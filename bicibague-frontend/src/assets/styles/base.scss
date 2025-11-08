@@ -1,0 +1,38 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  // Aplicar colores del tema a toda la página
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  // Transición suave al cambiar de tema
+  transition: background-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+html,
+body,
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: 'Segoe UI', Helvetica, Roboto Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-size: 16px;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+.link {
+  text-decoration: none;
+  color: inherit;
+}

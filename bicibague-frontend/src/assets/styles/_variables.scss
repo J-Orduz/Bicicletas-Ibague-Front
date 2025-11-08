@@ -1,0 +1,80 @@
+// Tema claro (por defecto)
+:root {
+  // Colores principales
+  --primary-color: #ff922d;
+  --primary-color-light: #ffb380;
+  --primary-color-dark: #e07b1f;
+
+  // Colores de fondo
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+
+  // color del header
+  --header-bg-color: #ffffff;
+
+  // Colores de texto
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-inverse: #ffffff;
+
+  // Bordes y sombras
+  --border-color: #dee2e6;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+  // Transiciones
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+// Tema oscuro
+[data-theme='dark'] {
+  // Colores principales (pueden ser más vibrantes en modo oscuro)
+  --primary-color: #ff9633;
+  --primary-color-light: #ffad77;
+  --primary-color-dark: #e07715;
+
+  // Colores de fondo
+  --bg-primary: #212121;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3a3a3a;
+
+  // color del header
+  --header-bg-color: #212121;
+
+  // Colores de texto
+  --text-primary: #e9ecef;
+  --text-secondary: #adb5bd;
+  --text-inverse: #212529;
+
+  // Bordes y sombras
+  --border-color: #495057;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+// Exportar variables para compatibilidad con código SCSS existente
+$primary-color: var(--primary-color);
+$primary-color-light: var(--primary-color-light);
+$primary-color-dark: var(--primary-color-dark);
+
+$bg-primary: var(--bg-primary);
+$bg-secondary: var(--bg-secondary);
+$bg-tertiary: var(--bg-tertiary);
+
+$header-bg-color: var(--header-bg-color);
+
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$text-inverse: var(--text-inverse);
+
+$border-color: var(--border-color);
+$shadow-sm: var(--shadow-sm);
+$shadow-md: var(--shadow-md);
+$shadow-lg: var(--shadow-lg);
+
+$transition-fast: var(--transition-fast);
+$transition-normal: var(--transition-normal);

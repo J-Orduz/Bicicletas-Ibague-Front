@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useTheme } from '@hooks/useTheme';
+import { useScrollDirection } from '@hooks/useScrollDirection';
 // styles
 import './Header.scss';
 
 export const Header = () => {
   const { theme, toggleTheme } = useTheme();
+  const scrollDirection = useScrollDirection();
 
   return (
-    <header className="header">
-      <h1>Bicibague</h1>
+    <header className={`header ${scrollDirection === 'down' ? 'header--hidden' : ''}`}>
+      <h1>BicIbagué</h1>
       <nav>
         <ul>
           <li>

@@ -6,12 +6,11 @@
   --primary-color-dark: #e07b1f;
 
   // Colores de fondo
+  --bg-darkest: #ffffff;
   --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
+  --bg-secondary: #f5f5f5; //#f8f9fa; (azulado)
   --bg-tertiary: #e9ecef;
-
-  // color del header
-  --header-bg-color: #ffffff;
+  --bg-quaternary: #c5c5c5;
 
   // Colores de texto
   --text-primary: #212529;
@@ -37,12 +36,11 @@
   --primary-color-dark: #e07715;
 
   // Colores de fondo
+  --bg-darkest: #121212;
   --bg-primary: #212121;
   --bg-secondary: #2d2d2d;
   --bg-tertiary: #3a3a3a;
-
-  // color del header
-  --header-bg-color: #212121;
+  --bg-quaternary: #575757;
 
   // Colores de texto
   --text-primary: #e9ecef;
@@ -61,9 +59,11 @@ $primary-color: var(--primary-color);
 $primary-color-light: var(--primary-color-light);
 $primary-color-dark: var(--primary-color-dark);
 
+$bg-darkest: var(--bg-darkest);
 $bg-primary: var(--bg-primary);
 $bg-secondary: var(--bg-secondary);
 $bg-tertiary: var(--bg-tertiary);
+$bg-quaternary: var(--bg-quaternary);
 
 $header-bg-color: var(--header-bg-color);
 
@@ -78,3 +78,4 @@ $shadow-lg: var(--shadow-lg);
 
 $transition-fast: var(--transition-fast);
 $transition-normal: var(--transition-normal);
+$bg-transition: background-color var(--transition-normal);

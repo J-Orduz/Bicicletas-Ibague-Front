@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 // components
 import { Header } from '@components/navigation/Header';
-import { Home } from '@components/Home/Home';
+import { Home } from '@components/home/Home';
 
 export const AppRouter = () => {
   return (

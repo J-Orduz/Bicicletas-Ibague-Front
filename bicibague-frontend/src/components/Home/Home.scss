@@ -1,0 +1,10 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+.home-container {
+  @include flex-center(null, column);
+
+  h1 {
+    margin: 10px 0;
+  }
+}

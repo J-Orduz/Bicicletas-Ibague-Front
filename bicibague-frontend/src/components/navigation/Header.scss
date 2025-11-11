@@ -2,10 +2,22 @@
 @use '@styles/mixins' as *;
 
 .header {
+  @include flex-center(20px);
+  position: fixed; // posicion para scroll
+  top: 0;
+  width: 100%;
+  z-index: 1000;
   height: 55px;
   padding: 0 20px;
-  @include flex-center(20px);
+  background-color: $bg-secondary;
   box-shadow: $shadow-md;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease, $bg-transition;
+
+  &--hidden {
+    // Classname para ocultar el header al scrollear
+    transform: translateY(-100%);
+    box-shadow: none;
+  }
 
   h1 {
     color: $primary-color;
@@ -29,6 +41,7 @@
     }
   }
 
+  // button para cambiar tema
   .theme-toggle {
     background: transparent;
     border: none;

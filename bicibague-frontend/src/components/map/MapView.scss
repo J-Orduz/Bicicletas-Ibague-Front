@@ -1,0 +1,40 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+.map-container {
+  @include flex-center();
+  position: relative;
+  background-color: $bg-quaternary;
+  width: 80%;
+  height: calc(100vh - 200px);
+  border-radius: 8px;
+  color: $text-primary;
+  overflow: hidden;
+
+  .leaflet-map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  // Popup de las estaciones
+  .bike-station-popup {
+    text-align: center;
+    
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 1rem;
+      color: $primary-color;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      
+      strong {
+        color: $primary-color;
+        font-size: 1.1rem;
+      }
+    }
+  }
+}

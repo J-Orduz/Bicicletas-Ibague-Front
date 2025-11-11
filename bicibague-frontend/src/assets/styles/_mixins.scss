@@ -1,6 +1,9 @@
-@mixin flex-center($gap: 0) {
+// @use '@styles/variables' as *;
+
+@mixin flex-center($gap: 0, $direction: row) {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: $gap;
+  flex-direction: $direction;
 }

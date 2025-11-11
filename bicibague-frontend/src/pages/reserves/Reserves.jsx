@@ -14,12 +14,11 @@ export const Reserves = () => {
   const navigate = useNavigate();
   const [showUnlockModal, setShowUnlockModal] = useState(false);
 
-  // Mock data - Reemplazar con datos reales de la API
-  const [currentReservation, setCurrentReservation] = useState({
-    id: 1,
-    bikeId: 'BIC-001',
-    createdAt: '2025-11-09T10:30:00',
-    status: 'activa',
+  // TEMPORAL: Cargar reserva actual desde localStorage para simular persistencia
+  // TODO: Reemplazar con datos reales de la API
+  const [currentReservation, setCurrentReservation] = useState(() => {
+    const savedReservation = localStorage.getItem('currentReservation');
+    return savedReservation ? JSON.parse(savedReservation) : null;
   });
 
   const [reservationHistory] = useState([
@@ -54,12 +53,16 @@ export const Reserves = () => {
   ]);
 
   const handleCancelReservation = () => {
-    // Aquí implementarías la lógica para cancelar la reserva
+    // TEMPORAL: Cancelar reserva y eliminar del localStorage
+    // TODO: Implementar la lógica para cancelar la reserva en la API
     const confirmCancel = window.confirm(
       '¿Estás seguro de que deseas cancelar esta reserva?'
     );
     if (confirmCancel) {
       console.log('Reserva cancelada:', currentReservation.id);
+      // Eliminar del localStorage
+      localStorage.removeItem('currentReservation');
+      // Actualizar el estado
       setCurrentReservation(null);
     }
   };
@@ -153,7 +156,9 @@ export const Reserves = () => {
                   <div className="detail-content">
                     <span className="detail-label">Fecha de reserva</span>
                     <span className="detail-value">
-                      {formatDate(currentReservation.createdAt)}
+                      {currentReservation.reservationType === 'scheduled' 
+                        ? formatDate(currentReservation.scheduledDate)
+                        : formatDate(currentReservation.createdAt)}
                     </span>
                   </div>
                 </div>
@@ -162,7 +167,9 @@ export const Reserves = () => {
                   <div className="detail-content">
                     <span className="detail-label">Hora de reserva</span>
                     <span className="detail-value">
-                      {formatTime(currentReservation.createdAt)}
+                      {currentReservation.reservationType === 'scheduled' 
+                        ? currentReservation.scheduledTime
+                        : formatTime(currentReservation.createdAt)}
                     </span>
                   </div>
                 </div>

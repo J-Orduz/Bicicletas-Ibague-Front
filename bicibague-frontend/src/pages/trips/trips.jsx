@@ -18,15 +18,11 @@ import { SubHeader } from '@layouts/SubHeader';
 import './trips.scss';
 
 export const Trips = () => {
-  // Mock data - Reemplazar con datos reales de la API
-  const [currentTrip, setCurrentTrip] = useState({
-    id: 1,
-    bikeId: 'BIC-001',
-    bikeType: 'electrica', // 'electrica' o 'mecanica'
-    battery: 85, // Solo para eléctricas
-    // startTime: '2025-11-09T14:30:00',
-    startTime: new Date(), // Simulacion
-    status: 'en-progreso',
+  // TEMPORAL: Cargar viaje actual desde localStorage para simular persistencia
+  // TODO: Reemplazar con datos reales de la API
+  const [currentTrip, setCurrentTrip] = useState(() => {
+    const savedTrip = localStorage.getItem('currentTrip');
+    return savedTrip ? JSON.parse(savedTrip) : null;
   });
 
   const [tripHistory] = useState([
@@ -101,16 +97,20 @@ export const Trips = () => {
     return () => clearInterval(interval);
   }, [currentTrip]);
 
-  //   const handleEndTrip = () => {
-  //     const confirmEnd = window.confirm(
-  //       '¿Estás seguro de que deseas finalizar el viaje?'
-  //     );
-  //     if (confirmEnd) {
-  //       console.log('Viaje finalizado:', currentTrip.id);
-  //       // Aquí implementarías la lógica para finalizar el viaje
-  //       setCurrentTrip(null);
-  //     }
-  //   };
+  // TEMPORAL: Función para finalizar el viaje y limpiar localStorage
+  // TODO: Reemplazar con llamada real a la API
+  // const handleEndTrip = () => {
+  //   const confirmEnd = window.confirm(
+  //     '¿Estás seguro de que deseas finalizar el viaje?'
+  //   );
+  //   if (confirmEnd) {
+  //     console.log('Viaje finalizado:', currentTrip.id);
+  //     // Limpiar el viaje actual del localStorage
+  //     localStorage.removeItem('currentTrip');
+  //     // Actualizar el estado para ocultar el viaje actual
+  //     setCurrentTrip(null);
+  //   }
+  // };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -218,12 +218,12 @@ export const Trips = () => {
                 </div>
               </div>
 
-              <div className="trip-actions">
-                {/* <button className="btn btn-end" onClick={handleEndTrip}>
-                  <MdOutlineStopCircle className='btn-icon'/>
+              {/* <div className="trip-actions">
+                <button className="btn btn-end" onClick={handleEndTrip}>
+                  <MdOutlineStopCircle className="btn-icon" />
                   Finalizar Viaje
-                </button> */}
-              </div>
+                </button>
+              </div> */}
             </div>
           ) : (
             <div className="no-trip">

@@ -159,6 +159,155 @@
         }
       }
 
+      // Tipo de reserva
+      .reservation-type {
+        margin-bottom: 24px;
+
+        h3 {
+          margin: 0 0 16px 0;
+          font-size: 1.1rem;
+          color: $text-primary;
+          font-weight: 600;
+        }
+
+        .type-options {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+
+          .type-option {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: $bg-secondary;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all $transition-fast;
+
+            input[type='radio'] {
+              position: absolute;
+              top: 12px;
+              right: 12px;
+              cursor: pointer;
+              width: 20px;
+              height: 20px;
+              accent-color: $primary-color;
+            }
+
+            .option-content {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              width: 100%;
+
+              .option-icon {
+                font-size: 1.8rem;
+              }
+
+              .option-text {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+
+                strong {
+                  color: $text-primary;
+                  font-size: 0.95rem;
+                }
+
+                small {
+                  color: $text-secondary;
+                  font-size: 0.8rem;
+                }
+              }
+            }
+
+            &:hover {
+              border-color: $primary-color-light;
+              background-color: $bg-tertiary;
+              transform: translateY(-2px);
+              box-shadow: $shadow-sm;
+            }
+
+            &:has(input:checked) {
+              border-color: $primary-color;
+              background: linear-gradient(
+                135deg,
+                rgba(255, 146, 45, 0.15),
+                rgba(255, 146, 45, 0.05)
+              );
+              box-shadow: 0 0 0 3px rgba(255, 146, 45, 0.2);
+            }
+          }
+
+          @media (max-width: 480px) {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+
+      // Campos de programación de horario
+      .schedule-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: linear-gradient(135deg, $bg-secondary, $bg-tertiary);
+        border-radius: 12px;
+        border-left: 4px solid $primary-color;
+        animation: slideDown 0.3s ease;
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .field-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+
+          .field-label {
+            font-weight: 600;
+            color: $text-primary;
+            font-size: 0.9rem;
+          }
+
+          .field-input {
+            padding: 10px 12px;
+            border: 2px solid $border-color;
+            border-radius: 8px;
+            background-color: $bg-primary;
+            color: $text-primary;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all $transition-fast;
+
+            &:focus {
+              outline: none;
+              border-color: $primary-color;
+              box-shadow: 0 0 0 3px rgba(255, 146, 45, 0.1);
+            }
+
+            &:hover {
+              border-color: $primary-color-light;
+            }
+          }
+        }
+
+        @media (max-width: 480px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
       // Lista de bicicletas
       .bike-list {
         h3 {

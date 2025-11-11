@@ -12,10 +12,18 @@ import {
 } from 'react-icons/fa6';
 // styles
 import './Header.scss';
+import { useEffect } from 'react';
 
 export const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const scrollDirection = useScrollDirection();
+
+  // simulacion de usuario logueado
+  // useEffect(() => {
+  //   const hasToken = Boolean(localStorage.getItem('access_token'));
+  // }, []);
+
+  const hasToken = Boolean(localStorage.getItem('access_token'));
 
   return (
     <header
@@ -26,25 +34,25 @@ export const Header = () => {
         <ul>
           <li>
             <Link className="link" to="/">
-              <FaRegMap className='header-item-icon map-icon'/>
+              <FaRegMap className="header-item-icon map-icon" />
               <span>Mapa</span>
             </Link>
           </li>
           <li>
             <Link className="link" to="/reserves">
-              <FaRegBookmark className='header-item-icon'/>
+              <FaRegBookmark className="header-item-icon" />
               <span>Reservas</span>
             </Link>
           </li>
           <li>
             <Link className="link" to="/trips">
-              <FaBicycle className='header-item-icon bicycle-icon'/>
+              <FaBicycle className="header-item-icon bicycle-icon" />
               <span>Viajes</span>
             </Link>
           </li>
           <li>
-            <Link className="link" to="/register">
-              <FaUser className='header-item-icon'/>
+            <Link className="link" to={hasToken ? '/profile' : '/register'}>
+              <FaUser className="header-item-icon" />
               <span>Perfil</span>
             </Link>
           </li>

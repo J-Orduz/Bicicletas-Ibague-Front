@@ -1,0 +1,18 @@
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    margin: 1rem auto;
+  }
+
+  .profile-content {
+    text-align: center;
+    padding: 1rem;
+
+    @media (max-width: 768px) {
+      text-align: left;
+    }
+  }
+
+}

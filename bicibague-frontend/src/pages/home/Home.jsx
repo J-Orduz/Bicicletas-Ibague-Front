@@ -1,8 +1,8 @@
 // components
 import { MapView } from '@pages/map/MapView';
+import { SubHeader } from '@layouts/SubHeader';
 // styles
 import './Home.scss';
-import { SubHeader } from '@layouts/SubHeader';
 
 export const Home = () => {
   // procesar el token de verificación desde la URL (cuando el usuario hace clic en el enlace del email)

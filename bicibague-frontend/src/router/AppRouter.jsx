@@ -11,6 +11,7 @@ import { Reserves } from '@pages/reserves/Reserves';
 import { Trips } from '@pages/trips/trips';
 import { Register } from '@pages/auth/Register';
 import { NotFound } from '../pages/notFound/NotFound';
+import { Profile } from '@pages/profile/Profile';
 
 export const AppRouter = () => {
   return (
@@ -20,6 +21,7 @@ export const AppRouter = () => {
           <Route index element={<Home />} />
           <Route path="/reserves" element={<Reserves />} />
           <Route path="/trips" element={<Trips />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         {/* Rutas de autenticación */}

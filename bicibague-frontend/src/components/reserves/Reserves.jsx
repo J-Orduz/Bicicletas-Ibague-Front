@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // icons
-import { FaRegClock, FaPlus, FaRegCalendar } from 'react-icons/fa6';
+import { FaRegClock, FaPlus, FaRegCalendar, FaBicycle } from 'react-icons/fa6';
 import { MdOutlinePlayCircleOutline } from 'react-icons/md';
 import { BsXLg } from 'react-icons/bs';
 // components
@@ -130,19 +130,10 @@ export const Reserves = () => {
           {currentReservation ? (
             <div className="current-reservation-card">
               <div className="reservation-header">
-                <div className="reservation-info">
-                  <h3 className="bike-id">
-                    Bicicleta: {currentReservation.bikeId}
-                  </h3>
-                  <div className="reservation-meta">
-                    <p className="reservation-date">
-                      <span className="meta-label">Fecha:</span>{' '}
-                      {formatDate(currentReservation.createdAt)}
-                    </p>
-                    <p className="reservation-time">
-                      <span className="meta-label">Hora:</span>{' '}
-                      {formatTime(currentReservation.createdAt)}
-                    </p>
+                <div className="bike-info">
+                  <div className="bike-id-container">
+                    <FaBicycle className="bike-icon" />
+                    <h3 className="bike-id">{currentReservation.bikeId}</h3>
                   </div>
                 </div>
                 <span
@@ -152,6 +143,27 @@ export const Reserves = () => {
                 >
                   {getStatusText(currentReservation.status)}
                 </span>
+              </div>
+
+              <div className="reservation-details">
+                <div className="detail-item">
+                  <FaRegCalendar className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Fecha de reserva</span>
+                    <span className="detail-value">
+                      {formatDate(currentReservation.createdAt)}
+                    </span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FaRegClock className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Hora de reserva</span>
+                    <span className="detail-value">
+                      {formatTime(currentReservation.createdAt)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="reservation-actions">
@@ -184,14 +196,17 @@ export const Reserves = () => {
 
         {/* Sección de Historial */}
         <div className="history-section">
-          <h2 className="section-title">Historial</h2>
+          <h2 className="section-title">Historial de Reservas</h2>
 
           {reservationHistory.length > 0 ? (
             <div className="history-list">
               {reservationHistory.map((reservation) => (
                 <div key={reservation.id} className="history-card">
                   <div className="history-card-header">
-                    <h3 className="bike-id">Bicicleta: {reservation.bikeId}</h3>
+                    <div className="bike-info-small">
+                      <FaBicycle className="bike-icon-small" />
+                      <h3 className="bike-id-small">{reservation.bikeId}</h3>
+                    </div>
                     <span
                       className={`status-badge ${getStatusClass(
                         reservation.status
@@ -201,14 +216,22 @@ export const Reserves = () => {
                     </span>
                   </div>
                   <div className="history-card-body">
-                    <div className="history-meta">
-                      <div className="meta-item">
-                        <FaRegCalendar className="meta-icon" />
-                        <span>{formatDate(reservation.createdAt)}</span>
+                    <div className="history-detail">
+                      <FaRegCalendar className="history-icon" />
+                      <div className="history-content">
+                        <span className="history-label">Fecha:</span>
+                        <span className="history-value">
+                          {formatDate(reservation.createdAt)}
+                        </span>
                       </div>
-                      <div className="meta-item">
-                        <FaRegClock className="meta-icon" />
-                        <span>{formatTime(reservation.createdAt)}</span>
+                    </div>
+                    <div className="history-detail">
+                      <FaRegClock className="history-icon" />
+                      <div className="history-content">
+                        <span className="history-label">Hora:</span>
+                        <span className="history-value">
+                          {formatTime(reservation.createdAt)}
+                        </span>
                       </div>
                     </div>
                   </div>

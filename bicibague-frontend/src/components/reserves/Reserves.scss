@@ -37,7 +37,7 @@
     .current-reservation-card {
       border: 2px solid $primary-color;
       border-radius: 12px;
-      padding: 1rem;
+      padding: 1.5rem;
       background-color: $bg-tertiary;
       transition: all $transition-normal;
 
@@ -46,13 +46,13 @@
       }
 
       @media (max-width: 768px) {
-        padding: 0.75rem;
+        padding: 1rem;
         border-radius: 8px;
       }
 
       .reservation-header {
         @include flex($justify: space-between, $align: flex-start);
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         gap: 1rem;
 
         @media (max-width: 768px) {
@@ -60,17 +60,81 @@
           gap: 0.75rem;
         }
 
-        .reservation-info {
-          .reservation-meta {
-            @include flex($align: flex-start, $direction: column, $gap: 0.5rem);
+        .bike-info {
+          @include flex($direction: column, $align: flex-start, $gap: 0.5rem);
 
-            .meta-label {
-              font-weight: 600;
-              color: $text-primary;
+          .bike-id-container {
+            @include flex($justify: flex-start, $gap: 0.75rem);
+
+            .bike-icon {
+              width: 28px;
+              height: 28px;
+              color: $primary-color;
+
+              @media (max-width: 768px) {
+                width: 24px;
+                height: 24px;
+              }
             }
 
-            p {
+            .bike-id {
+              margin: 0;
+              font-size: 1.5rem;
+
+              @media (max-width: 768px) {
+                font-size: 1.25rem;
+              }
+            }
+          }
+        }
+      }
+
+      .reservation-details {
+        @include flex($direction: column, $align: stretch, $gap: 1rem);
+        margin-bottom: 1.5rem;
+
+        .detail-item {
+          @include flex($justify: flex-start, $gap: 1rem);
+          background-color: $bg-secondary;
+          padding: 1rem;
+          border-radius: 8px;
+          transition: all $transition-normal;
+
+          @media (max-width: 768px) {
+            padding: 0.8rem;
+            gap: 0.75rem;
+          }
+
+          .detail-icon {
+            width: 24px;
+            height: 24px;
+            color: $primary-color;
+            flex-shrink: 0;
+
+            @media (max-width: 768px) {
+              width: 20px;
+              height: 20px;
+            }
+          }
+
+          .detail-content {
+            @include flex(
+              $direction: column,
+              $align: flex-start,
+              $gap: 0.25rem
+            );
+            flex: 1;
+
+            .detail-label {
+              font-size: 0.875rem;
               color: $text-secondary;
+              font-weight: 600;
+            }
+
+            .detail-value {
+              font-size: 1rem;
+              color: $text-primary;
+              font-weight: 500;
             }
           }
         }
@@ -100,21 +164,25 @@
   // Sin reserva actual
   .no-reservation {
     @include flex($direction: column);
+    padding: 2rem 1rem;
 
     .no-reservation-icon {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       margin-bottom: 1rem;
-      opacity: 0.6;
+      opacity: 0.5;
+      color: $text-secondary;
 
       @media (max-width: 768px) {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
       }
     }
 
     .no-reservation-text {
-      color: $text-secondary;
+      color: $text-primary;
+      font-size: 1.125rem;
+      font-weight: 600;
       margin-bottom: 1rem;
     }
 
@@ -154,41 +222,79 @@
       @media (max-width: 768px) {
         padding: 0.8rem;
       }
-    }
 
-    .history-card-header {
-      @include flex($justify: space-between, $gap: 0.75rem);
-      margin-bottom: 0.75rem;
+      .history-card-header {
+        @include flex($justify: space-between, $align: center, $gap: 1rem);
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid $border-color-secondary;
 
-      @media (max-width: 768px) {
-        flex-direction: column;
-        align-items: flex-start;
+        @media (max-width: 768px) {
+          flex-wrap: wrap;
+        }
+
+        .bike-info-small {
+          @include flex($justify: flex-start, $gap: 0.5rem);
+
+          .bike-icon-small {
+            width: 20px;
+            height: 20px;
+            color: $primary-color;
+          }
+
+          .bike-id-small {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+
+            @media (max-width: 768px) {
+              font-size: 1rem;
+            }
+          }
+        }
       }
 
-      .bike-id {
-        margin: 0;
-      }
-    }
+      .history-card-body {
+        @include flex($direction: column, $align: stretch, $gap: 0.75rem);
 
-    .history-card-body {
-      display: flex;
-      flex-direction: column;
+        .history-detail {
+          @include flex($justify: flex-start, $gap: 0.75rem);
 
-      .history-meta {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-
-        .meta-item {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          color: $text-secondary;
-
-          .meta-icon {
+          .history-icon {
             width: 18px;
-            // height: 16px;
+            height: 18px;
+            color: $text-secondary;
             flex-shrink: 0;
+            margin-top: 2px;
+
+            @media (max-width: 768px) {
+              width: 16px;
+              height: 16px;
+            }
+          }
+
+          .history-content {
+            @include flex(
+              $direction: column,
+              $align: flex-start,
+              $gap: 0.25rem
+            );
+            flex: 1;
+
+            .history-label {
+              font-size: 0.8rem;
+              color: $text-secondary;
+              font-weight: 600;
+            }
+
+            .history-value {
+              font-size: 0.9rem;
+              color: $text-primary;
+
+              @media (max-width: 768px) {
+                font-size: 0.85rem;
+              }
+            }
           }
         }
       }

@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // icons
 import { IoLockOpenOutline } from 'react-icons/io5';
-import { BsXLg } from "react-icons/bs";
+import { BsXLg } from 'react-icons/bs';
 // import { FaBicyclet } from 'react-icons/md';
 import { FaBicycle } from 'react-icons/fa6';
-import {
-  FaExclamationCircle,
-} from 'react-icons/fa';
+import { FaExclamationCircle } from 'react-icons/fa';
 // styles
 import './UnlockBike.scss';
 
@@ -21,12 +19,12 @@ export const UnlockBike = ({ reservation, onClose }) => {
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, []);
-  
+
   const onUnlock = (serialNumber) => {
     // TODO: Implementar la lógica para iniciar el viaje con el número de serie
     console.log('Viaje iniciado con número de serie:', serialNumber);
@@ -98,7 +96,7 @@ export const UnlockBike = ({ reservation, onClose }) => {
             disabled={isLoading}
             aria-label="Cerrar"
           >
-            <BsXLg  className='btn-icon'/>
+            <BsXLg className="btn-icon" />
           </button>
         </div>
 
@@ -116,8 +114,12 @@ export const UnlockBike = ({ reservation, onClose }) => {
           <div className="unlock-instructions">
             <h3 className="instructions-title">Instrucciones:</h3>
             <ol className="instructions-list">
-              <li>1. Localiza el número de serie en la barra de la bicicleta</li>
-              <li>2. Ingresa el código exactamente como aparece (sin espacios)</li>
+              <li>
+                1. Localiza el número de serie en la barra de la bicicleta
+              </li>
+              <li>
+                2. Ingresa el código exactamente como aparece (sin espacios)
+              </li>
               <li>3. Presiona "Desbloquear" para iniciar tu viaje</li>
             </ol>
           </div>

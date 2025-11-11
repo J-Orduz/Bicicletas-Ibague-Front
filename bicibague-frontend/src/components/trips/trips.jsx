@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 // icons
 import {
-    FaBicycle,
-    FaBolt,
-    FaRegClock,
-    FaRegCalendar,
-    FaRegCalendarCheck,
-    FaMoneyBillWave,
+  FaBicycle,
+  FaBolt,
+  FaRegClock,
+  FaRegCalendar,
+  FaRegCalendarCheck,
+  FaMoneyBillWave,
+  FaBatteryHalf,
 } from 'react-icons/fa6';
 // import { MdOutlineStopCircle } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
+import { PiSneakerFill } from 'react-icons/pi';
 // styles
 import './trips.scss';
 
@@ -18,7 +20,7 @@ export const Trips = () => {
   const [currentTrip, setCurrentTrip] = useState({
     id: 1,
     bikeId: 'BIC-001',
-    bikeType: 'electrica', // 'electrica' o 'manual'
+    bikeType: 'electrica', // 'electrica' o 'mecanica'
     battery: 85, // Solo para eléctricas
     // startTime: '2025-11-09T14:30:00',
     startTime: new Date(), // Simulacion
@@ -29,7 +31,7 @@ export const Trips = () => {
     {
       id: 8,
       bikeId: 'BIC-045',
-      bikeType: 'manual',
+      bikeType: 'mecanica',
       startTime: '2025-11-08T14:20:00',
       endTime: '2025-11-08T15:45:00',
       duration: '1h 25m',
@@ -47,7 +49,7 @@ export const Trips = () => {
     {
       id: 6,
       bikeId: 'BIC-018',
-      bikeType: 'manual',
+      bikeType: 'mecanica',
       startTime: '2025-11-05T16:00:00',
       endTime: '2025-11-05T16:45:00',
       duration: '45m',
@@ -136,7 +138,9 @@ export const Trips = () => {
   const getBikeTypeIcon = (type) => {
     return type === 'electrica' ? (
       <FaBolt className="bike-type-icon electric" />
-    ) : null;
+    ) : (
+      <PiSneakerFill className="bike-type-icon mechanical" />
+    );
   };
 
   const getBatteryClass = (battery) => {
@@ -165,7 +169,6 @@ export const Trips = () => {
                   </div>
                   {currentTrip.bikeType === 'electrica' && (
                     <div className="battery-indicator">
-                      <div className="battery-label">Batería</div>
                       <div
                         className={`battery-bar ${getBatteryClass(
                           currentTrip.battery
@@ -175,6 +178,7 @@ export const Trips = () => {
                           className="battery-fill"
                           style={{ width: `${currentTrip.battery}%` }}
                         >
+                          <FaBatteryHalf className="battery-icon" />
                           <span className="battery-percentage">
                             {currentTrip.battery}%
                           </span>
@@ -245,7 +249,7 @@ export const Trips = () => {
                     </div>
                     <div className="charge-amount">
                       <FaMoneyBillWave className="charge-icon" />
-                      {formatCurrency(trip.charge)}
+                      {formatCurrency(trip.charge)} COP
                     </div>
                   </div>
 

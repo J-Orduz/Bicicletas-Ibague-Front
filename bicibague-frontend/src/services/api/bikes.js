@@ -1,0 +1,19 @@
+import { useFetch } from '@hooks/useFetch';
+
+// ESTACION GET
+export const useGetStations = () => {
+  return {
+    get: useFetch(
+      '/not-prefix/bicicletas/estaciones',
+      'Error al obtener las estaciones'
+    ).fetchData,
+  };
+};
+
+// BICICLETAS EN ESTACION GET
+export const useGetStationBikes = (stationId) => {
+  return {
+    get: useFetch(``, 'Error al obtener las bicicletas de la estación')
+      .fetchData,
+  };
+};

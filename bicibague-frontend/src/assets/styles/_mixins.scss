@@ -1,9 +1,52 @@
-// @use '@styles/variables' as *;
+@use '@styles/variables' as *;
 
-@mixin flex-center($gap: 0, $direction: row) {
+@mixin flex($justify: center, $align: center, $gap: 0, $direction: row) {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: $justify;
+  align-items: $align;
   gap: $gap;
   flex-direction: $direction;
+}
+
+@mixin basic-button(
+  $gap: 0.5rem,
+  $padding: 10px 20px,
+  $bg-color: $primary-color,
+  $bg-color-hover: $primary-color-dark,
+  $text-color: #fff,
+  $border: none,
+  $border-radius: 8px,
+  $font-weight: 600,
+  $icon-width: 20px,
+  $icon-height: 20px,
+) {
+  @include flex($gap: $gap, $align: center);
+  padding: $padding;
+  background-color: $bg-color;
+  color: $text-color;
+  border: $border;
+  border-radius: $border-radius;
+  font-weight: $font-weight;
+  cursor: pointer;
+  transition: all $transition-normal;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: $bg-color-hover;
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn-icon {
+    width: $icon-width;
+    height: $icon-height;
+  }
 }

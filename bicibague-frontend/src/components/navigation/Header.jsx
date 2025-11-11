@@ -19,7 +19,7 @@ export const Header = () => {
             </Link>
           </li>
           <li>
-            <Link className="link" to="/about">About</Link>
+            <Link className="link" to="/history/reserves">Reservas</Link>
           </li>
         </ul>
         <button 

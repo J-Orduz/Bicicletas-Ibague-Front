@@ -8,8 +8,8 @@
   // Colores de fondo
   --bg-darkest: #ffffff;
   --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f5; //#f8f9fa; (azulado)
-  --bg-tertiary: #e9ecef;
+  --bg-secondary: #ebebeb; //#f8f9fa; (azulado)
+  --bg-tertiary: #dfdfdf;
   --bg-quaternary: #c5c5c5;
 
   // Colores de texto
@@ -19,13 +19,10 @@
 
   // Bordes y sombras
   --border-color: #dee2e6;
+  --border-color-secondary: #a7aeb6;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-
-  // Transiciones
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
 }
 
 // Tema oscuro
@@ -37,9 +34,9 @@
 
   // Colores de fondo
   --bg-darkest: #121212;
-  --bg-primary: #212121;
-  --bg-secondary: #2d2d2d;
-  --bg-tertiary: #3a3a3a;
+  --bg-primary: #202020;
+  --bg-secondary: #2c2c2c;
+  --bg-tertiary: #383838;
   --bg-quaternary: #575757;
 
   // Colores de texto
@@ -49,9 +46,10 @@
 
   // Bordes y sombras
   --border-color: #495057;
+  --border-color-secondary: #646c72;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 }
 
 // Exportar variables para compatibilidad con código SCSS existente
@@ -72,10 +70,29 @@ $text-secondary: var(--text-secondary);
 $text-inverse: var(--text-inverse);
 
 $border-color: var(--border-color);
+$border-color-secondary: var(--border-color-secondary);
 $shadow-sm: var(--shadow-sm);
 $shadow-md: var(--shadow-md);
 $shadow-lg: var(--shadow-lg);
 
-$transition-fast: var(--transition-fast);
-$transition-normal: var(--transition-normal);
-$bg-transition: background-color var(--transition-normal);
+// variables estaticas
+$transition-fast: 0.2s ease;
+$transition-normal: 0.3s ease;
+$bg-transition: background-color $transition-normal;
+
+$white: #ffffff;
+$black: #000000;
+$text-black: #212529;
+
+$green: #28a745;
+$white-green: #d4edda;
+$light-green: #71dd8a;
+$dark-green: #1e7e34;
+$red: #df3c4c;
+$white-red: #ffb3b9;
+$light-red: #e76c7a;
+$dark-red: #a71d2a;
+$blue: #0c78ec;
+$white-blue: #c8e6ff;
+$light-blue: #66b0ff;
+$dark-blue: #0c60b9;

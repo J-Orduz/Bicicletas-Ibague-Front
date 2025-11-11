@@ -2,7 +2,7 @@
 @use '@styles/mixins' as *;
 
 .header {
-  @include flex-center(20px);
+  @include flex($gap: 20px);
   position: fixed; // posicion para scroll
   top: 0;
   width: 100%;
@@ -21,13 +21,14 @@
 
   h1 {
     color: $primary-color;
+    margin-bottom: 3px;
   }
 
   nav {
-    @include flex-center(20px);
+    @include flex($gap: 20px);
 
     ul {
-      @include flex-center(10px);
+      @include flex($gap: 10px);
 
       .link {
         padding: 8px 12px;

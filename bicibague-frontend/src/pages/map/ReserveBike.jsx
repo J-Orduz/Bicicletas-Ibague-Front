@@ -8,6 +8,9 @@ import './ReserveBike.scss';
 export const ReserveBike = ({ station, onClose }) => {
   const navigate = useNavigate();
   const [selectedBike, setSelectedBike] = useState(null);
+  const [reservationType, setReservationType] = useState('now'); // 'now' o 'scheduled'
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
 
   const totalCapacity = 15;
   const availableBikes = station.bikes.filter((bike) => bike.available);
@@ -19,15 +22,52 @@ export const ReserveBike = ({ station, onClose }) => {
   );
 
   const handleReserve = () => {
-    if (selectedBike) {
-      alert(
-        `Bicicleta ${selectedBike} reservada exitosamente en ${station.name}!`
-      );
-      onClose();
-      navigate('/reserves');
-    } else {
+    if (!selectedBike) {
       alert('Por favor selecciona una bicicleta');
+      return;
     }
+
+    // Validar fecha y hora si es reserva programada
+    if (reservationType === 'scheduled') {
+      if (!scheduledDate || !scheduledTime) {
+        alert('Por favor selecciona fecha y hora para la reserva');
+        return;
+      }
+
+      // Validar que la fecha sea futura
+      const selectedDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
+      const now = new Date();
+      if (selectedDateTime <= now) {
+        alert('La fecha y hora deben ser futuras');
+        return;
+      }
+    }
+
+    // TEMPORAL: Guardar reserva en localStorage para simular persistencia
+    // TODO: Reemplazar con llamada real a la API cuando esté disponible
+    const reservationData = {
+      id: Date.now(), // ID temporal usando timestamp
+      bikeId: selectedBike,
+      bikeType: station.bikes.find((bike) => bike.id === selectedBike)?.type || 'mechanical',
+      stationName: station.name,
+      createdAt: new Date().toISOString(),
+      reservationType: reservationType, // 'now' o 'scheduled'
+      scheduledDate: reservationType === 'scheduled' ? scheduledDate : null,
+      scheduledTime: reservationType === 'scheduled' ? scheduledTime : null,
+      status: 'activa',
+    };
+
+    localStorage.setItem('currentReservation', JSON.stringify(reservationData));
+
+    // Mensaje según tipo de reserva
+    const reserveMessage =
+      reservationType === 'now'
+        ? `Bicicleta ${selectedBike} reservada exitosamente en ${station.name}!`
+        : `Bicicleta ${selectedBike} programada para ${scheduledDate} a las ${scheduledTime} en ${station.name}!`;
+
+    alert(reserveMessage);
+    onClose();
+    navigate('/reserves');
   };
 
   // Cerrar modal al hacer clic en el overlay
@@ -73,6 +113,77 @@ export const ReserveBike = ({ station, onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* Tipo de reserva */}
+          <div className="reservation-type">
+            <h3>Tipo de reserva:</h3>
+            <div className="type-options">
+              <label className="type-option">
+                <input
+                  type="radio"
+                  name="reservationType"
+                  value="now"
+                  checked={reservationType === 'now'}
+                  onChange={(e) => setReservationType(e.target.value)}
+                />
+                <span className="option-content">
+                  <span className="option-icon">🕒</span>
+                  <span className="option-text">
+                    <strong>Reservar Ahora</strong>
+                    <small>Disponible inmediatamente</small>
+                  </span>
+                </span>
+              </label>
+
+              <label className="type-option">
+                <input
+                  type="radio"
+                  name="reservationType"
+                  value="scheduled"
+                  checked={reservationType === 'scheduled'}
+                  onChange={(e) => setReservationType(e.target.value)}
+                />
+                <span className="option-content">
+                  <span className="option-icon">📅</span>
+                  <span className="option-text">
+                    <strong>Programar Reserva</strong>
+                    <small>Elige fecha y hora</small>
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Campos de fecha y hora si es programada */}
+          {reservationType === 'scheduled' && (
+            <div className="schedule-fields">
+              <div className="field-group">
+                <label htmlFor="scheduledDate" className="field-label">
+                  Fecha:
+                </label>
+                <input
+                  type="date"
+                  id="scheduledDate"
+                  className="field-input"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div className="field-group">
+                <label htmlFor="scheduledTime" className="field-label">
+                  Hora:
+                </label>
+                <input
+                  type="time"
+                  id="scheduledTime"
+                  className="field-input"
+                  value={scheduledTime}
+                  onChange={(e) => setScheduledTime(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="bike-list">
             <h3>Selecciona una bicicleta:</h3>

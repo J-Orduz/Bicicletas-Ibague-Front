@@ -28,6 +28,24 @@ export const UnlockBike = ({ reservation, onClose }) => {
   const onUnlock = (serialNumber) => {
     // TODO: Implementar la lógica para iniciar el viaje con el número de serie
     console.log('Viaje iniciado con número de serie:', serialNumber);
+    
+    // TEMPORAL: Guardar datos del viaje en localStorage para simular persistencia
+    // TODO: Reemplazar con datos reales de la API cuando esté disponible
+    const tripData = {
+      id: reservation.id,
+      bikeId: reservation.bikeId,
+      bikeType: reservation.bikeType || 'mecanica', // 'electrica' o 'mecanica' - usar mecanica por defecto
+      battery: 85, // Valor temporal fijo para bicicletas eléctricas
+      startTime: new Date().toISOString(), // Fecha y hora de inicio
+      status: 'en-progreso',
+      serialNumber: serialNumber,
+    };
+    
+    localStorage.setItem('currentTrip', JSON.stringify(tripData));
+    
+    // TEMPORAL: Eliminar la reserva del localStorage al iniciar el viaje
+    localStorage.removeItem('currentReservation');
+    
     alert(
       `¡Bicicleta desbloqueada! Número de serie: ${serialNumber}\n¡Disfruta tu viaje!`
     );

@@ -1,3 +1,6 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,11 +10,18 @@
 html,
 body {
   // Aplicar colores del tema a toda la página
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  // Transición suave al cambiar de tema
-  transition: background-color var(--transition-normal),
-    color var(--transition-normal);
+  background-color: $bg-primary;
+  color: $text-primary;
+  transition: $bg-transition, color $transition-normal;
+}
+
+// Compensar el espacio del header
+body {
+  padding-top: 55px; // altura del header en escritorio
+
+  @media (max-width: 768px) {
+    padding-top: 50px; // altura del sub-header en móvil
+  }
 }
 
 html,

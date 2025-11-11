@@ -1,0 +1,9 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+.notfound-container {
+  margin: auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: $bg-primary;
+}

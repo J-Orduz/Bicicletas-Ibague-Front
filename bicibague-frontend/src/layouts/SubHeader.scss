@@ -1,0 +1,32 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+.sub-header {
+  @include flex();
+  position: relative;
+  padding: 0 1rem;
+  height: 100px;
+  z-index: 10;
+  background-color: $bg-primary;
+  transition: $bg-transition;
+
+  @media (max-width: 768px) {
+    justify-content: left;
+    height: 50px;
+    box-shadow: $shadow-sm;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  h1 {
+    font-size: 2rem;
+    text-align: center;
+    color: $primary-color;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
+}

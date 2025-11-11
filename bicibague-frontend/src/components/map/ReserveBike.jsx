@@ -1,4 +1,6 @@
 import { useState } from 'react';
+//icons
+import { BsXLg } from "react-icons/bs";
 // styles
 import './ReserveBike.scss';
 
@@ -38,7 +40,7 @@ export const ReserveBike = ({ station, onClose }) => {
         <div className="modal-header">
           <h1>{station.name}</h1>
           <button className="btn-close" onClick={onClose} aria-label="Cerrar">
-            ✕
+            <BsXLg  className='btn-icon'/>
           </button>
         </div>
 

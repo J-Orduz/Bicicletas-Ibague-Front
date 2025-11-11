@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // components
 import { Header } from '@components/navigation/Header';
 import { Home } from '@components/home/Home';
-import { Reserves } from '@components/history/Reserves';
+import { Reserves } from '@components/reserves/Reserves';
 
 export const AppRouter = () => {
   return (

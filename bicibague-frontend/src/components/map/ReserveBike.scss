@@ -67,16 +67,10 @@
       }
 
       .btn-close {
-        background: none;
-        border: none;
-        font-size: 1.8rem;
-        color: $text-secondary;
-        cursor: pointer;
-        line-height: 1;
-        padding: 2px;
+        @include secondary-button($icon-width: 25px, $icon-height: 25px);
         transition: all $transition-fast;
 
-        &:hover {
+        &:hover:not(:disabled) {
           color: $text-primary;
           transform: rotate(90deg);
         }

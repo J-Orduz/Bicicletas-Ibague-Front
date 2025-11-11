@@ -43,7 +43,7 @@ export const Header = () => {
             </Link>
           </li>
           <li>
-            <Link className="link" to="/profile">
+            <Link className="link" to="/register">
               <FaUser className='header-item-icon'/>
               <span>Perfil</span>
             </Link>

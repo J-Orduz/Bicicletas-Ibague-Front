@@ -1,0 +1,7 @@
+.main-container {
+  padding-top: 55px; // altura del header en escritorio
+
+  @media (max-width: 768px) {
+    padding-top: 50px; // altura del sub-header en móvil
+  }
+}

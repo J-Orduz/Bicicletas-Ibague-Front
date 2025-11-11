@@ -12,7 +12,7 @@ export const useMutation = () => {
     endpoint,
     body = null,
     errorMessage = 'Hubo un error',
-    verifyAuth = true
+    // verifyAuth = true
   ) => {
     // if (verifyAuth && !isAuthenticated) {
     //   throw new Error('Usuario no autenticado');

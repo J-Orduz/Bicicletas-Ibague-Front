@@ -1,5 +1,5 @@
 // leaftlet map. Tutorial: https://leafletjs.com/examples.html
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -9,6 +9,8 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 // components
 import { ReserveBike } from './ReserveBike.jsx';
+// api
+import { useGetStations, useGetStationBikes } from '@api/bikes';
 
 // styles
 import './MapView.scss';
@@ -27,46 +29,93 @@ export const MapView = () => {
   // Coordenadas de Ibagué, Colombia
   const center = [4.4389, -75.2322];
 
+  // --- Obtener estaciones y bicicletas ---
+  const [bikeStations, setBikeStations] = useState([]);
+
+  const getStations = useGetStations();
+  const getStationBikes = useGetStationBikes();
+
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const stationsData = await getStations.get();
+
+        // llamar las bicicletas de cada estación
+        let bikesData = [];
+        await Promise.all(
+          stationsData.map(async (station) => {
+            bikesData = await getStationBikes.get(
+              `/not-prefix/bicicletas/${station.id}/EstacionesBici`
+            );
+
+            // agregar bicicletas a la estación y formatear
+            bikesData = bikesData.map((bike) => ({
+              id: bike.id,
+              type: bike.tipo == 'Mecanica' ? 'mechanical' : 'electric',
+              available: bike.estado == 'Disponible' ? true : false,
+            }));
+            station.bikes = bikesData;
+          })
+        );
+;
+        console.log('Stations Data:', stationsData);
+
+        // formatear datos de la estacion para el mapa
+        setBikeStations(
+          stationsData.map((station) => ({
+            id: station.id,
+            name: station.nombre,
+            position: [station.posicion.latitud, station.posicion.longitud],
+            bikes: station.bikes || [],
+          }))
+        );
+      } catch (error) {
+        // mostrar error al usuario en vista
+      }
+    };
+
+    fetchStations();
+  }, []);
   // Estaciones de bicicletas con coordenadas de ejemplo en Ibagué
-  const bikeStations = [
-    {
-      id: 1,
-      name: 'Estación Centro',
-      position: [4.4389, -75.2322],
-      bikes: [
-        { id: 'M001', type: 'mechanical', available: true },
-        { id: 'M002', type: 'mechanical', available: true },
-        { id: 'M003', type: 'mechanical', available: false },
-        { id: 'E001', type: 'electric', available: true },
-        { id: 'E002', type: 'electric', available: true },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Estación Norte',
-      position: [4.4489, -75.2222],
-      bikes: [
-        { id: 'M004', type: 'mechanical', available: true },
-        { id: 'M005', type: 'mechanical', available: false },
-        { id: 'E003', type: 'electric', available: false },
-      ],
-    },
-    {
-      id: 3,
-      name: 'Estación Sur',
-      position: [4.4289, -75.2422],
-      bikes: [
-        { id: 'M006', type: 'mechanical', available: true },
-        { id: 'M007', type: 'mechanical', available: true },
-        { id: 'M008', type: 'mechanical', available: true },
-        { id: 'M009', type: 'mechanical', available: true },
-        { id: 'E004', type: 'electric', available: true },
-        { id: 'E005', type: 'electric', available: true },
-        { id: 'E006', type: 'electric', available: true },
-        { id: 'E007', type: 'electric', available: false },
-      ],
-    },
-  ];
+  // const bikeStations = [
+  //   {
+  //     id: 1,
+  //     name: 'Estación Centro',
+  //     position: [4.4389, -75.2322],
+  //     bikes: [
+  //       { id: 'M001', type: 'mechanical', available: true },
+  //       { id: 'M002', type: 'mechanical', available: true },
+  //       { id: 'M003', type: 'mechanical', available: false },
+  //       { id: 'E001', type: 'electric', available: true },
+  //       { id: 'E002', type: 'electric', available: true },
+  //     ],
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Estación Norte',
+  //     position: [4.4489, -75.2222],
+  //     bikes: [
+  //       { id: 'M004', type: 'mechanical', available: true },
+  //       { id: 'M005', type: 'mechanical', available: false },
+  //       { id: 'E003', type: 'electric', available: false },
+  //     ],
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Estación Sur',
+  //     position: [4.4289, -75.2422],
+  //     bikes: [
+  //       { id: 'M006', type: 'mechanical', available: true },
+  //       { id: 'M007', type: 'mechanical', available: true },
+  //       { id: 'M008', type: 'mechanical', available: true },
+  //       { id: 'M009', type: 'mechanical', available: true },
+  //       { id: 'E004', type: 'electric', available: true },
+  //       { id: 'E005', type: 'electric', available: true },
+  //       { id: 'E006', type: 'electric', available: true },
+  //       { id: 'E007', type: 'electric', available: false },
+  //     ],
+  //   },
+  // ];
 
   const handleOpenReserve = (station) => {
     setSelectedStation(station);

@@ -3,7 +3,11 @@
 
 .reserves-container {
   max-width: 1200px;
-  margin: 1rem auto;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    margin: 1rem auto;
+  }
 
   // Sección de Reserva Actual
   .current-reservation-section {

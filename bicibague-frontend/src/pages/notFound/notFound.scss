@@ -2,8 +2,13 @@
 @use '@styles/mixins' as *;
 
 .notfound-container {
-  margin: auto;
+  margin: 55px auto;
   padding: 2rem;
   text-align: center;
   background-color: $bg-primary;
+
+  @media (max-width: 768px) {
+    margin: 50px auto;
+    padding: 1rem;
+  }
 }

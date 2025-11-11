@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 //icons
-import { BsXLg } from "react-icons/bs";
+import { BsXLg } from 'react-icons/bs';
 // styles
 import './ReserveBike.scss';
 
 export const ReserveBike = ({ station, onClose }) => {
+  const navigate = useNavigate();
   const [selectedBike, setSelectedBike] = useState(null);
 
   const totalCapacity = 15;
@@ -22,6 +24,7 @@ export const ReserveBike = ({ station, onClose }) => {
         `Bicicleta ${selectedBike} reservada exitosamente en ${station.name}!`
       );
       onClose();
+      navigate('/reserves');
     } else {
       alert('Por favor selecciona una bicicleta');
     }
@@ -40,7 +43,7 @@ export const ReserveBike = ({ station, onClose }) => {
         <div className="modal-header">
           <h1>{station.name}</h1>
           <button className="btn-close" onClick={onClose} aria-label="Cerrar">
-            <BsXLg  className='btn-icon'/>
+            <BsXLg className="btn-icon" />
           </button>
         </div>
 
@@ -80,14 +83,14 @@ export const ReserveBike = ({ station, onClose }) => {
                 <p className="category-title">Mecánicas</p>
                 <div className="bikes-grid">
                   {availableMechanical.map((bike) => (
-                      <BikeItem
-                        key={bike.id}
-                        bikeId={bike.id}
-                        bikeType={bike.type}
-                        selectedBike={selectedBike}
-                        setSelectedBike={setSelectedBike}
-                      />
-                    ))}
+                    <BikeItem
+                      key={bike.id}
+                      bikeId={bike.id}
+                      bikeType={bike.type}
+                      selectedBike={selectedBike}
+                      setSelectedBike={setSelectedBike}
+                    />
+                  ))}
                 </div>
               </div>
             )}

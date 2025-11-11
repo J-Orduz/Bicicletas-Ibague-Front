@@ -2,9 +2,6 @@
 @use '@styles/mixins' as *;
 
 .home-container {
-  @include flex($direction: column);
-
-  h1 {
-    margin: 10px 0;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
 }

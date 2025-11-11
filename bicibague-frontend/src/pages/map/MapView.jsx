@@ -142,4 +142,3 @@ export const BikeStationPopup = ({ name, bikes, onReserveClick }) => {
     </div>
   );
 };
-

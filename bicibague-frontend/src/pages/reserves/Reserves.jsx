@@ -6,6 +6,7 @@ import { MdOutlinePlayCircleOutline } from 'react-icons/md';
 import { BsXLg } from 'react-icons/bs';
 // components
 import { UnlockBike } from './UnlockBike';
+import { SubHeader } from '@layouts/SubHeader';
 // styles
 import './Reserves.scss';
 
@@ -68,7 +69,7 @@ export const Reserves = () => {
   };
 
   const handleReserveNow = () => {
-    navigate('/home');
+    navigate('/');
   };
 
   const formatDate = (dateString) => {
@@ -119,9 +120,10 @@ export const Reserves = () => {
   };
 
   return (
-    <section className="reserves-container">
-      <div className="reserves-content">
-        <h1 className="reserves-title">Reservas</h1>
+    // <section className="reserves-container">
+    <>
+      <div className="reserves-container">
+        <SubHeader pageTitle="Reservas" />
 
         {/* Sección de Reserva Actual */}
         <div className="current-reservation-section">
@@ -253,6 +255,7 @@ export const Reserves = () => {
           onClose={() => setShowUnlockModal(false)}
         />
       )}
-    </section>
+      {/* </section> */}
+    </>
   );
 };

@@ -5,7 +5,7 @@
   @include flex();
   position: relative;
   background-color: $bg-quaternary;
-  width: 80%;
+  width: 100%;
   height: calc(100vh - 250px);
   border-radius: 8px;
   color: $text-primary;
@@ -87,8 +87,7 @@
   }
 
   @media (max-width: 768px) {
-    width: 100%;
-    height: calc(100svh - 123px);
+    height: calc(100svh - 105px); // 105 = 55 header + 50 subheader
   }
 }
 

@@ -1,27 +1,12 @@
 @use '@styles/variables' as *;
 @use '@styles/mixins' as *;
 
-.reserves-container {
-  min-height: calc(100vh - 100px);
-  background-color: $bg-primary;
-  padding: 1.75rem 1.5rem;
-  transition: $bg-transition;
+.trips-container {
+  max-width: 1200px;
+  margin: 1rem auto;
 
-  @media (max-width: 768px) {
-    padding: 1.5rem 1.25rem;
-  }
-
-  .reserves-content {
-    max-width: 1200px;
-    margin: 0 auto;
-
-    .reserves-title {
-      text-align: center;
-    }
-  }
-
-  // Sección de Reserva Actual
-  .current-reservation-section {
+  // Sección de Viaje Actual
+  .current-trip-section {
     background-color: $bg-secondary;
     border-radius: 12px;
     padding: 1.5rem;
@@ -33,8 +18,8 @@
       padding: 1rem;
       border-radius: 8px;
     }
-
-    .current-reservation-card {
+    
+    .current-trip-card {
       border: 2px solid $primary-color;
       border-radius: 12px;
       padding: 1.5rem;
@@ -50,18 +35,12 @@
         border-radius: 8px;
       }
 
-      .reservation-header {
-        @include flex($justify: space-between, $align: flex-start);
+      .trip-header {
         margin-bottom: 1.5rem;
-        gap: 1rem;
-
-        @media (max-width: 768px) {
-          flex-wrap: wrap;
-          gap: 0.75rem;
-        }
 
         .bike-info {
-          @include flex($direction: column, $align: flex-start, $gap: 0.5rem);
+          @include flex($justify: space-between, $gap: 1rem);
+          flex-wrap: wrap;
 
           .bike-id-container {
             @include flex($justify: flex-start, $gap: 0.75rem);
@@ -85,13 +64,123 @@
                 font-size: 1.25rem;
               }
             }
+
+            .bike-type-icon {
+              width: 22px;
+              height: 22px;
+
+              &.electric {
+                color: $blue;
+              }
+
+              &.mechanical {
+                color: $green;
+              }
+
+              @media (max-width: 768px) {
+                width: 20px;
+                height: 20px;
+              }
+            }
+          }
+
+          .battery-indicator {
+            width: 100%;
+            max-width: 300px;
+
+            .battery-bar {
+              width: 100%;
+              height: 32px;
+              background-color: $bg-secondary;
+              border-radius: 8px;
+              overflow: hidden;
+              border: 2px solid $border-color;
+              position: relative;
+
+              .battery-fill {
+                @include flex($gap: 0.2rem);
+                height: 100%;
+                transition: width $transition-normal;
+                border-radius: 6px;
+                position: relative;
+
+                .battery-icon {
+                  width: 0.9rem;
+                  height: 0.9rem;
+                  transform: rotate(-90deg);
+                }
+
+                .battery-percentage {
+                  font-size: 0.875rem;
+                  font-weight: 700;
+                  position: relative;
+                  z-index: 1;
+                }
+              }
+
+              &.battery-high .battery-fill {
+                background: linear-gradient(90deg, $light-green, $green);
+                color: $white;
+              }
+
+              &.battery-medium .battery-fill {
+                background: linear-gradient(90deg, #ffd966, #ffb800);
+                color: $text-black;
+              }
+
+              &.battery-low .battery-fill {
+                background: linear-gradient(90deg, $light-red, $red);
+                color: $white;
+              }
+            }
           }
         }
       }
 
-      .reservation-details {
-        @include flex($direction: column, $align: stretch, $gap: 1rem);
+      .trip-timer {
+        @include flex($direction: column, $gap: 0.75rem);
+        background: linear-gradient(
+          135deg,
+          $primary-color-light,
+          $primary-color
+        );
+        border-radius: 12px;
+        padding: 1.5rem;
         margin-bottom: 1.5rem;
+        box-shadow: $shadow-md;
+
+        @media (max-width: 768px) {
+          padding: 1.25rem;
+        }
+
+        .timer-icon {
+          width: 36px;
+          height: 36px;
+          color: $white;
+          margin: 0.5rem;
+
+          @media (max-width: 768px) {
+            width: 32px;
+            height: 32px;
+          }
+        }
+
+        .timer-display {
+          font-size: 3rem;
+          font-weight: 700;
+          color: $white;
+          font-family: 'Courier New', monospace;
+          letter-spacing: 0.1em;
+
+          @media (max-width: 768px) {
+            font-size: 2.25rem;
+          }
+        }
+      }
+
+      .trip-details {
+        @include flex($direction: column, $align: stretch, $gap: 1rem);
+        // margin-bottom: 1.5rem;
 
         .detail-item {
           @include flex($justify: flex-start, $gap: 1rem);
@@ -140,33 +229,21 @@
         }
       }
 
-      .reservation-actions {
-        display: flex;
-        gap: 1rem;
-
-        @media (max-width: 768px) {
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-
-        .btn {
-          flex: 1;
-        }
-
-        .btn-cancel {
-          @include primary-button($bg-color: $red, $bg-color-hover: $dark-red);
-          flex: 1;
-        }
-      }
+      //   .trip-actions {
+      //     .btn-end {
+      //       @include primary-button($bg-color: $red, $bg-color-hover: $dark-red);
+      //       width: 100%;
+      //     }
+      //   }
     }
   }
 
-  // Sin reserva actual
-  .no-reservation {
+  // Sin viaje actual
+  .no-trip {
     @include flex($direction: column);
-    padding: 2rem 1rem;
+    // padding: 2rem 1rem;
 
-    .no-reservation-icon {
+    .no-trip-icon {
       width: 60px;
       height: 60px;
       margin-bottom: 1rem;
@@ -179,15 +256,16 @@
       }
     }
 
-    .no-reservation-text {
+    .no-trip-text {
       color: $text-primary;
       font-size: 1.125rem;
       font-weight: 600;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
     }
 
-    .btn-reserve-now {
-      @include primary-button();
+    .no-trip-hint {
+      color: $text-secondary;
+      font-size: 0.875rem;
     }
   }
 
@@ -251,6 +329,31 @@
               font-size: 1rem;
             }
           }
+
+          .bike-type-icon {
+            width: 18px;
+            height: 18px;
+
+            &.electric {
+              color: $blue;
+            }
+
+            &.mechanical {
+              color: $green;
+            }
+          }
+        }
+
+        .charge-amount {
+          @include flex($justify: flex-start, $align: center, $gap: 0.5rem);
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: $green;
+          white-space: nowrap;
+
+          @media (max-width: 768px) {
+            font-size: 1.125rem;
+          }
         }
       }
 
@@ -308,40 +411,6 @@
       @media (max-width: 768px) {
         padding: 1rem 0.5rem;
       }
-    }
-  }
-
-  // Estado de la reserva
-  .status-badge {
-    padding: 0.4rem 0.8rem;
-    border-radius: 50px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    white-space: nowrap;
-
-    &.status-active {
-      background-color: $white-blue;
-      color: $dark-blue;
-    }
-
-    &.status-completed {
-      background-color: $white-green;
-      color: $dark-green;
-    }
-
-    &.status-cancelled {
-      background-color: $bg-quaternary;
-      color: $text-primary;
-    }
-
-    &.status-lost {
-      background-color: $white-red;
-      color: $dark-red;
-    }
-
-    @media (max-width: 768px) {
-      font-size: 0.75rem;
     }
   }
 }

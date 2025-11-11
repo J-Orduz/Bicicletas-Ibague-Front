@@ -12,6 +12,8 @@ import {
 // import { MdOutlineStopCircle } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
 import { PiSneakerFill } from 'react-icons/pi';
+// components
+import { SubHeader } from '@layouts/SubHeader';
 // styles
 import './trips.scss';
 
@@ -150,9 +152,10 @@ export const Trips = () => {
   };
 
   return (
-    <section className="trips-container">
-      <div className="trips-content">
-        <h1 className="trips-title">Viajes</h1>
+    // <section className="trips-container">
+    <>
+      <div className="trips-container">
+        <SubHeader pageTitle="Viajes" />
 
         {/* Sección de Viaje Actual */}
         <div className="current-trip-section">
@@ -294,6 +297,6 @@ export const Trips = () => {
           )}
         </div>
       </div>
-    </section>
+    </>
   );
 };

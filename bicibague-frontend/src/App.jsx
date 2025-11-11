@@ -1,6 +1,6 @@
-import { AppRouter } from '@components/navigation/router/AppRouter';
+import { AppRouter } from './router/AppRouter';
 
-import "@styles/main.scss";
+import '@styles/main.scss';
 
 function App() {
   return (

@@ -12,13 +12,16 @@ body {
   // Aplicar colores del tema a toda la página
   background-color: $bg-primary;
   color: $text-primary;
-  // Transición suave al cambiar de tema
   transition: $bg-transition, color $transition-normal;
 }
 
-// Compensar el espacio del header fijo
+// Compensar el espacio del header
 body {
-  padding-top: 55px;
+  padding-top: 55px; // altura del header en escritorio
+
+  @media (max-width: 768px) {
+    padding-top: 50px; // altura del sub-header en móvil
+  }
 }
 
 html,

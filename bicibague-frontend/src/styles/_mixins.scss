@@ -18,7 +18,7 @@
   $border-radius: 8px,
   $font-weight: 600,
   $icon-width: 20px,
-  $icon-height: 20px,
+  $icon-height: 20px
 ) {
   @include flex($gap: $gap);
   padding: $padding;
@@ -61,7 +61,7 @@
   $border-radius: 8px,
   $font-weight: 400,
   $icon-width: 20px,
-  $icon-height: 20px,
+  $icon-height: 20px
 ) {
   @include flex($gap: $gap);
   padding: $padding;

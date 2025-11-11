@@ -1,0 +1,136 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+.header {
+  @include flex($gap: 20px);
+  position: fixed; // posicion para scroll
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  height: 55px;
+  padding: 0 20px;
+  background-color: $bg-secondary;
+  box-shadow: $shadow-md;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease, $bg-transition;
+
+  &--hidden {
+    // Classname para ocultar el header al scrollear
+    transform: translateY(-100%);
+    box-shadow: none;
+  }
+
+  // Vista móvil: header en la parte inferior
+  @media (max-width: 768px) {
+    top: auto;
+    bottom: 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
+    &--hidden {
+      // En móvil se oculta hacia abajo
+      transform: translateY(100%);
+    }
+  }
+
+  h1 {
+    color: $primary-color;
+    margin-bottom: 3px;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  nav {
+    @include flex($gap: 20px);
+
+    @media (max-width: 768px) {
+      flex: 1;
+    }
+
+    ul {
+      @include flex($gap: 20px);
+
+      @media (max-width: 768px) {
+        flex: 1;
+        justify-content: space-around;
+      }
+
+      li {
+        .link {
+          @include flex($gap: 8px);
+          padding: 5px 10px;
+          border-radius: 10px;
+          transition: background-color $transition-fast;
+
+          &:hover {
+            background-color: $primary-color-dark;
+          }
+
+          @media (max-width: 768px) {
+            gap: 0;
+            flex-direction: column;
+            font-size: 1.5rem;
+
+            span {
+              display: none;
+            }
+          }
+
+          .header-item-icon {
+            &.map-icon {
+              font-size: 1.2856rem;
+            }
+            &.bicycle-icon {
+              font-size: 1.429rem;
+            }
+
+            @media (max-width: 768px) {
+              &.map-icon {
+                font-size: 1.7rem;
+              }
+              &.bicycle-icon {
+                font-size: 1.9rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // button para cambiar tema
+  .theme-toggle {
+    background: transparent;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background-color: $primary-color-light;
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 768px) {
+      // padding: 5px;
+      position: absolute;
+      bottom: 65px;
+      right: 10px;
+      font-size: 1.25rem;
+      background-color: $bg-secondary;
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: $shadow-md;
+    }
+
+    .theme-icon {
+      color: $text-primary;
+      display: flex;
+    }
+  }
+}

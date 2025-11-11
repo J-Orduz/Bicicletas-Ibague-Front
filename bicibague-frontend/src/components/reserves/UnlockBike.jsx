@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 // icons
 import { IoLockOpenOutline } from 'react-icons/io5';
-import { BsXLg  } from "react-icons/bs";
-import { MdOutlineDirectionsBike } from 'react-icons/md';
+import { BsXLg } from "react-icons/bs";
+// import { FaBicyclet } from 'react-icons/md';
+import { FaBicycle } from 'react-icons/fa6';
 import {
   FaExclamationCircle,
 } from 'react-icons/fa';
 // styles
 import './UnlockBike.scss';
 
-export const UnlockBike = ({ reservation, onClose, onUnlock }) => {
+export const UnlockBike = ({ reservation, onClose }) => {
+  const navigate = useNavigate();
+
   const [serialNumber, setSerialNumber] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +26,15 @@ export const UnlockBike = ({ reservation, onClose, onUnlock }) => {
       document.body.style.overflow = 'unset';
     };
   }, []);
+  
+  const onUnlock = (serialNumber) => {
+    // TODO: Implementar la lógica para iniciar el viaje con el número de serie
+    console.log('Viaje iniciado con número de serie:', serialNumber);
+    alert(
+      `¡Bicicleta desbloqueada! Número de serie: ${serialNumber}\n¡Disfruta tu viaje!`
+    );
+    navigate('/trips');
+  };
 
   const handleUnlock = async () => {
     setError('');
@@ -92,7 +105,7 @@ export const UnlockBike = ({ reservation, onClose, onUnlock }) => {
         <div className="modal-body">
           <div className="bike-info-card">
             <div className="bike-icon-container">
-              <MdOutlineDirectionsBike className="bike-icon" />
+              <FaBicycle className="bike-icon" />
             </div>
             <div className="bike-details">
               <h2 className="bike-id">{reservation.bikeId}</h2>

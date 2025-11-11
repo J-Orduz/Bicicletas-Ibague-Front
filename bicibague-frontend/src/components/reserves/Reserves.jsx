@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // icons
-import { FaRegClock } from 'react-icons/fa6';
-import { MdOutlinePlayCircleOutline } from "react-icons/md";
-import { BsXLg } from "react-icons/bs";
-import { FaPlus } from "react-icons/fa6";
-import { FaRegCalendar } from "react-icons/fa6";
-
-
+import { FaRegClock, FaPlus, FaRegCalendar } from 'react-icons/fa6';
+import { MdOutlinePlayCircleOutline } from 'react-icons/md';
+import { BsXLg } from 'react-icons/bs';
 // components
 import { UnlockBike } from './UnlockBike';
 // styles
@@ -69,13 +65,6 @@ export const Reserves = () => {
 
   const handleStartTrip = () => {
     setShowUnlockModal(true);
-  };
-
-  const handleUnlock = (serialNumber) => {
-    // TODO: Implementar la lógica para iniciar el viaje con el número de serie
-    console.log('Viaje iniciado con número de serie:', serialNumber);
-    alert(`¡Bicicleta desbloqueada! Número de serie: ${serialNumber}\n¡Disfruta tu viaje!`);
-    // Aquí podrías actualizar el estado de la reserva, etc.
   };
 
   const handleReserveNow = () => {
@@ -167,14 +156,14 @@ export const Reserves = () => {
 
               <div className="reservation-actions">
                 <button className="btn btn-start" onClick={handleStartTrip}>
-                  <MdOutlinePlayCircleOutline className='btn-icon'/>
+                  <MdOutlinePlayCircleOutline className="btn-icon" />
                   Iniciar Viaje
                 </button>
                 <button
                   className="btn-cancel"
                   onClick={handleCancelReservation}
                 >
-                  <BsXLg className='btn-icon'/>
+                  <BsXLg className="btn-icon" />
                   Cancelar Reserva
                 </button>
               </div>
@@ -185,11 +174,8 @@ export const Reserves = () => {
               <p className="no-reservation-text">
                 No tienes ninguna reserva activa
               </p>
-              <button
-                className="btn-reserve-now"
-                onClick={handleReserveNow}
-              >
-                <FaPlus className='btn-icon'/>
+              <button className="btn-reserve-now" onClick={handleReserveNow}>
+                <FaPlus className="btn-icon" />
                 Reservar Ahora
               </button>
             </div>
@@ -242,7 +228,6 @@ export const Reserves = () => {
         <UnlockBike
           reservation={currentReservation}
           onClose={() => setShowUnlockModal(false)}
-          onUnlock={handleUnlock}
         />
       )}
     </section>

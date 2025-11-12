@@ -1,0 +1,62 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+// button para cambiar tema
+// .theme-toggle {
+//   background: transparent;
+//   border: none;
+//   padding: 5px 10px;
+//   border-radius: 8px;
+//   cursor: pointer;
+//   transition: all $transition-fast;
+
+//   &:hover {
+//     background-color: $primary-color-light;
+//     transform: scale(1.05);
+//   }
+
+//   &:active {
+//     transform: scale(0.95);
+//   }
+
+//   @media (max-width: 768px) {
+//     position: absolute;
+//     bottom: 65px;
+//     right: 10px;
+//     font-size: 1.25rem;
+//     background-color: $bg-secondary;
+//     padding: 10px;
+//     border-radius: 50%;
+//     box-shadow: $shadow-md;
+//   }
+
+//   .theme-icon {
+//     color: $text-primary;
+//     display: flex;
+//   }
+// }
+
+.theme-toggle {
+  position: absolute;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  background-color: $bg-secondary;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: $shadow-md;
+
+  &:hover {
+    background-color: $primary-color;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .theme-icon {
+    color: $text-primary;
+    display: flex;
+  }
+}

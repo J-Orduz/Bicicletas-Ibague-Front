@@ -1,29 +1,15 @@
 import { Link } from 'react-router-dom';
-import { useTheme } from '@hooks/useTheme';
+// hooks
 import { useScrollDirection } from '@hooks/useScrollDirection';
+// components
+import { ButtonThemeToggle } from '@components/buttonThemeToggle';
 // icons
-import {
-  FaUser,
-  FaRegMap,
-  FaRegBookmark,
-  FaBicycle,
-  FaRegMoon,
-  FaRegSun,
-} from 'react-icons/fa6';
+import { FaUser, FaRegMap, FaRegBookmark, FaBicycle } from 'react-icons/fa6';
 // styles
 import './Header.scss';
-import { useEffect } from 'react';
 
 export const Header = () => {
-  const { theme, toggleTheme } = useTheme();
   const scrollDirection = useScrollDirection();
-
-  // simulacion de usuario logueado
-  // useEffect(() => {
-  //   const hasToken = Boolean(localStorage.getItem('access_token'));
-  // }, []);
-
-  const hasToken = Boolean(localStorage.getItem('access_token'));
 
   return (
     <header
@@ -51,19 +37,13 @@ export const Header = () => {
             </Link>
           </li>
           <li>
-            <Link className="link" to={hasToken ? '/profile' : '/register'}>
+            <Link className="link" to="/profile">
               <FaUser className="header-item-icon" />
               <span>Perfil</span>
             </Link>
           </li>
         </ul>
-        <button className="theme-toggle" onClick={toggleTheme}>
-          {theme === 'light' ? (
-            <FaRegMoon className="theme-icon" />
-          ) : (
-            <FaRegSun className="theme-icon" />
-          )}
-        </button>
+        <ButtonThemeToggle />
       </nav>
     </header>
   );

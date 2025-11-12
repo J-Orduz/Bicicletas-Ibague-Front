@@ -100,37 +100,14 @@
 
   // button para cambiar tema
   .theme-toggle {
-    background: transparent;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover {
-      background-color: $primary-color-light;
-      transform: scale(1.05);
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
+    position: initial;
+    box-shadow: none;
 
     @media (max-width: 768px) {
-      // padding: 5px;
       position: absolute;
-      bottom: 65px;
-      right: 10px;
-      font-size: 1.25rem;
-      background-color: $bg-secondary;
-      padding: 10px;
-      border-radius: 50%;
+      bottom: 60px;
+      right: 5px;
       box-shadow: $shadow-md;
-    }
-
-    .theme-icon {
-      color: $text-primary;
-      display: flex;
     }
   }
 }

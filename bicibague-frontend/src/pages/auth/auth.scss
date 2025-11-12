@@ -1,15 +1,17 @@
 @use '@styles/variables' as *;
 @use '@styles/mixins' as *;
 
-.register-container {
+// Estilos base compartidos para todas las páginas de autenticación
+.auth-container {
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 
   @media (max-width: 768px) {
     padding-top: 50px; // Espacio para el SubHeader fijo en móvil
   }
 
-  .register-wrapper {
+  .auth-wrapper {
     @include flex($justify: center, $align: center);
 
     @media (max-width: 768px) {
@@ -17,7 +19,7 @@
     }
   }
 
-  .register-card {
+  .auth-card {
     width: 100%;
     max-width: 450px;
     background-color: $bg-secondary;
@@ -34,7 +36,7 @@
     }
   }
 
-  .register-header {
+  .auth-header {
     text-align: center;
     margin-bottom: 2rem;
 
@@ -49,13 +51,13 @@
       }
     }
 
-    // p {
-    //   color: $text-secondary;
-    //   font-size: 0.95rem;
-    // }
+    p {
+      color: $text-secondary;
+      font-size: 0.95rem;
+    }
   }
 
-  .register-form {
+  .auth-form {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -140,7 +142,7 @@
     }
   }
 
-  .register-footer {
+  .auth-footer {
     margin-top: 1.5rem;
     text-align: center;
 
@@ -149,7 +151,7 @@
       font-size: 0.95rem;
     }
 
-    .link-login {
+    .auth-link {
       color: $primary-color;
       font-weight: 600;
       text-decoration: none;
@@ -159,6 +161,34 @@
         color: $primary-color-dark;
         text-decoration: underline;
       }
+    }
+  }
+
+  // Estilos adicionales para links de recuperación de contraseña
+  .forgot-password {
+    text-align: right;
+    margin-top: -0.5rem;
+
+    a {
+      color: $primary-color;
+      font-size: 0.9rem;
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .theme-toggle {
+    position: fixed; // no toma en cuenta el relative de .auth-container xd
+    bottom: 20px;
+    right: 20px;
+
+    @media (max-width: 768px) {
+      bottom: 10px;
+      right: 10px;
     }
   }
 }

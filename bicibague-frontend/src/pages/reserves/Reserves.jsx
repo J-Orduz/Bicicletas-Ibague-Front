@@ -191,7 +191,7 @@ export const Reserves = () => {
             </div>
           ) : (
             <div className="no-reservation">
-              <FaRegClock ck className="no-reservation-icon" />
+              <FaRegClock className="no-reservation-icon" />
               <p className="no-reservation-text">
                 No tienes ninguna reserva activa
               </p>

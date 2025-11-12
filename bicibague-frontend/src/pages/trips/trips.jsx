@@ -29,7 +29,7 @@ export const Trips = () => {
     {
       id: 8,
       bikeId: 'BIC-045',
-      bikeType: 'mecanica',
+      bikeType: 'mechanical',
       startTime: '2025-11-08T14:20:00',
       endTime: '2025-11-08T15:45:00',
       duration: '1h 25m',
@@ -38,7 +38,7 @@ export const Trips = () => {
     {
       id: 7,
       bikeId: 'BIC-032',
-      bikeType: 'electrica',
+      bikeType: 'electric',
       startTime: '2025-11-07T09:15:00',
       endTime: '2025-11-07T10:30:00',
       duration: '1h 15m',
@@ -47,7 +47,7 @@ export const Trips = () => {
     {
       id: 6,
       bikeId: 'BIC-018',
-      bikeType: 'mecanica',
+      bikeType: 'mechanical',
       startTime: '2025-11-05T16:00:00',
       endTime: '2025-11-05T16:45:00',
       duration: '45m',
@@ -56,7 +56,7 @@ export const Trips = () => {
     {
       id: 5,
       bikeId: 'BIC-027',
-      bikeType: 'electrica',
+      bikeType: 'electric',
       startTime: '2025-11-03T11:45:00',
       endTime: '2025-11-03T13:20:00',
       duration: '1h 35m',
@@ -138,7 +138,7 @@ export const Trips = () => {
   };
 
   const getBikeTypeIcon = (type) => {
-    return type === 'electrica' ? (
+    return type === 'electric' ? (
       <FaBolt className="bike-type-icon electric" />
     ) : (
       <PiSneakerFill className="bike-type-icon mechanical" />
@@ -170,7 +170,7 @@ export const Trips = () => {
                     <h3 className="bike-id">{currentTrip.bikeId}</h3>
                     {getBikeTypeIcon(currentTrip.bikeType)}
                   </div>
-                  {currentTrip.bikeType === 'electrica' && (
+                  {currentTrip.bikeType === 'electric' && (
                     <div className="battery-indicator">
                       <div
                         className={`battery-bar ${getBatteryClass(

@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 // components
 import { SubHeader } from '@layouts/SubHeader';
 import { ButtonThemeToggle } from '@components/buttonThemeToggle';
+// context
+import { useAuth } from '@contexts/AuthContext';
 // api
 import { useLoginUserMutation } from '@api/auth';
 
 export const Login = () => {
   const navigate = useNavigate();
   const loginUserMutation = useLoginUserMutation();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -63,7 +66,10 @@ export const Login = () => {
       console.log('Datos de login:', formData);
 
       const response = await loginUserMutation.post(formData);
-      localStorage.setItem('access_token', response.session.access_token);
+      
+      // Usar el contexto para guardar la autenticación
+      login(response.session.access_token, response.user);
+      
       navigate('/');
     } catch (error) {
       setErrors({

@@ -48,7 +48,7 @@ export const ReserveBike = ({ station, onClose }) => {
     const reservationData = {
       id: Date.now(), // ID temporal usando timestamp
       bikeId: selectedBike,
-      bikeType: station.bikes.find((bike) => bike.id === selectedBike)?.type || 'mechanical',
+      bikeType: station.bikes.find((bike) => bike.id === selectedBike)?.type || 'Desconocido',
       stationName: station.name,
       createdAt: new Date().toISOString(),
       reservationType: reservationType, // 'now' o 'scheduled'

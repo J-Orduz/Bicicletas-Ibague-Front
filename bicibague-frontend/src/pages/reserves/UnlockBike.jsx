@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+// API
+import { useStartTripMutation } from '@api/bikes';
 // icons
 import { IoLockOpenOutline } from 'react-icons/io5';
 import { BsXLg } from 'react-icons/bs';
-// import { FaBicyclet } from 'react-icons/md';
 import { FaBicycle } from 'react-icons/fa6';
 import { FaExclamationCircle } from 'react-icons/fa';
 // styles
@@ -25,27 +26,29 @@ export const UnlockBike = ({ reservation, onClose }) => {
     };
   }, []);
 
-  const onUnlock = (serialNumber) => {
-    // TODO: Implementar la lógica para iniciar el viaje con el número de serie
+  const startTripMutation = useStartTripMutation();
+
+  const onUnlock = (serialNumber, bikeData) => {
     console.log('Viaje iniciado con número de serie:', serialNumber);
-    
+
     // TEMPORAL: Guardar datos del viaje en localStorage para simular persistencia
-    // TODO: Reemplazar con datos reales de la API cuando esté disponible
+    // TODO: Reemplazar con datos reales de la API cuando esté disponible (bikeId, bikeType, status ya son datos reales)
+
     const tripData = {
       id: reservation.id,
-      bikeId: reservation.bikeId,
-      bikeType: reservation.bikeType || 'mecanica', // 'electrica' o 'mecanica' - usar mecanica por defecto
+      bikeId: bikeData.id, 
+      bikeType: bikeData.tipo, 
       battery: 85, // Valor temporal fijo para bicicletas eléctricas
       startTime: new Date().toISOString(), // Fecha y hora de inicio
-      status: 'en-progreso',
+      status: bikeData.estado,
       serialNumber: serialNumber,
     };
-    
+
     localStorage.setItem('currentTrip', JSON.stringify(tripData));
-    
+
     // TEMPORAL: Eliminar la reserva del localStorage al iniciar el viaje
     localStorage.removeItem('currentReservation');
-    
+
     alert(
       `¡Bicicleta desbloqueada! Número de serie: ${serialNumber}\n¡Disfruta tu viaje!`
     );
@@ -57,37 +60,37 @@ export const UnlockBike = ({ reservation, onClose }) => {
 
     // Validación básica
     if (!serialNumber.trim()) {
+      // cadena vacia es falsy: !"" = true
       setError('Por favor ingresa el número de serie');
       return;
     }
 
-    if (serialNumber.length < 4) {
-      setError('El número de serie debe tener al menos 4 caracteres');
+    if (serialNumber.length < 11 || serialNumber.length > 11) {
+      setError('El número de serie debe ser de tipo: ABC-123-XYZ');
       return;
     }
 
     setIsLoading(true);
 
-    // Simular petición a la API
-    setTimeout(() => {
-      // TODO: Aquí implementar la llamada real a la API
-      console.log('Desbloqueando bicicleta:', {
-        reservationId: reservation.id,
-        bikeId: reservation.bikeId,
+    try {
+      const response = await startTripMutation.post({
         serialNumber: serialNumber,
       });
 
-      // Simulación: validar si el número de serie es correcto
-      // En producción, esto vendría del backend
-      if (serialNumber.toLowerCase() === 'test123') {
-        setIsLoading(false);
-        onUnlock(serialNumber);
-        onClose();
-      } else {
-        setIsLoading(false);
-        setError('Número de serie incorrecto. Intenta nuevamente.');
+      console.log('respuesta de iniciar viaje:', response);
+
+      setIsLoading(false);
+      onUnlock(serialNumber, response.data.bicicleta);
+      onClose();
+    } catch (error) {
+      setIsLoading(false);
+      if (error?.errorStatus === 400) {
+        setError(error.errorJsonMsg);
+        return;
       }
-    }, 500);
+      setError(error.errorMutationMsg);
+      return;
+    }
   };
 
   const handleInputChange = (e) => {

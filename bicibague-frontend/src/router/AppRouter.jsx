@@ -13,12 +13,20 @@ import { Register } from '@pages/auth/Register';
 import { Login } from '@pages/auth/Login';
 import { NotFound } from '../pages/notFound/NotFound';
 import { Profile } from '@pages/profile/Profile';
+import { ProtectedRoute } from '../router/ProtectedRoute';
 
 export const AppRouter = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainLayout />}>
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Home />} />
           <Route path="/reserves" element={<Reserves />} />
           <Route path="/trips" element={<Trips />} />

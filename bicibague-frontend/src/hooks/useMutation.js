@@ -1,17 +1,16 @@
 import { useState } from 'react';
-// import { useAuth } from '@contexts/AuthContext';
+import { useAuth } from '@contexts/AuthContext';
 
 export const useMutation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-//   const { isAuthenticated } = useAuth();
+  const { token } = useAuth();
 
   const mutate = async (
     method,
     endpoint,
     body = null,
-    errorMessage = 'Hubo un error',
+    errorMessage = 'Hubo un error'
     // verifyAuth = true
   ) => {
     // if (verifyAuth && !isAuthenticated) {
@@ -31,6 +30,7 @@ export const useMutation = () => {
         method,
         headers: {
           ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: body ? (isFormData ? body : JSON.stringify(body)) : null,
       });
@@ -42,16 +42,22 @@ export const useMutation = () => {
       }
 
       if (!response.ok) {
-        throw new Error(result.message || `HTTP error ${response.status}`);
+        // throw new Error(result.message || `HTTP error ${response.status}`);
+        const errorMsgs = {
+          message: result.message || `HTTP error ${response.status}`,
+          status: response.status,
+        };
+        throw errorMsgs;
       }
+
       return result;
     } catch (err) {
       setError('Ha ocurrido un error'); // usuario
-
-      console.error(`${errorMessage}:: ${err}`); // desarrollador
+      console.error(`${errorMessage}:: ${err?.message || err}`); // desarrollador
       const errorMsgs = {
+        errorStatus: err?.status || 500,
         errorMutationMsg: errorMessage, // para usuario
-        errorJsonMsg: err, // especifico del backend
+        errorJsonMsg: err?.message || 'Error desconocido', // especifico del backend
       };
 
       throw errorMsgs;

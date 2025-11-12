@@ -11,13 +11,13 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => {
-        if (path.startsWith('/api/not-prefix')) {
-          // si la endpoint no tiene /api al inicio, el fetch se envia como /api/not-prefix y se elimina
-          return path.replace('/api/not-prefix', '');
-        }
-        return path;
-      },
+        // rewrite: (path) => {
+        // if (path.startsWith('/api/not-prefix')) {
+        //   // si la endpoint no tiene /api al inicio, el fetch se envia como /api/not-prefix y se elimina
+        //   return path.replace('/api/not-prefix', '');
+        // }
+        // return path;
+      // },
       },
     },
   },
@@ -30,6 +30,7 @@ export default defineConfig({
       '@hooks': '/src/hooks',
       '@api': '/src/services/api',
       '@components': '/src/components',
+      '@contexts': '/src/store/contexts',
     },
   },
 });

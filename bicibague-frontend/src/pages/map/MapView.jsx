@@ -45,7 +45,7 @@ export const MapView = () => {
         await Promise.all(
           stationsData.map(async (station) => {
             bikesData = await getStationBikes.get(
-              `/not-prefix/bicicletas/${station.id}/EstacionesBici`
+              `/bikes/${station.id}/EstacionesBici`
             );
 
             // agregar bicicletas a la estación y formatear

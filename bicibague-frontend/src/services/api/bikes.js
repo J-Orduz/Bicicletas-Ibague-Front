@@ -4,7 +4,7 @@ import { useFetch } from '@hooks/useFetch';
 export const useGetStations = () => {
   return {
     get: useFetch(
-      '/not-prefix/bicicletas/estaciones',
+      '/bikes/estaciones',
       'Error al obtener las estaciones'
     ).fetchData,
   };

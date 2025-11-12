@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 // components
 import { SubHeader } from '@layouts/SubHeader';
 import { ButtonThemeToggle } from '@components/buttonThemeToggle';
 // api
-import { useRegisterUserMutation } from '@api/auth';
+import { useLoginUserMutation } from '@api/auth';
 
-export const Register = () => {
-  const registerUserMutation = useRegisterUserMutation();
+export const Login = () => {
+  const navigate = useNavigate();
+  const loginUserMutation = useLoginUserMutation();
 
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
   });
@@ -36,12 +36,6 @@ export const Register = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es requerido';
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'El nombre debe tener al menos 3 caracteres';
-    }
-
     if (!formData.email.trim()) {
       newErrors.email = 'El correo es requerido';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -50,10 +44,6 @@ export const Register = () => {
 
     if (!formData.password) {
       newErrors.password = 'La contraseña es requerida';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
-    } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'La contraseña debe contener al menos una letra y un número';
     }
 
     setErrors(newErrors);
@@ -70,16 +60,15 @@ export const Register = () => {
     setIsLoading(true);
 
     try {
-      console.log('Datos de registro:', formData);
+      console.log('Datos de login:', formData);
 
-      // cambiar name a nombre
-      const { name, email, password } = formData;
-      const response = await registerUserMutation.post({ nombre: name, email, password });
-
-      //   navigate('/');
-      alert(response.message);
+      const response = await loginUserMutation.post(formData);
+      localStorage.setItem('access_token', response.session.access_token);
+      navigate('/');
     } catch (error) {
-      setErrors({ submit: error.errorMutationMsg });
+      setErrors({
+        submit: error.errorMutationMsg,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -87,33 +76,15 @@ export const Register = () => {
 
   return (
     <section className="auth-container">
-      <SubHeader pageTitle="Crear Cuenta" />
+      <SubHeader pageTitle="Iniciar Sesión" />
 
       <div className="auth-wrapper">
         <div className="auth-card">
           <div className="auth-header">
-            <h2>Regístrate</h2>
-            {/* <p>Únete a BicIbagué y comienza tu aventura</p> */}
+            <h2>Inicia Sesión</h2>
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="name">Nombre completo</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Ingresa tu nombre"
-                className={errors.name ? 'input-error' : ''}
-                disabled={isLoading}
-              />
-              {errors.name && (
-                <span className="error-message">{errors.name}</span>
-              )}
-            </div>
-
             <div className="form-group">
               <label htmlFor="email">Correo electrónico</label>
               <input
@@ -139,13 +110,21 @@ export const Register = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Mínimo 6 caracteres (letras y números)"
+                placeholder="Ingresa tu contraseña"
                 className={errors.password ? 'input-error' : ''}
                 disabled={isLoading}
               />
               {errors.password && (
                 <span className="error-message">{errors.password}</span>
               )}
+              <div className="forgot-password">
+                <Link
+                  to="#"
+                  onClick={() => alert('Funcionalidad en desarrollo')}
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
             </div>
 
             {errors.submit && (
@@ -153,15 +132,15 @@ export const Register = () => {
             )}
 
             <button type="submit" className="btn-submit" disabled={isLoading}>
-              {isLoading ? 'Registrando...' : 'Crear cuenta'}
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              ¿Ya tienes cuenta?{' '}
-              <Link to="/login" className="auth-link">
-                Inicia sesión
+              ¿No tienes cuenta?{' '}
+              <Link to="/register" className="auth-link">
+                Regístrate
               </Link>
             </p>
           </div>

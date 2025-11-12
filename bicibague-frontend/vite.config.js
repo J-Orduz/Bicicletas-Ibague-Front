@@ -29,6 +29,7 @@ export default defineConfig({
       '@layouts': '/src/layouts',
       '@hooks': '/src/hooks',
       '@api': '/src/services/api',
+      '@components': '/src/components',
     },
   },
 });

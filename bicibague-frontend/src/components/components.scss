@@ -1,0 +1,35 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+// button para cambiar tema
+.theme-toggle {
+  position: absolute;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  background-color: $bg-secondary;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: $shadow-md;
+  transition: transform 0.3s ease-in-out;
+
+  &:hover {
+    background-color: $primary-color;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .theme-icon {
+    color: $text-primary;
+    display: flex;
+  }
+
+  @media (max-width: 768px) {
+    &--hidden {
+      transform: scale(0);
+    }
+  }
+}

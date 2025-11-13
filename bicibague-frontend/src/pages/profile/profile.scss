@@ -1,3 +1,6 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
 .profile-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -7,12 +10,21 @@
   }
 
   .profile-content {
-    text-align: center;
+    @include flex($direction: column);
     padding: 1rem;
 
     @media (max-width: 768px) {
       text-align: left;
+      align-items: flex-start;
+    }
+
+    .logout-button {
+      @include primary-button();
+      margin-top: 1.5rem;
+
+      @media (max-width: 768px) {
+        margin-top: 1rem;
+      }
     }
   }
-
 }

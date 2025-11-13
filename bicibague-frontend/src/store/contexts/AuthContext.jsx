@@ -8,8 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Cargar token del localStorage al iniciar
   useEffect(() => {
+    // Cargar token del localStorage al iniciar
     const loadAuth = () => {
       try {
         const storedToken = localStorage.getItem('access_token');
@@ -18,7 +18,8 @@ export const AuthProvider = ({ children }) => {
         if (storedToken) {
           setToken(storedToken);
           setIsAuthenticated(true);
-          
+          console.log('Token de autenticación cargado');
+
           if (storedUser) {
             setUser(JSON.parse(storedUser));
           }
@@ -32,6 +33,35 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    // procesar el token de verificación desde la URL (cuando el usuario hace clic en el enlace del email)
+    const processURLToken = () => {
+      const hash = window.location.hash;
+      if (hash.includes('access_token')) {
+        const params = {};
+
+        hash
+          .substring(1)
+          .split('&')
+          .forEach((param) => {
+            const [key, value] = param.split('=');
+            params[key] = decodeURIComponent(value);
+          });
+
+        if (params.access_token) {
+          // Guardar token
+          localStorage.setItem('access_token', params.access_token);
+
+          console.log('Token de verificación guardado');
+
+          // Limpiar la URL (remover el fragmento)
+          window.history.replaceState(null, null, ' ');
+
+          alert('Email verificado exitosamente.');
+        }
+      }
+    };
+
+    processURLToken();
     loadAuth();
   }, []);
 

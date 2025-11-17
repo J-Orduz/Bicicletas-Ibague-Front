@@ -4,9 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { UnlockBike } from './UnlockBike';
 import { SubHeader } from '@layouts/SubHeader';
 // api
-import { useGetCurrentReservation } from '@api/reserves';
+import {
+  useGetCurrentReservation,
+  useGetReservationHistory,
+  useCancelReservationMutation,
+} from '@api/reserves';
 // icons
-import { FaRegClock, FaPlus, FaRegCalendar, FaBicycle, FaLocationDot } from 'react-icons/fa6';
+import {
+  FaRegClock,
+  FaPlus,
+  FaRegCalendar,
+  FaBicycle,
+  FaLocationDot,
+} from 'react-icons/fa6';
 import { TbClockOff } from 'react-icons/tb';
 import { MdOutlinePlayCircleOutline } from 'react-icons/md';
 import { BsXLg } from 'react-icons/bs';
@@ -16,11 +26,14 @@ import './Reserves.scss';
 export const Reserves = () => {
   const navigate = useNavigate();
   const [showUnlockModal, setShowUnlockModal] = useState(false);
-
+  // Estados de la reserva actual y el historial
   const [currentReservation, setCurrentReservation] = useState(null);
+  const [reservationHistory, setReservationHistory] = useState([]);
+  // API hooks
   const getCurrentReservation = useGetCurrentReservation();
-
-  // Estado para el contador regresivo
+  const getReservationHistory = useGetReservationHistory();
+  const cancelReservationMutation = useCancelReservationMutation();
+  // Estados para el contador regresivo
   const [remainingTime, setRemainingTime] = useState('00:00:00');
   const [isExpiringSoon, setIsExpiringSoon] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
@@ -55,6 +68,34 @@ export const Reserves = () => {
     fetchCurrentReservation();
   }, []);
 
+  // Obtener historial de reservas desde la API
+  useEffect(() => {
+    const fetchReservationHistory = async () => {
+      try {
+        const history = await getReservationHistory.get();
+
+        if (!history.data || history.data.length === 0) {
+          setReservationHistory([]);
+          return;
+        }
+
+        const formattedHistory = history.data.map((reservation) => ({
+          id: reservation.id,
+          bikeId: reservation.bicicleta_id,
+          bikeType: reservation.Bicicleta.tipo,
+          createdAt: reservation.timestamp_reserva,
+          status: reservation.estado_reserva,
+        }));
+
+        setReservationHistory(formattedHistory);
+      } catch (error) {
+        console.error(error.errorFetchMsg || error);
+      }
+    };
+
+    fetchReservationHistory();
+  }, []);
+
   // Efecto para calcular el tiempo restante de la reserva
   useEffect(() => {
     if (!currentReservation) return;
@@ -77,7 +118,7 @@ export const Reserves = () => {
 
       if (diff <= 0) {
         setRemainingTime('00:00:00');
-        setIsExpiringSoon(true);
+        setIsExpiringSoon(false);
         setIsExpired(true);
         return;
       }
@@ -108,37 +149,6 @@ export const Reserves = () => {
     return () => clearInterval(interval);
   }, [currentReservation]);
 
-  const [reservationHistory] = useState([
-    {
-      id: 5,
-      bikeId: 'BIC-045',
-      createdAt: '2025-11-08T14:20:00',
-      completedAt: '2025-11-08T15:45:00',
-      status: 'completada',
-    },
-    {
-      id: 4,
-      bikeId: 'BIC-032',
-      createdAt: '2025-11-07T09:15:00',
-      completedAt: '2025-11-07T10:30:00',
-      status: 'completada',
-    },
-    {
-      id: 3,
-      bikeId: 'BIC-018',
-      createdAt: '2025-11-05T16:00:00',
-      completedAt: null,
-      status: 'cancelada',
-    },
-    {
-      id: 2,
-      bikeId: 'BIC-027',
-      createdAt: '2025-11-03T11:45:00',
-      completedAt: null,
-      status: 'perdida',
-    },
-  ]);
-
   const handleCancelReservation = () => {
     // TEMPORAL: Cancelar reserva y eliminar del localStorage
     // TODO: Implementar la lógica para cancelar la reserva en la API
@@ -146,10 +156,7 @@ export const Reserves = () => {
       '¿Estás seguro de que deseas cancelar esta reserva?'
     );
     if (confirmCancel) {
-      console.log('Reserva cancelada:', currentReservation.id);
-      // Eliminar del localStorage
-      localStorage.removeItem('currentReservation');
-      // Actualizar el estado
+      cancelReservationMutation.post({ bikeId: currentReservation.bikeId });
       setCurrentReservation(null);
     }
   };
@@ -183,12 +190,12 @@ export const Reserves = () => {
     switch (status) {
       case 'completada':
         return 'status-completed';
-      case 'cancelada':
+      case 'cancel  ada':
         return 'status-cancelled';
-      case 'perdida':
-        return 'status-lost';
       case 'activa':
         return 'status-active';
+      case 'expirada':
+        return 'status-lost';
       default:
         return '';
     }
@@ -200,10 +207,10 @@ export const Reserves = () => {
         return 'Completada';
       case 'cancelada':
         return 'Cancelada';
-      case 'perdida':
-        return 'Perdida';
       case 'activa':
         return 'Activa';
+      case 'expirada':
+        return 'Perdida';
       default:
         return status;
     }

@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// icons
-import { FaRegClock, FaPlus, FaRegCalendar, FaBicycle } from 'react-icons/fa6';
-import { MdOutlinePlayCircleOutline } from 'react-icons/md';
-import { BsXLg } from 'react-icons/bs';
 // components
 import { UnlockBike } from './UnlockBike';
 import { SubHeader } from '@layouts/SubHeader';
+// api
+import { useGetCurrentReservation } from '@api/reserves';
+// icons
+import { FaRegClock, FaPlus, FaRegCalendar, FaBicycle, FaLocationDot } from 'react-icons/fa6';
+import { TbClockOff } from 'react-icons/tb';
+import { MdOutlinePlayCircleOutline } from 'react-icons/md';
+import { BsXLg } from 'react-icons/bs';
 // styles
 import './Reserves.scss';
 
@@ -14,12 +17,96 @@ export const Reserves = () => {
   const navigate = useNavigate();
   const [showUnlockModal, setShowUnlockModal] = useState(false);
 
-  // TEMPORAL: Cargar reserva actual desde localStorage para simular persistencia
-  // TODO: Reemplazar con datos reales de la API
-  const [currentReservation, setCurrentReservation] = useState(() => {
-    const savedReservation = localStorage.getItem('currentReservation');
-    return savedReservation ? JSON.parse(savedReservation) : null;
-  });
+  const [currentReservation, setCurrentReservation] = useState(null);
+  const getCurrentReservation = useGetCurrentReservation();
+
+  // Estado para el contador regresivo
+  const [remainingTime, setRemainingTime] = useState('00:00:00');
+  const [isExpiringSoon, setIsExpiringSoon] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
+
+  // Obtener reserva actual desde la API
+  useEffect(() => {
+    const fetchCurrentReservation = async () => {
+      try {
+        const reservation = await getCurrentReservation.get();
+
+        if (reservation.data === null) {
+          setCurrentReservation(null);
+          return;
+        }
+
+        const reservationData = {
+          id: reservation.data.id,
+          reserveDate: reservation.data.timestamp_reserva,
+          reserveExpiry: reservation.data.timestamp_expiracion,
+          bikeId: reservation.data.Bicicleta.id,
+          bikeType: reservation.data.Bicicleta.tipo,
+          estation: reservation.data.Bicicleta.Estacion.nombre,
+          status: reservation.data.estado_reserva,
+        };
+        setCurrentReservation(reservationData);
+      } catch (error) {
+        console.error(error.errorFetchMsg || error);
+      }
+    };
+
+    fetchCurrentReservation();
+  }, []);
+
+  // Efecto para calcular el tiempo restante de la reserva
+  useEffect(() => {
+    if (!currentReservation) return;
+
+    const updateRemainingTime = () => {
+      const now = new Date();
+      const reserveStart = new Date(currentReservation.reserveDate);
+      const reserveExpiry = new Date(currentReservation.reserveExpiry);
+
+      // Verificar si la reserva ya ha comenzado
+      if (now < reserveStart) {
+        setHasStarted(false);
+        return;
+      }
+
+      setHasStarted(true);
+
+      // Calcular tiempo restante hasta la expiración
+      const diff = reserveExpiry - now;
+
+      if (diff <= 0) {
+        setRemainingTime('00:00:00');
+        setIsExpiringSoon(true);
+        setIsExpired(true);
+        return;
+      }
+
+      setIsExpired(false);
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setRemainingTime(
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+          2,
+          '0'
+        )}:${String(seconds).padStart(2, '0')}`
+      );
+
+      // Activar efecto de advertencia si queda menos de 1 minuto
+      setIsExpiringSoon(diff < 60000);
+    };
+
+    // Actualizar inmediatamente
+    updateRemainingTime();
+
+    // Actualizar cada segundo
+    const interval = setInterval(updateRemainingTime, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentReservation]);
 
   const [reservationHistory] = useState([
     {
@@ -123,7 +210,6 @@ export const Reserves = () => {
   };
 
   return (
-    // <section className="reserves-container">
     <>
       <div className="reserves-container">
         <SubHeader pageTitle="Reservas" />
@@ -150,15 +236,47 @@ export const Reserves = () => {
                 </span>
               </div>
 
+              {/* Contador regresivo o mensajes de tiempo agotado */}
+              {hasStarted && (
+                <>
+                  {isExpired ? (
+                    <div className="reservation-expired">
+                      <TbClockOff className="expired-icon" />
+                      <div className="expired-content">
+                        <h3 className="expired-title">¡Tiempo Agotado!</h3>
+                        <p className="expired-subtitle">Reserva Perdida</p>
+                        <p className="expired-message">
+                          Espera unos segundos para poder realizar otra reserva
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={`reservation-timer ${
+                        isExpiringSoon ? 'expiring-soon' : ''
+                      }`}
+                    >
+                      <FaRegClock className="timer-icon" />
+                      <div className="timer-content">
+                        <span className="timer-label">
+                          {isExpiringSoon
+                            ? '¡Tiempo casi agotado!'
+                            : 'Tiempo restante'}
+                        </span>
+                        <div className="timer-display">{remainingTime}</div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
               <div className="reservation-details">
                 <div className="detail-item">
                   <FaRegCalendar className="detail-icon" />
                   <div className="detail-content">
                     <span className="detail-label">Fecha de reserva</span>
                     <span className="detail-value">
-                      {currentReservation.reservationType === 'scheduled' 
-                        ? formatDate(currentReservation.scheduledDate)
-                        : formatDate(currentReservation.createdAt)}
+                      {formatDate(currentReservation.reserveDate)}
                     </span>
                   </div>
                 </div>
@@ -167,22 +285,36 @@ export const Reserves = () => {
                   <div className="detail-content">
                     <span className="detail-label">Hora de reserva</span>
                     <span className="detail-value">
-                      {currentReservation.reservationType === 'scheduled' 
-                        ? currentReservation.scheduledTime
-                        : formatTime(currentReservation.createdAt)}
+                      {formatTime(currentReservation.reserveDate)} -{' '}
+                      {formatTime(currentReservation.reserveExpiry)} (Guardamos
+                      tu reserva por 10 min. más)
+                    </span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FaLocationDot className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Estación</span>
+                    <span className="detail-value">
+                      {currentReservation.estation}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="reservation-actions">
-                <button className="btn btn-start" onClick={handleStartTrip}>
+                <button
+                  className="btn btn-start"
+                  onClick={handleStartTrip}
+                  disabled={isExpired}
+                >
                   <MdOutlinePlayCircleOutline className="btn-icon" />
                   Iniciar Viaje
                 </button>
                 <button
                   className="btn-cancel"
                   onClick={handleCancelReservation}
+                  disabled={isExpired}
                 >
                   <BsXLg className="btn-icon" />
                   Cancelar Reserva
@@ -262,7 +394,6 @@ export const Reserves = () => {
           onClose={() => setShowUnlockModal(false)}
         />
       )}
-      {/* </section> */}
     </>
   );
 };

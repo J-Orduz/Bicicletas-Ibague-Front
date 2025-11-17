@@ -16,18 +16,3 @@ export const useGetStationBikes = (stationId) => {
       .fetchData,
   };
 };
-
-// Iniciar viaje POST
-export const useStartTripMutation = () => {
-  const post = useMutation();
-
-  return {
-    post: (data) =>
-      post.mutate(
-        'POST',
-        '/bikes/iniciar-viaje',
-        data,
-        'Numero de serie incorrecto'
-      ),
-  };
-};

@@ -25,7 +25,7 @@ export const useCreateRechargeMutation = () => {
         true // supabaseURL
       ),
   };
-};ß
+};
 
 // simular recarga POST
 export const useSimulateRechargeMutation = () => {

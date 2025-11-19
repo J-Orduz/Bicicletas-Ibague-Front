@@ -1,56 +1,182 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// icons
-import { FaRegClock, FaPlus, FaRegCalendar, FaBicycle } from 'react-icons/fa6';
-import { MdOutlinePlayCircleOutline } from 'react-icons/md';
-import { BsXLg } from 'react-icons/bs';
 // components
 import { UnlockBike } from './UnlockBike';
 import { SubHeader } from '@layouts/SubHeader';
+// api
+import {
+  useGetCurrentReservation,
+  useGetReservationHistory,
+  useGetReservationStats,
+  useCancelReservationMutation,
+} from '@api/reserves';
+// icons
+import {
+  FaRegClock,
+  FaPlus,
+  FaRegCalendar,
+  FaBicycle,
+  FaLocationDot,
+} from 'react-icons/fa6';
+import { TbClockOff } from 'react-icons/tb';
+import { MdOutlinePlayCircleOutline } from 'react-icons/md';
+import { BsXLg } from 'react-icons/bs';
 // styles
 import './Reserves.scss';
 
 export const Reserves = () => {
   const navigate = useNavigate();
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  // Estados de la reserva actual y el historial
+  const [currentReservation, setCurrentReservation] = useState(null);
+  const [reservationHistory, setReservationHistory] = useState([]);
+  const [stats, setStats] = useState(null);
+  // API hooks
+  const getCurrentReservation = useGetCurrentReservation();
+  const getReservationHistory = useGetReservationHistory();
+  const getReservationStats = useGetReservationStats();
+  const cancelReservationMutation = useCancelReservationMutation();
+  // Estados para el contador regresivo
+  const [remainingTime, setRemainingTime] = useState('00:00:00');
+  const [isExpiringSoon, setIsExpiringSoon] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
 
-  // TEMPORAL: Cargar reserva actual desde localStorage para simular persistencia
-  // TODO: Reemplazar con datos reales de la API
-  const [currentReservation, setCurrentReservation] = useState(() => {
-    const savedReservation = localStorage.getItem('currentReservation');
-    return savedReservation ? JSON.parse(savedReservation) : null;
-  });
+  // Obtener reserva actual desde la API
+  useEffect(() => {
+    const fetchCurrentReservation = async () => {
+      try {
+        const reservation = await getCurrentReservation.get();
 
-  const [reservationHistory] = useState([
-    {
-      id: 5,
-      bikeId: 'BIC-045',
-      createdAt: '2025-11-08T14:20:00',
-      completedAt: '2025-11-08T15:45:00',
-      status: 'completada',
-    },
-    {
-      id: 4,
-      bikeId: 'BIC-032',
-      createdAt: '2025-11-07T09:15:00',
-      completedAt: '2025-11-07T10:30:00',
-      status: 'completada',
-    },
-    {
-      id: 3,
-      bikeId: 'BIC-018',
-      createdAt: '2025-11-05T16:00:00',
-      completedAt: null,
-      status: 'cancelada',
-    },
-    {
-      id: 2,
-      bikeId: 'BIC-027',
-      createdAt: '2025-11-03T11:45:00',
-      completedAt: null,
-      status: 'perdida',
-    },
-  ]);
+        if (reservation.data === null) {
+          setCurrentReservation(null);
+          return;
+        }
+
+        const reservationData = {
+          id: reservation.data.id,
+          // reserveDate: reservation.data.timestamp_reserva,
+          reserveDate:
+            reservation.data.estado_reserva === 'programada'
+              ? reservation.data.timestamp_programada
+              : reservation.data.timestamp_reserva,
+          reserveExpiry: reservation.data.timestamp_expiracion,
+          bikeId: reservation.data.Bicicleta.id,
+          bikeType: reservation.data.Bicicleta.tipo,
+          estation: reservation.data.Bicicleta.Estacion.nombre,
+          status: reservation.data.estado_reserva,
+        };
+        setCurrentReservation(reservationData);
+      } catch (error) {
+        console.error(error.errorFetchMsg || error);
+      }
+    };
+
+    fetchCurrentReservation();
+  }, []);
+
+  // Obtener historial de reservas desde la API
+  useEffect(() => {
+    const fetchReservationHistory = async () => {
+      try {
+        const history = await getReservationHistory.get();
+
+        if (!history.data || history.data.length === 0) {
+          setReservationHistory([]);
+          return;
+        }
+
+        const formattedHistory = history.data.map((reservation) => ({
+          id: reservation.id,
+          bikeId: reservation.bicicleta_id,
+          bikeType: reservation.Bicicleta.tipo,
+          reserveDate:
+            reservation.estado_reserva === 'programada'
+              ? new Date(
+                  new Date(reservation.timestamp_expiracion).getTime() -
+                    10 * 60000
+                ).toISOString() // TEMPORAL: Se usa la hora de expiracion si es programada, y se restan 10 minutos para mostrar la hora de inicio
+              : reservation.timestamp_reserva,
+          status: reservation.estado_reserva,
+        }));
+
+        setReservationHistory(formattedHistory);
+      } catch (error) {
+        console.error(error.errorFetchMsg || error);
+      }
+    };
+
+    fetchReservationHistory();
+  }, []);
+
+  // Obtener estadísticas de reservas desde la API
+  useEffect(() => {
+    const fetchReservationStats = async () => {
+      try {
+        const statsData = await getReservationStats.get();
+        if (statsData.data) {
+          setStats(statsData.data);
+        }
+      } catch (error) {
+        console.error(error.errorFetchMsg || error);
+      }
+    };
+
+    fetchReservationStats();
+  }, []);
+
+  // Efecto para calcular el tiempo restante de la reserva
+  useEffect(() => {
+    if (!currentReservation) return;
+
+    const updateRemainingTime = () => {
+      const now = new Date();
+      const reserveStart = new Date(currentReservation.reserveDate);
+      const reserveExpiry = new Date(currentReservation.reserveExpiry);
+
+      // Verificar si la reserva ya ha comenzado
+      if (now < reserveStart) {
+        setHasStarted(false);
+        return;
+      }
+
+      setHasStarted(true);
+
+      // Calcular tiempo restante hasta la expiración
+      const diff = reserveExpiry - now;
+
+      if (diff <= 0) {
+        setRemainingTime('00:00:00');
+        setIsExpiringSoon(false);
+        setIsExpired(true);
+        return;
+      }
+
+      setIsExpired(false);
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setRemainingTime(
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+          2,
+          '0'
+        )}:${String(seconds).padStart(2, '0')}`
+      );
+
+      // Activar efecto de advertencia si queda menos de 1 minuto
+      setIsExpiringSoon(diff < 60000);
+    };
+
+    // Actualizar inmediatamente
+    updateRemainingTime();
+
+    // Actualizar cada segundo
+    const interval = setInterval(updateRemainingTime, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentReservation]);
 
   const handleCancelReservation = () => {
     // TEMPORAL: Cancelar reserva y eliminar del localStorage
@@ -59,10 +185,7 @@ export const Reserves = () => {
       '¿Estás seguro de que deseas cancelar esta reserva?'
     );
     if (confirmCancel) {
-      console.log('Reserva cancelada:', currentReservation.id);
-      // Eliminar del localStorage
-      localStorage.removeItem('currentReservation');
-      // Actualizar el estado
+      cancelReservationMutation.post({ bikeId: currentReservation.bikeId });
       setCurrentReservation(null);
     }
   };
@@ -98,10 +221,12 @@ export const Reserves = () => {
         return 'status-completed';
       case 'cancelada':
         return 'status-cancelled';
-      case 'perdida':
-        return 'status-lost';
       case 'activa':
         return 'status-active';
+      case 'expirada':
+        return 'status-lost';
+      case 'programada':
+        return 'status-scheduled';
       default:
         return '';
     }
@@ -113,17 +238,18 @@ export const Reserves = () => {
         return 'Completada';
       case 'cancelada':
         return 'Cancelada';
-      case 'perdida':
-        return 'Perdida';
       case 'activa':
         return 'Activa';
+      case 'expirada':
+        return 'Perdida';
+      case 'programada':
+        return 'Programada';
       default:
         return status;
     }
   };
 
   return (
-    // <section className="reserves-container">
     <>
       <div className="reserves-container">
         <SubHeader pageTitle="Reservas" />
@@ -150,15 +276,47 @@ export const Reserves = () => {
                 </span>
               </div>
 
+              {/* Contador regresivo o mensajes de tiempo agotado */}
+              {hasStarted && (
+                <>
+                  {isExpired ? (
+                    <div className="reservation-expired">
+                      <TbClockOff className="expired-icon" />
+                      <div className="expired-content">
+                        <h3 className="expired-title">¡Tiempo Agotado!</h3>
+                        <p className="expired-subtitle">Reserva Perdida</p>
+                        <p className="expired-message">
+                          Espera unos segundos para poder realizar otra reserva
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={`reservation-timer ${
+                        isExpiringSoon ? 'expiring-soon' : ''
+                      }`}
+                    >
+                      <FaRegClock className="timer-icon" />
+                      <div className="timer-content">
+                        <span className="timer-label">
+                          {isExpiringSoon
+                            ? '¡Tiempo casi agotado!'
+                            : 'Tiempo restante'}
+                        </span>
+                        <div className="timer-display">{remainingTime}</div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
               <div className="reservation-details">
                 <div className="detail-item">
                   <FaRegCalendar className="detail-icon" />
                   <div className="detail-content">
                     <span className="detail-label">Fecha de reserva</span>
                     <span className="detail-value">
-                      {currentReservation.reservationType === 'scheduled' 
-                        ? formatDate(currentReservation.scheduledDate)
-                        : formatDate(currentReservation.createdAt)}
+                      {formatDate(currentReservation.reserveDate)}
                     </span>
                   </div>
                 </div>
@@ -167,22 +325,36 @@ export const Reserves = () => {
                   <div className="detail-content">
                     <span className="detail-label">Hora de reserva</span>
                     <span className="detail-value">
-                      {currentReservation.reservationType === 'scheduled' 
-                        ? currentReservation.scheduledTime
-                        : formatTime(currentReservation.createdAt)}
+                      {formatTime(currentReservation.reserveDate)} -{' '}
+                      {formatTime(currentReservation.reserveExpiry)} (Guardamos
+                      tu reserva por 10 min. más)
+                    </span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FaLocationDot className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Estación</span>
+                    <span className="detail-value">
+                      {currentReservation.estation}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="reservation-actions">
-                <button className="btn btn-start" onClick={handleStartTrip}>
+                <button
+                  className="btn btn-start"
+                  onClick={handleStartTrip}
+                  disabled={isExpired}
+                >
                   <MdOutlinePlayCircleOutline className="btn-icon" />
                   Iniciar Viaje
                 </button>
                 <button
                   className="btn-cancel"
                   onClick={handleCancelReservation}
+                  disabled={isExpired}
                 >
                   <BsXLg className="btn-icon" />
                   Cancelar Reserva
@@ -207,6 +379,81 @@ export const Reserves = () => {
         <div className="history-section">
           <h2 className="section-title">Historial de Reservas</h2>
 
+          {/* Estadísticas */}
+          {stats && (
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-icon total">
+                  <FaBicycle />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">{stats.total_reservas}</span>
+                  <span className="stat-label">Total Reservas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon active">
+                  <MdOutlinePlayCircleOutline />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_activas || 0}
+                  </span>
+                  <span className="stat-label">Activas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon completed">
+                  <FaRegCalendar />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_completadas || 0}
+                  </span>
+                  <span className="stat-label">Completadas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon scheduled">
+                  <FaRegClock />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_programadas || 0}
+                  </span>
+                  <span className="stat-label">Programadas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon cancelled">
+                  <BsXLg />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_canceladas || 0}
+                  </span>
+                  <span className="stat-label">Canceladas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon expired">
+                  <TbClockOff />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_expiradas || 0}
+                  </span>
+                  <span className="stat-label">Expiradas</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {reservationHistory.length > 0 ? (
             <div className="history-list">
               {reservationHistory.map((reservation) => (
@@ -230,7 +477,7 @@ export const Reserves = () => {
                       <div className="history-content">
                         <span className="history-label">Fecha:</span>
                         <span className="history-value">
-                          {formatDate(reservation.createdAt)}
+                          {formatDate(reservation.reserveDate)}
                         </span>
                       </div>
                     </div>
@@ -239,7 +486,7 @@ export const Reserves = () => {
                       <div className="history-content">
                         <span className="history-label">Hora:</span>
                         <span className="history-value">
-                          {formatTime(reservation.createdAt)}
+                          {formatTime(reservation.reserveDate)}
                         </span>
                       </div>
                     </div>
@@ -262,7 +509,6 @@ export const Reserves = () => {
           onClose={() => setShowUnlockModal(false)}
         />
       )}
-      {/* </section> */}
     </>
   );
 };

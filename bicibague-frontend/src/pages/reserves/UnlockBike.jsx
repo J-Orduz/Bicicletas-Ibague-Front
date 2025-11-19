@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // API
-import { useStartTripMutation } from '@api/bikes';
+import { useStartTripMutation } from '@api/reserves';
 // icons
 import { IoLockOpenOutline } from 'react-icons/io5';
 import { BsXLg } from 'react-icons/bs';

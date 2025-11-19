@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-// import { useAuth } from '@contexts/AuthContext';
+import { useAuth } from '@contexts/AuthContext';
 
 export const useFetch = (
   baseUrl = '',
@@ -9,6 +9,7 @@ export const useFetch = (
   // Estados que se muestran al usuario
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { token } = useAuth();
 
   //   const { isAuthenticated, authIsLoading } = useAuth();
 
@@ -50,6 +51,7 @@ export const useFetch = (
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
 

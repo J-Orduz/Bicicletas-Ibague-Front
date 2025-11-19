@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// api
+import { useReserveBikeMutation, useReserveBikeScheduledMutation } from '@api/reserves';
 //icons
 import { BsXLg } from 'react-icons/bs';
 // styles
@@ -12,6 +14,9 @@ export const ReserveBike = ({ station, onClose }) => {
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
 
+  const reserveBikeMutation = useReserveBikeMutation();
+  const reserveBikeScheduledMutation = useReserveBikeScheduledMutation();
+
   const totalCapacity = 15;
   const availableBikes = station.bikes.filter((bike) => bike.available);
   const availableMechanical = station.bikes.filter(
@@ -21,7 +26,7 @@ export const ReserveBike = ({ station, onClose }) => {
     (bike) => bike.type === 'electric' && bike.available
   );
 
-  const handleReserve = () => {
+  const handleReserve = async () => {
     if (!selectedBike) {
       alert('Por favor selecciona una bicicleta');
       return;
@@ -43,31 +48,30 @@ export const ReserveBike = ({ station, onClose }) => {
       }
     }
 
-    // TEMPORAL: Guardar reserva en localStorage para simular persistencia
-    // TODO: Reemplazar con llamada real a la API cuando esté disponible
-    const reservationData = {
-      id: Date.now(), // ID temporal usando timestamp
-      bikeId: selectedBike,
-      bikeType: station.bikes.find((bike) => bike.id === selectedBike)?.type || 'Desconocido',
-      stationName: station.name,
-      createdAt: new Date().toISOString(),
-      reservationType: reservationType, // 'now' o 'scheduled'
-      scheduledDate: reservationType === 'scheduled' ? scheduledDate : null,
-      scheduledTime: reservationType === 'scheduled' ? scheduledTime : null,
-      status: 'activa',
-    };
+    try {
+      if (reservationType === 'now') {
+        // Reserva inmediata
+        await reserveBikeMutation.post({ bikeId: selectedBike });
+        alert(`Bicicleta ${selectedBike} reservada exitosamente en ${station.name}`);
+      } else {
+        // Reserva programada
+        // Construir la fecha y hora en formato ISO con zona horaria de Colombia (UTC-5)
+        const fechaHoraProgramada = `${scheduledDate}T${scheduledTime}:00-05:00`;
 
-    localStorage.setItem('currentReservation', JSON.stringify(reservationData));
+        console.log('Fecha y hora programada:', fechaHoraProgramada);
+        await reserveBikeScheduledMutation.post({
+          bikeId: selectedBike,
+          fechaHoraProgramada: fechaHoraProgramada
+        });
+        alert(`Bicicleta ${selectedBike} programada para ${scheduledDate} a las ${scheduledTime} en ${station.name}`);
+      }
 
-    // Mensaje según tipo de reserva
-    const reserveMessage =
-      reservationType === 'now'
-        ? `Bicicleta ${selectedBike} reservada exitosamente en ${station.name}!`
-        : `Bicicleta ${selectedBike} programada para ${scheduledDate} a las ${scheduledTime} en ${station.name}!`;
-
-    alert(reserveMessage);
-    onClose();
-    navigate('/reserves');
+      onClose();
+      navigate('/reserves');
+    } catch (error) {
+      alert(error.errorMutationMsg);
+      return;
+    }
   };
 
   // Cerrar modal al hacer clic en el overlay

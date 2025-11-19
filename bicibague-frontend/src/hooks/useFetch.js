@@ -10,7 +10,7 @@ export const useFetch = (
   // Estados que se muestran al usuario
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
 
   //   const { isAuthenticated, authIsLoading } = useAuth();
 
@@ -49,7 +49,7 @@ export const useFetch = (
       const finalUrl = supabaseURL
         ? `/functions/v1${newUrl || baseUrl}`
         : `/api${newUrl || baseUrl}`;
-        
+
       try {
         const response = await fetch(finalUrl, {
           method: 'GET',
@@ -66,12 +66,21 @@ export const useFetch = (
         }
 
         if (!response.ok) {
-          throw new Error(result.message || `HTTP error ${response.status}`);
+          const errorMsgs = {
+            message: result.message || `HTTP error ${response.status}`,
+            status: response.status, // en caso de manejar errores segun el codigo de estado
+          };
+          throw errorMsgs;
         }
         return result;
       } catch (err) {
         setError('Ha ocurrido un error'); // usuario
-        console.error(`${errorMessage}:: ${err}`); // desarrollador
+        console.error(`${errorMessage}:: ${err.message}`); // desarrollador
+
+        // Si el error es 401 (Unauthorized), cerrar sesión
+        if (err.status === 401) {
+          logout();
+        }
 
         const errorMsgs = {
           errorFetchMsg: errorMessage,
@@ -82,7 +91,7 @@ export const useFetch = (
         setLoading(false);
       }
     },
-    [baseUrl]//, verifyAuth, isAuthenticated, authIsLoading]
+    [baseUrl] //, verifyAuth, isAuthenticated, authIsLoading]
   );
 
   return { fetchData, loading, error };

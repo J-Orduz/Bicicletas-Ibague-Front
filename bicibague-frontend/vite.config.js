@@ -19,6 +19,11 @@ export default defineConfig({
         // return path;
       // },
       },
+      '/functions/v1/': {
+        target: 'https://rzpwjfvfiepqjiphvyow.supabase.co',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   resolve: {

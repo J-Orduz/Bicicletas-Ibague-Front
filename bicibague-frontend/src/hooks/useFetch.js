@@ -4,7 +4,8 @@ import { useAuth } from '@contexts/AuthContext';
 export const useFetch = (
   baseUrl = '',
   errorMessage = 'Hubo un error',
-  verifyAuth = true
+  supabaseURL = false
+  // verifyAuth = true,
 ) => {
   // Estados que se muestran al usuario
   const [loading, setLoading] = useState(false);
@@ -45,7 +46,10 @@ export const useFetch = (
       setLoading(true);
       setError(null);
 
-      const finalUrl = `/api${newUrl || baseUrl}`;
+      const finalUrl = supabaseURL
+        ? `/functions/v1${newUrl || baseUrl}`
+        : `/api${newUrl || baseUrl}`;
+        
       try {
         const response = await fetch(finalUrl, {
           method: 'GET',
@@ -60,7 +64,7 @@ export const useFetch = (
         if (contentType && contentType.includes('application/json')) {
           result = await response.json();
         }
-        
+
         if (!response.ok) {
           throw new Error(result.message || `HTTP error ${response.status}`);
         }
@@ -78,7 +82,7 @@ export const useFetch = (
         setLoading(false);
       }
     },
-    [baseUrl, verifyAuth]//, isAuthenticated, authIsLoading]
+    [baseUrl]//, verifyAuth, isAuthenticated, authIsLoading]
   );
 
   return { fetchData, loading, error };

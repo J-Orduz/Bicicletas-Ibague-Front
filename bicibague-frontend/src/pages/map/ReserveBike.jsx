@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // api
-import { useReserveBikeMutation } from '@api/reserves';
+import { useReserveBikeMutation, useReserveBikeScheduledMutation } from '@api/reserves';
 //icons
 import { BsXLg } from 'react-icons/bs';
 // styles
@@ -15,6 +15,7 @@ export const ReserveBike = ({ station, onClose }) => {
   const [scheduledTime, setScheduledTime] = useState('');
 
   const reserveBikeMutation = useReserveBikeMutation();
+  const reserveBikeScheduledMutation = useReserveBikeScheduledMutation();
 
   const totalCapacity = 15;
   const availableBikes = station.bikes.filter((bike) => bike.available);
@@ -48,15 +49,23 @@ export const ReserveBike = ({ station, onClose }) => {
     }
 
     try {
-      reserveBikeMutation.post({ bikeId: selectedBike });
+      if (reservationType === 'now') {
+        // Reserva inmediata
+        await reserveBikeMutation.post({ bikeId: selectedBike });
+        alert(`Bicicleta ${selectedBike} reservada exitosamente en ${station.name}`);
+      } else {
+        // Reserva programada
+        // Construir la fecha y hora en formato ISO con zona horaria de Colombia (UTC-5)
+        const fechaHoraProgramada = `${scheduledDate}T${scheduledTime}:00-05:00`;
 
-      // Mensaje según tipo de reserva
-      const reserveMessage =
-        reservationType === 'now'
-          ? `Bicicleta ${selectedBike} reservada exitosamente en ${station.name}`
-          : `Bicicleta ${selectedBike} programada para ${scheduledDate} a las ${scheduledTime} en ${station.name}`;
+        console.log('Fecha y hora programada:', fechaHoraProgramada);
+        await reserveBikeScheduledMutation.post({
+          bikeId: selectedBike,
+          fechaHoraProgramada: fechaHoraProgramada
+        });
+        alert(`Bicicleta ${selectedBike} programada para ${scheduledDate} a las ${scheduledTime} en ${station.name}`);
+      }
 
-      alert(reserveMessage);
       onClose();
       navigate('/reserves');
     } catch (error) {

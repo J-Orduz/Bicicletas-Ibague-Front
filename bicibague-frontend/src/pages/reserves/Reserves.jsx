@@ -7,6 +7,7 @@ import { SubHeader } from '@layouts/SubHeader';
 import {
   useGetCurrentReservation,
   useGetReservationHistory,
+  useGetReservationStats,
   useCancelReservationMutation,
 } from '@api/reserves';
 // icons
@@ -29,9 +30,11 @@ export const Reserves = () => {
   // Estados de la reserva actual y el historial
   const [currentReservation, setCurrentReservation] = useState(null);
   const [reservationHistory, setReservationHistory] = useState([]);
+  const [stats, setStats] = useState(null);
   // API hooks
   const getCurrentReservation = useGetCurrentReservation();
   const getReservationHistory = useGetReservationHistory();
+  const getReservationStats = useGetReservationStats();
   const cancelReservationMutation = useCancelReservationMutation();
   // Estados para el contador regresivo
   const [remainingTime, setRemainingTime] = useState('00:00:00');
@@ -52,7 +55,11 @@ export const Reserves = () => {
 
         const reservationData = {
           id: reservation.data.id,
-          reserveDate: reservation.data.timestamp_reserva,
+          // reserveDate: reservation.data.timestamp_reserva,
+          reserveDate:
+            reservation.data.estado_reserva === 'programada'
+              ? reservation.data.timestamp_programada
+              : reservation.data.timestamp_reserva,
           reserveExpiry: reservation.data.timestamp_expiracion,
           bikeId: reservation.data.Bicicleta.id,
           bikeType: reservation.data.Bicicleta.tipo,
@@ -83,7 +90,13 @@ export const Reserves = () => {
           id: reservation.id,
           bikeId: reservation.bicicleta_id,
           bikeType: reservation.Bicicleta.tipo,
-          createdAt: reservation.timestamp_reserva,
+          reserveDate:
+            reservation.estado_reserva === 'programada'
+              ? new Date(
+                  new Date(reservation.timestamp_expiracion).getTime() -
+                    10 * 60000
+                ).toISOString() // TEMPORAL: Se usa la hora de expiracion si es programada, y se restan 10 minutos para mostrar la hora de inicio
+              : reservation.timestamp_reserva,
           status: reservation.estado_reserva,
         }));
 
@@ -94,6 +107,22 @@ export const Reserves = () => {
     };
 
     fetchReservationHistory();
+  }, []);
+
+  // Obtener estadísticas de reservas desde la API
+  useEffect(() => {
+    const fetchReservationStats = async () => {
+      try {
+        const statsData = await getReservationStats.get();
+        if (statsData.data) {
+          setStats(statsData.data);
+        }
+      } catch (error) {
+        console.error(error.errorFetchMsg || error);
+      }
+    };
+
+    fetchReservationStats();
   }, []);
 
   // Efecto para calcular el tiempo restante de la reserva
@@ -190,12 +219,14 @@ export const Reserves = () => {
     switch (status) {
       case 'completada':
         return 'status-completed';
-      case 'cancel  ada':
+      case 'cancelada':
         return 'status-cancelled';
       case 'activa':
         return 'status-active';
       case 'expirada':
         return 'status-lost';
+      case 'programada':
+        return 'status-scheduled';
       default:
         return '';
     }
@@ -211,6 +242,8 @@ export const Reserves = () => {
         return 'Activa';
       case 'expirada':
         return 'Perdida';
+      case 'programada':
+        return 'Programada';
       default:
         return status;
     }
@@ -346,6 +379,81 @@ export const Reserves = () => {
         <div className="history-section">
           <h2 className="section-title">Historial de Reservas</h2>
 
+          {/* Estadísticas */}
+          {stats && (
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-icon total">
+                  <FaBicycle />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">{stats.total_reservas}</span>
+                  <span className="stat-label">Total Reservas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon active">
+                  <MdOutlinePlayCircleOutline />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_activas || 0}
+                  </span>
+                  <span className="stat-label">Activas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon completed">
+                  <FaRegCalendar />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_completadas || 0}
+                  </span>
+                  <span className="stat-label">Completadas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon scheduled">
+                  <FaRegClock />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_programadas || 0}
+                  </span>
+                  <span className="stat-label">Programadas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon cancelled">
+                  <BsXLg />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_canceladas || 0}
+                  </span>
+                  <span className="stat-label">Canceladas</span>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-icon expired">
+                  <TbClockOff />
+                </div>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {stats.reservas_expiradas || 0}
+                  </span>
+                  <span className="stat-label">Expiradas</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {reservationHistory.length > 0 ? (
             <div className="history-list">
               {reservationHistory.map((reservation) => (
@@ -369,7 +477,7 @@ export const Reserves = () => {
                       <div className="history-content">
                         <span className="history-label">Fecha:</span>
                         <span className="history-value">
-                          {formatDate(reservation.createdAt)}
+                          {formatDate(reservation.reserveDate)}
                         </span>
                       </div>
                     </div>
@@ -378,7 +486,7 @@ export const Reserves = () => {
                       <div className="history-content">
                         <span className="history-label">Hora:</span>
                         <span className="history-value">
-                          {formatTime(reservation.createdAt)}
+                          {formatTime(reservation.reserveDate)}
                         </span>
                       </div>
                     </div>

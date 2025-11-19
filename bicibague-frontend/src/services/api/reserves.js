@@ -21,6 +21,16 @@ export const useGetReservationHistory = () => {
   };
 };
 
+// Obtener estadisticas de reservas GET
+export const useGetReservationStats = () => {
+  return {
+    get: useFetch(
+      '/booking/estadisticas',
+      'Error al obtener las estadísticas de reservas'
+    ).fetchData,
+  };
+}
+
 // Iniciar viaje POST
 export const useStartTripMutation = () => {
   const post = useMutation();
@@ -51,10 +61,24 @@ export const useReserveBikeMutation = () => {
   };
 };
 
+// Reservar bicicleta con fecha y hora programada POST
+export const useReserveBikeScheduledMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/booking/reservar-programada',
+        data,
+        'Error al reservar la bicicleta de forma programada'
+      ),
+  };
+};
+
 // Cancelar reserva POST
 export const useCancelReservationMutation = () => {
   const post = useMutation();
-  
+
   return {
     post: (data) =>
       post.mutate(

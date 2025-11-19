@@ -14,10 +14,14 @@ import { GiPathDistance } from 'react-icons/gi';
 import { PiSneakerFill } from 'react-icons/pi';
 // components
 import { SubHeader } from '@layouts/SubHeader';
+// hooks
+import { useCurrency } from '@hooks/useCurrency';
 // styles
 import './trips.scss';
 
 export const Trips = () => {
+  const { formatCurrency } = useCurrency();
+
   // TEMPORAL: Cargar viaje actual desde localStorage para simular persistencia
   // TODO: Reemplazar con datos reales de la API
   const [currentTrip, setCurrentTrip] = useState(() => {
@@ -127,14 +131,6 @@ export const Trips = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   const getBikeTypeIcon = (type) => {
@@ -252,7 +248,7 @@ export const Trips = () => {
                     </div>
                     <div className="charge-amount">
                       <FaMoneyBillWave className="charge-icon" />
-                      {formatCurrency(trip.charge)} COP
+                      {formatCurrency(trip.charge)}
                     </div>
                   </div>
 

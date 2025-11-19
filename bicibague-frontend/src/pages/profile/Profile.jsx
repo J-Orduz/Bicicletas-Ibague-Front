@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { SubHeader } from '@layouts/SubHeader';
 // hooks
 import { useAuth } from '@contexts/AuthContext';
+import { usePreferences } from '@contexts/PreferencesContext';
+import { useCurrency } from '@hooks/useCurrency';
 // API
 import {
   useGetCurrentBalance,
@@ -16,12 +18,15 @@ import {
   BsCreditCard2Front,
   BsCashStack,
   BsPencilSquare,
+  BsGearFill,
 } from 'react-icons/bs';
 // styles
 import './Profile.scss';
 
 export const Profile = () => {
   const { logout } = useAuth();
+  const { formatCurrency, CURRENCIES } = useCurrency();
+  const { currency, updatePreference } = usePreferences();
 
   // Estados
   const [userData, setUserData] = useState(null);
@@ -110,7 +115,7 @@ export const Profile = () => {
               <div className="balance-card">
                 <span className="balance-label">Saldo Disponible</span>
                 <span className="balance-amount">
-                  ${userData.userBalance?.toLocaleString('es-CO') || '0'}
+                  {formatCurrency(userData.userBalance)}
                 </span>
                 <button
                   className="btn-recharge"
@@ -118,6 +123,56 @@ export const Profile = () => {
                 >
                   <BsCreditCard2Front /> Recargar Saldo
                 </button>
+              </div>
+            </div>
+
+            {/* Sección de Preferencias */}
+            <div className="preferences-section">
+              <div className="preferences-header">
+                <BsGearFill className="preferences-icon" />
+                <h2 className="section-title">Preferencias</h2>
+              </div>
+
+              <div className="preferences-content">
+                <div className="preference-item">
+                  <div className="preference-info">
+                    <span className="preference-label">Moneda</span>
+                    <span className="preference-description">
+                      Selecciona la moneda para mostrar los precios
+                    </span>
+                  </div>
+                  <div className="preference-control">
+                    <select
+                      className="preference-selector"
+                      value={currency}
+                      onChange={(e) => updatePreference('currency', e.target.value)}
+                    >
+                      {Object.entries(CURRENCIES).map(([code, info]) => (
+                        <option key={code} value={code}>
+                          {info.symbol} {info.code} - {info.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Espacio para futuras preferencias */}
+                {/* 
+                <div className="preference-item">
+                  <div className="preference-info">
+                    <span className="preference-label">Idioma</span>
+                    <span className="preference-description">
+                      Selecciona el idioma de la aplicación
+                    </span>
+                  </div>
+                  <div className="preference-control">
+                    <select className="preference-selector">
+                      <option value="es">Español</option>
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+                </div>
+                */}
               </div>
             </div>
           </>

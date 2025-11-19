@@ -1,12 +1,15 @@
 import { AppRouter } from './router/AppRouter';
 import { AuthProvider } from '@contexts/AuthContext';
+import { PreferencesProvider } from '@contexts/PreferencesContext';
 
 import '@styles/main.scss';
 
 function App() {
   return (
     <AuthProvider>
-      <AppRouter />
+      <PreferencesProvider>
+        <AppRouter />
+      </PreferencesProvider>
     </AuthProvider>
   );
 }

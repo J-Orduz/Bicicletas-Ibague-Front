@@ -161,8 +161,9 @@ export default function Aurora(props) {
       return [c.r, c.g, c.b];
     }
 
+    // Default to a stronger, more saturated orange ramp; can be overridden via props.colorStops
     const initialStops = (
-      props.colorStops || ["#5227FF", "#7cff67", "#5227FF"]
+      props.colorStops || ["#ff4500", "#ff6a00", "#ff8c2b"]
     ).map(hexToRgbArray);
 
     program = new Program(gl, {

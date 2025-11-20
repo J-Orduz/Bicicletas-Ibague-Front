@@ -1,20 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   FaBicycle,
   FaRegClock,
   FaLocationDot,
   FaBolt,
-//   FaLocationDot,
-} from 'react-icons/fa6';
-import { PiSneakerFill } from 'react-icons/pi';
-import { useGetReservationStats } from '@api/reserves';
-import './MapSidebar.scss';
+  //   FaLocationDot,
+} from "react-icons/fa6";
+import { PiSneakerFill } from "react-icons/pi";
+import { BsPersonCircle } from "react-icons/bs";
+import { Link } from "react-router-dom";
+import { useAuth } from "@contexts/AuthContext";
+import { useGetReservationStats } from "@api/reserves";
+import { useGetCurrentBalance } from "@api/payments";
+import { useCurrency } from "@hooks/useCurrency";
+import "./MapSidebar.scss";
 
 export const MapSidebar = ({ currentReservation, bikeStations }) => {
+  const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
+  const getCurrentBalance = useGetCurrentBalance();
+  const [balance, setBalance] = useState(null);
   const [stats, setStats] = useState({ totalReserves: 0, totalTrips: 0 });
   const [currentTrip, setCurrentTrip] = useState(null);
-  const [elapsedTime, setElapsedTime] = useState('00:00:00');
-  const [remainingTime, setRemainingTime] = useState('00:00:00');
+  const [elapsedTime, setElapsedTime] = useState("00:00:00");
+  const [remainingTime, setRemainingTime] = useState("00:00:00");
 
   const getReservationStats = useGetReservationStats();
 
@@ -24,7 +33,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
       try {
         const response = await getReservationStats.get();
 
-        const tripHistory = localStorage.getItem('tripHistory');
+        const tripHistory = localStorage.getItem("tripHistory");
         const trips = tripHistory ? JSON.parse(tripHistory) : [];
 
         if (response.data) {
@@ -35,7 +44,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
         }
       } catch (error) {
         // Fallback a historial local
-        const tripHistory = localStorage.getItem('tripHistory');
+        const tripHistory = localStorage.getItem("tripHistory");
         const trips = tripHistory ? JSON.parse(tripHistory) : [];
         setStats({
           totalReserves: 0,
@@ -47,9 +56,24 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
     fetchStats();
   }, []);
 
+  // Obtener saldo actual para mostrar en el sidebar
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const balanceData = await getCurrentBalance.get();
+        setBalance(balanceData?.usuario?.saldo ?? null);
+      } catch (error) {
+        // no bloquear la UI si falla
+        setBalance(null);
+      }
+    };
+
+    fetchBalance();
+  }, []);
+
   // Obtener viaje actual desde localStorage
   useEffect(() => {
-    const savedTrip = localStorage.getItem('currentTrip');
+    const savedTrip = localStorage.getItem("currentTrip");
     if (savedTrip) {
       setCurrentTrip(JSON.parse(savedTrip));
     }
@@ -69,10 +93,10 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       setElapsedTime(
-        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
           2,
-          '0'
-        )}:${String(seconds).padStart(2, '0')}`
+          "0"
+        )}:${String(seconds).padStart(2, "0")}`
       );
     };
 
@@ -92,7 +116,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
       const diff = expiration - now;
 
       if (diff <= 0) {
-        setRemainingTime('Expirada');
+        setRemainingTime("Expirada");
         return;
       }
 
@@ -101,10 +125,10 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       setRemainingTime(
-        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
           2,
-          '0'
-        )}:${String(seconds).padStart(2, '0')}`
+          "0"
+        )}:${String(seconds).padStart(2, "0")}`
       );
     };
 
@@ -116,13 +140,15 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
 
   // Calcular totales de estaciones
   const totalStations = bikeStations?.length || 0;
-  const totalAvailableBikes = bikeStations?.reduce((total, station) => {
-    const available = station.bikes?.filter((bike) => bike.available).length || 0;
-    return total + available;
-  }, 0) || 0;
+  const totalAvailableBikes =
+    bikeStations?.reduce((total, station) => {
+      const available =
+        station.bikes?.filter((bike) => bike.available).length || 0;
+      return total + available;
+    }, 0) || 0;
 
   const getBikeTypeIcon = (type) => {
-    return type === 'Electrica' || type === 'electric' ? (
+    return type === "Electrica" || type === "electric" ? (
       <FaBolt className="bike-type-icon" />
     ) : (
       <PiSneakerFill className="bike-type-icon" />
@@ -131,6 +157,24 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
 
   return (
     <aside className="map-sidebar">
+      {/* User header */}
+      <div className="sidebar-card user-card">
+        <div className="user-center">
+          <BsPersonCircle className="user-icon" />
+          <span className="user-name">
+            {user?.nombre || user?.userName || "Usuario"}
+          </span>
+          <span className="user-balance">
+            {balance !== null ? formatCurrency(balance) : "-"}
+          </span>
+          <div className="user-actions">
+            <Link to="/profile" className="btn-quick-recharge">
+              Recargar
+            </Link>
+            {/* 'Ver perfil' eliminado según petición */}
+          </div>
+        </div>
+      </div>
       {/* Reserva Actual - Siempre visible */}
       <div className="sidebar-card reservation-card">
         <h3>Reserva Activa</h3>
@@ -141,7 +185,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
               <div className="info-content">
                 <span className="info-label">Bicicleta:</span>
                 <span className="info-value">
-                  {currentReservation.Bicicleta?.id || 'N/A'}
+                  {currentReservation.Bicicleta?.id || "N/A"}
                   {currentReservation.Bicicleta?.tipo &&
                     getBikeTypeIcon(currentReservation.Bicicleta.tipo)}
                 </span>
@@ -159,7 +203,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
               <div className="info-content">
                 <span className="info-label">Estación:</span>
                 <span className="info-value">
-                  {currentReservation.Bicicleta?.Estacion?.nombre || 'N/A'}
+                  {currentReservation.Bicicleta?.Estacion?.nombre || "N/A"}
                 </span>
               </div>
             </div>
@@ -182,9 +226,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
             </div>
             <div className="info-row-small">
               <FaBicycle className="icon-small" />
-              <span>
-                {currentTrip.bikeId}
-              </span>
+              <span>{currentTrip.bikeId}</span>
             </div>
           </div>
         ) : (

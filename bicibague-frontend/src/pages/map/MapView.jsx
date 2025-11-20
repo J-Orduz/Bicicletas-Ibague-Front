@@ -22,7 +22,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-export const MapView = () => {
+export const MapView = ({ onStationsLoaded }) => {
   const [selectedStation, setSelectedStation] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
 
@@ -57,18 +57,23 @@ export const MapView = () => {
             station.bikes = bikesData;
           })
         );
-;
+
         console.log('Stations Data:', stationsData);
 
         // formatear datos de la estacion para el mapa
-        setBikeStations(
-          stationsData.map((station) => ({
-            id: station.id,
-            name: station.nombre,
-            position: [station.posicion.latitud, station.posicion.longitud],
-            bikes: station.bikes || [],
-          }))
-        );
+        const formattedStations = stationsData.map((station) => ({
+          id: station.id,
+          name: station.nombre,
+          position: [station.posicion.latitud, station.posicion.longitud],
+          bikes: station.bikes || [],
+        }));
+        
+        setBikeStations(formattedStations);
+        
+        // Notificar al componente padre
+        if (onStationsLoaded) {
+          onStationsLoaded(formattedStations);
+        }
       } catch (error) {
         // mostrar error al usuario en vista
       }

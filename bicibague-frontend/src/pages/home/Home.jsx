@@ -1,14 +1,45 @@
-// components
+import { useState, useEffect } from 'react';
 import { MapView } from '@pages/map/MapView';
+import { MapSidebar } from '@pages/map/MapSidebar';
 import { SubHeader } from '@layouts/SubHeader';
-// styles
+import { useGetCurrentReservation } from '@api/reserves';
 import './Home.scss';
 
 export const Home = () => {
+  const [currentReservation, setCurrentReservation] = useState(null);
+  const [bikeStations, setBikeStations] = useState([]);
+  
+  const getCurrentReservation = useGetCurrentReservation();
+
+  useEffect(() => {
+    const fetchReservation = async () => {
+      try {
+        const reservation = await getCurrentReservation.get();
+        if (reservation.data) {
+          setCurrentReservation(reservation.data);
+        }
+      } catch (error) {
+        console.error('Error al obtener reserva:', error);
+      }
+    };
+
+    fetchReservation();
+  }, []);
+
+  const handleStationsLoaded = (stations) => {
+    setBikeStations(stations);
+  };
+
   return (
     <section className="home-container">
       <SubHeader pageTitle="Mapa BicIbagué" />
-      <MapView />
+      <div className="home-content">
+        <MapView onStationsLoaded={handleStationsLoaded} />
+        <MapSidebar 
+          currentReservation={currentReservation}
+          bikeStations={bikeStations}
+        />
+      </div>
     </section>
   );
 };

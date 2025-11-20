@@ -9,15 +9,20 @@ import {
   FaMoneyBillWave,
   FaBatteryHalf,
 } from 'react-icons/fa6';
-// import { MdOutlineStopCircle } from 'react-icons/md';
+import { MdOutlineStopCircle } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
 import { PiSneakerFill } from 'react-icons/pi';
 // components
 import { SubHeader } from '@layouts/SubHeader';
+import { EndTrip } from './EndTrip';
+// hooks
+import { useCurrency } from '@hooks/useCurrency';
 // styles
 import './trips.scss';
 
 export const Trips = () => {
+  const { formatCurrency } = useCurrency();
+
   // TEMPORAL: Cargar viaje actual desde localStorage para simular persistencia
   // TODO: Reemplazar con datos reales de la API
   const [currentTrip, setCurrentTrip] = useState(() => {
@@ -25,47 +30,48 @@ export const Trips = () => {
     return savedTrip ? JSON.parse(savedTrip) : null;
   });
 
-  const [tripHistory] = useState([
-    {
-      id: 8,
-      bikeId: 'BIC-045',
-      bikeType: 'mechanical',
-      startTime: '2025-11-08T14:20:00',
-      endTime: '2025-11-08T15:45:00',
-      duration: '1h 25m',
-      charge: 4500,
-    },
-    {
-      id: 7,
-      bikeId: 'BIC-032',
-      bikeType: 'electric',
-      startTime: '2025-11-07T09:15:00',
-      endTime: '2025-11-07T10:30:00',
-      duration: '1h 15m',
-      charge: 3750,
-    },
-    {
-      id: 6,
-      bikeId: 'BIC-018',
-      bikeType: 'mechanical',
-      startTime: '2025-11-05T16:00:00',
-      endTime: '2025-11-05T16:45:00',
-      duration: '45m',
-      charge: 2250,
-    },
-    {
-      id: 5,
-      bikeId: 'BIC-027',
-      bikeType: 'electric',
-      startTime: '2025-11-03T11:45:00',
-      endTime: '2025-11-03T13:20:00',
-      duration: '1h 35m',
-      charge: 4750,
-    },
-  ]);
+  // TEMPORAL: Cargar historial de viajes desde localStorage para simular persistencia
+  // TODO: Reemplazar con datos reales de la API
+  const [tripHistory, setTripHistory] = useState(() => {
+    const savedHistory = localStorage.getItem('tripHistory');
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  });
+
+  // setear 2 viajes de prueba en el historial
+  useEffect(() => {
+    const sampleHistory = [
+      {
+        id: 'trip1',
+        bikeId: 'M001',
+        bikeType: 'mechanical',
+        startTime: '2024-06-20T10:00:00Z',
+        endTime: '2024-06-20T10:30:00Z',
+        duration: '30 minutos',
+        charge: 1500,
+      },
+      {
+        id: 'trip2',
+        bikeId: 'E002',
+        bikeType: 'electric',
+        startTime: '2024-06-18T14:00:00Z',
+        endTime: '2024-06-18T14:45:00Z',
+        duration: '45 minutos',
+        charge: 2500,
+      },
+    ];
+
+    const savedHistory = localStorage.getItem('tripHistory');
+    if (!savedHistory) {
+      localStorage.setItem('tripHistory', JSON.stringify(sampleHistory));
+      setTripHistory(sampleHistory);
+    }
+  }, []);
 
   // Estado para el contador del viaje actual
   const [elapsedTime, setElapsedTime] = useState('00:00');
+
+  // Estado para el modal de finalizar viaje
+  const [showEndTripModal, setShowEndTripModal] = useState(false);
 
   // Efecto para calcular el tiempo transcurrido
   useEffect(() => {
@@ -97,20 +103,24 @@ export const Trips = () => {
     return () => clearInterval(interval);
   }, [currentTrip]);
 
-  // TEMPORAL: Función para finalizar el viaje y limpiar localStorage
-  // TODO: Reemplazar con llamada real a la API
-  // const handleEndTrip = () => {
-  //   const confirmEnd = window.confirm(
-  //     '¿Estás seguro de que deseas finalizar el viaje?'
-  //   );
-  //   if (confirmEnd) {
-  //     console.log('Viaje finalizado:', currentTrip.id);
-  //     // Limpiar el viaje actual del localStorage
-  //     localStorage.removeItem('currentTrip');
-  //     // Actualizar el estado para ocultar el viaje actual
-  //     setCurrentTrip(null);
-  //   }
-  // };
+  // Función para abrir el modal de finalizar viaje
+  const handleEndTrip = () => {
+    setShowEndTripModal(true);
+  };
+
+  // Función para cerrar el modal
+  const handleCloseEndTripModal = () => {
+    setShowEndTripModal(false);
+  };
+
+  // Función para manejar cuando el viaje finaliza exitosamente
+  const handleTripEnded = () => {
+    setCurrentTrip(null);
+    setShowEndTripModal(false);
+    // TEMPORAL: Recargar el historial desde localStorage
+    const savedHistory = localStorage.getItem('tripHistory');
+    setTripHistory(savedHistory ? JSON.parse(savedHistory) : []);
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -129,14 +139,6 @@ export const Trips = () => {
     });
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const getBikeTypeIcon = (type) => {
     return type === 'electric' ? (
       <FaBolt className="bike-type-icon electric" />
@@ -152,7 +154,6 @@ export const Trips = () => {
   };
 
   return (
-    // <section className="trips-container">
     <>
       <div className="trips-container">
         <SubHeader pageTitle="Viajes" />
@@ -218,12 +219,12 @@ export const Trips = () => {
                 </div>
               </div>
 
-              {/* <div className="trip-actions">
+              <div className="trip-actions">
                 <button className="btn btn-end" onClick={handleEndTrip}>
                   <MdOutlineStopCircle className="btn-icon" />
-                  Finalizar Viaje
+                  Finalizar Viaje (boton de simulación)
                 </button>
-              </div> */}
+              </div>
             </div>
           ) : (
             <div className="no-trip">
@@ -252,7 +253,7 @@ export const Trips = () => {
                     </div>
                     <div className="charge-amount">
                       <FaMoneyBillWave className="charge-icon" />
-                      {formatCurrency(trip.charge)} COP
+                      {formatCurrency(trip.charge)}
                     </div>
                   </div>
 
@@ -297,6 +298,15 @@ export const Trips = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de finalizar viaje */}
+      {showEndTripModal && currentTrip && (
+        <EndTrip
+          trip={currentTrip}
+          onClose={handleCloseEndTripModal}
+          onTripEnded={handleTripEnded}
+        />
+      )}
     </>
   );
 };

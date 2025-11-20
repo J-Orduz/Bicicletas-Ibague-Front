@@ -10,7 +10,9 @@ export const useMutation = () => {
     method,
     endpoint,
     body = null,
-    errorMessage = 'Hubo un error'
+    errorMessage = 'Hubo un error',
+    supabaseURL = false,
+    options = {}
     // verifyAuth = true
   ) => {
     // if (verifyAuth && !isAuthenticated) {
@@ -20,17 +22,20 @@ export const useMutation = () => {
     setLoading(true);
     setError(null);
 
+    // const finalUrl = `/v1${endpoint}`;
+    const finalUrl = supabaseURL
+      ? `/functions/v1${endpoint}`
+      : `/api${endpoint}`;
+
     try {
       const isFormData = body instanceof FormData;
-
-      // const finalUrl = `/v1${endpoint}`;
-      const finalUrl = `/api${endpoint}`;
 
       const response = await fetch(finalUrl, {
         method,
         headers: {
           ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...options?.headers,
         },
         body: body ? (isFormData ? body : JSON.stringify(body)) : null,
       });
@@ -45,7 +50,7 @@ export const useMutation = () => {
         // throw new Error(result.message || `HTTP error ${response.status}`);
         const errorMsgs = {
           message: result.message || `HTTP error ${response.status}`,
-          status: response.status,
+          status: response.status, // en caso de manejar errores segun el codigo de estado
         };
         throw errorMsgs;
       }

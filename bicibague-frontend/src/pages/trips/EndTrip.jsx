@@ -72,10 +72,10 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
       const now = new Date();
       const diffInMinutes = Math.floor((now - start) / (1000 * 60));
 
-      // Tarifa base: 3000 COP por hora (~$0.75 USD)
-      // Convertir minutos a horas y calcular costo (en centavos de USD)
-      const costInCents = Math.ceil((diffInMinutes / 60) * 100);
-      setTripCost(costInCents);
+      // Tarifa base: 500 COP por minuto
+      // Convertir minutos a horas y calcular costo (en centavos de COP)
+      const costInCents = Math.ceil(diffInMinutes * 500);
+      setTripCost(costInCents <= 2000 ? 2000 : costInCents);
     }
   }, [trip]);
 
@@ -100,10 +100,9 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
       // Crear PaymentIntent en el backend
       const paymentIntentData = {
         amount: tripCost,
-        currency: 'usd',
+        currency: 'cop',
         metadata: {
-          bookingId: 'abc123',
-          // bikeId: trip.bikeId,
+          bookingId: 'abc1234',
         },
       };
       console.log('Datos para PaymentIntent:', paymentIntentData);
@@ -186,6 +185,28 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
       if (paymentIntent.status === 'succeeded') {
         setPaymentStep('success');
         setTimeout(() => {
+          // TEMPORAL: Guardar el viaje finalizado en el historial de localStorage
+          const completedTrip = {
+            id: Date.now(),
+            bikeId: trip.bikeId,
+            bikeType: trip.bikeType,
+            startTime: trip.startTime,
+            endTime: new Date().toISOString(),
+            duration: calculateDuration(),
+            charge: tripCost,
+          };
+
+          // Obtener historial existente o crear uno nuevo
+          const existingHistory = JSON.parse(
+            localStorage.getItem('tripHistory') || '[]'
+          );
+
+          // Agregar el viaje completado al inicio del historial
+          const updatedHistory = [completedTrip, ...existingHistory];
+
+          // Guardar el historial actualizado
+          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
+
           // Limpiar el viaje actual del localStorage
           localStorage.removeItem('currentTrip');
           onTripEnded();

@@ -30,44 +30,42 @@ export const Trips = () => {
     return savedTrip ? JSON.parse(savedTrip) : null;
   });
 
-  const [tripHistory] = useState([
-    {
-      id: 8,
-      bikeId: 'BIC-045',
-      bikeType: 'mechanical',
-      startTime: '2025-11-08T14:20:00',
-      endTime: '2025-11-08T15:45:00',
-      duration: '1h 25m',
-      charge: 4500,
-    },
-    {
-      id: 7,
-      bikeId: 'BIC-032',
-      bikeType: 'electric',
-      startTime: '2025-11-07T09:15:00',
-      endTime: '2025-11-07T10:30:00',
-      duration: '1h 15m',
-      charge: 3750,
-    },
-    {
-      id: 6,
-      bikeId: 'BIC-018',
-      bikeType: 'mechanical',
-      startTime: '2025-11-05T16:00:00',
-      endTime: '2025-11-05T16:45:00',
-      duration: '45m',
-      charge: 2250,
-    },
-    {
-      id: 5,
-      bikeId: 'BIC-027',
-      bikeType: 'electric',
-      startTime: '2025-11-03T11:45:00',
-      endTime: '2025-11-03T13:20:00',
-      duration: '1h 35m',
-      charge: 4750,
-    },
-  ]);
+  // TEMPORAL: Cargar historial de viajes desde localStorage para simular persistencia
+  // TODO: Reemplazar con datos reales de la API
+  const [tripHistory, setTripHistory] = useState(() => {
+    const savedHistory = localStorage.getItem('tripHistory');
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  });
+
+  // setear 2 viajes de prueba en el historial
+  useEffect(() => {
+    const sampleHistory = [
+      {
+        id: 'trip1',
+        bikeId: 'M001',
+        bikeType: 'mechanical',
+        startTime: '2024-06-20T10:00:00Z',
+        endTime: '2024-06-20T10:30:00Z',
+        duration: '30 minutos',
+        charge: 1500,
+      },
+      {
+        id: 'trip2',
+        bikeId: 'E002',
+        bikeType: 'electric',
+        startTime: '2024-06-18T14:00:00Z',
+        endTime: '2024-06-18T14:45:00Z',
+        duration: '45 minutos',
+        charge: 2500,
+      },
+    ];
+
+    const savedHistory = localStorage.getItem('tripHistory');
+    if (!savedHistory) {
+      localStorage.setItem('tripHistory', JSON.stringify(sampleHistory));
+      setTripHistory(sampleHistory);
+    }
+  }, []);
 
   // Estado para el contador del viaje actual
   const [elapsedTime, setElapsedTime] = useState('00:00');
@@ -119,6 +117,9 @@ export const Trips = () => {
   const handleTripEnded = () => {
     setCurrentTrip(null);
     setShowEndTripModal(false);
+    // TEMPORAL: Recargar el historial desde localStorage
+    const savedHistory = localStorage.getItem('tripHistory');
+    setTripHistory(savedHistory ? JSON.parse(savedHistory) : []);
   };
 
   const formatDate = (dateString) => {

@@ -80,6 +80,7 @@ export const useFetch = (
         // Si el error es 401 (Unauthorized), cerrar sesión
         if (err.status === 401) {
           logout();
+          alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
         }
 
         const errorMsgs = {

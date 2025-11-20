@@ -1,18 +1,19 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { Link } from "react-router-dom";
 // components
-import { SubHeader } from '@layouts/SubHeader';
-import { ButtonThemeToggle } from '@components/buttonThemeToggle';
+import { SubHeader } from "@layouts/SubHeader";
+import { ButtonThemeToggle } from "@components/buttonThemeToggle";
+import Aurora from "@components/Aurora";
 // api
-import { useRegisterUserMutation } from '@api/auth';
+import { useRegisterUserMutation } from "@api/auth";
 
 export const Register = () => {
   const registerUserMutation = useRegisterUserMutation();
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
+    name: "",
+    email: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -28,7 +29,7 @@ export const Register = () => {
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: '',
+        [name]: "",
       }));
     }
   };
@@ -37,23 +38,24 @@ export const Register = () => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es requerido';
+      newErrors.name = "El nombre es requerido";
     } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'El nombre debe tener al menos 3 caracteres';
+      newErrors.name = "El nombre debe tener al menos 3 caracteres";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'El correo es requerido';
+      newErrors.email = "El correo es requerido";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'El correo no es válido';
+      newErrors.email = "El correo no es válido";
     }
 
     if (!formData.password) {
-      newErrors.password = 'La contraseña es requerida';
+      newErrors.password = "La contraseña es requerida";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+      newErrors.password = "La contraseña debe tener al menos 6 caracteres";
     } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'La contraseña debe contener al menos una letra y un número';
+      newErrors.password =
+        "La contraseña debe contener al menos una letra y un número";
     }
 
     setErrors(newErrors);
@@ -70,11 +72,15 @@ export const Register = () => {
     setIsLoading(true);
 
     try {
-      console.log('Datos de registro:', formData);
+      console.log("Datos de registro:", formData);
 
       // cambiar name a nombre
       const { name, email, password } = formData;
-      const response = await registerUserMutation.post({ nombre: name, email, password });
+      const response = await registerUserMutation.post({
+        nombre: name,
+        email,
+        password,
+      });
 
       //   navigate('/');
       alert(response.message);
@@ -87,7 +93,23 @@ export const Register = () => {
 
   return (
     <section className="auth-container">
-      <SubHeader pageTitle="Crear Cuenta" />
+      <Aurora
+        colorStops={[
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary-color")
+            .trim() || "#ff922d",
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary-color-light")
+            .trim() || "#ffb380",
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary-color-dark")
+            .trim() || "#e07b1f",
+        ]}
+        blend={0.5}
+        amplitude={1.0}
+        speed={0.6}
+      />
+      <div className="auth-bg-overlay" />
 
       <div className="auth-wrapper">
         <div className="auth-card">
@@ -106,7 +128,7 @@ export const Register = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Ingresa tu nombre"
-                className={errors.name ? 'input-error' : ''}
+                className={errors.name ? "input-error" : ""}
                 disabled={isLoading}
               />
               {errors.name && (
@@ -123,7 +145,7 @@ export const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="ejemplo@correo.com"
-                className={errors.email ? 'input-error' : ''}
+                className={errors.email ? "input-error" : ""}
                 disabled={isLoading}
               />
               {errors.email && (
@@ -140,7 +162,7 @@ export const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Mínimo 6 caracteres (letras y números)"
-                className={errors.password ? 'input-error' : ''}
+                className={errors.password ? "input-error" : ""}
                 disabled={isLoading}
               />
               {errors.password && (
@@ -153,13 +175,13 @@ export const Register = () => {
             )}
 
             <button type="submit" className="btn-submit" disabled={isLoading}>
-              {isLoading ? 'Registrando...' : 'Crear cuenta'}
+              {isLoading ? "Registrando..." : "Crear cuenta"}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              ¿Ya tienes cuenta?{' '}
+              ¿Ya tienes cuenta?{" "}
               <Link to="/login" className="auth-link">
                 Inicia sesión
               </Link>

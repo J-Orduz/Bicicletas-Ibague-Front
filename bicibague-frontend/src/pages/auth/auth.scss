@@ -6,30 +6,42 @@
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
+  min-height: 100vh; // ensure container fills viewport for vertical centering
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   @media (max-width: 768px) {
-    padding-top: 50px; // Espacio para el SubHeader fijo en móvil
+    /* leave some top space for fixed SubHeader on small screens */
+    min-height: calc(100vh - 50px);
+    padding-top: 50px;
   }
 
   .auth-wrapper {
     @include flex($justify: center, $align: center);
+    width: 100%;
+    align-self: center; /* ensure wrapper centers inside .auth-container */
+    padding: 1rem 0;
 
     @media (max-width: 768px) {
       margin: 1rem auto;
+      padding: 0.5rem 0;
     }
   }
 
   .auth-card {
     width: 100%;
-    max-width: 450px;
+    max-width: 480px;
     background-color: $bg-secondary;
     border-radius: 12px;
-    padding: 2.5rem;
+    padding: 3.5rem 2.5rem; // more breathing room
     box-shadow: $shadow-lg;
     transition: $bg-transition, box-shadow $transition-normal;
+    position: relative;
+    z-index: 100; // ensure the card sits above fixed background/overlays
 
     @media (max-width: 768px) {
-      padding: 2rem 1.5rem;
+      padding: 2.25rem 1.5rem;
       border-radius: 8px;
       background-color: transparent;
       box-shadow: none;
@@ -60,13 +72,13 @@
   .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem; // increased gap between rows
   }
 
   .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; // slightly larger label->input spacing
 
     label {
       color: $text-primary;
@@ -75,8 +87,8 @@
     }
 
     input {
-      width: 100%;
-      padding: 0.875rem 1rem;
+    width: 100%;
+    padding: 1rem 1.25rem; // larger input padding for readability
       border: 2px solid $border-color;
       border-radius: 8px;
       font-size: 1rem;
@@ -135,7 +147,7 @@
     );
     width: 100%;
     font-size: 1rem;
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
 
     &:disabled {
       transform: none;

@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 // components
-import { SubHeader } from '@layouts/SubHeader';
-import { ButtonThemeToggle } from '@components/buttonThemeToggle';
+import { SubHeader } from "@layouts/SubHeader";
+import { ButtonThemeToggle } from "@components/buttonThemeToggle";
+import Aurora from "@components/Aurora";
 // context
-import { useAuth } from '@contexts/AuthContext';
+import { useAuth } from "@contexts/AuthContext";
 // api
-import { useLoginUserMutation } from '@api/auth';
+import { useLoginUserMutation } from "@api/auth";
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -14,8 +15,8 @@ export const Login = () => {
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -31,7 +32,7 @@ export const Login = () => {
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: '',
+        [name]: "",
       }));
     }
   };
@@ -40,13 +41,13 @@ export const Login = () => {
     const newErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = 'El correo es requerido';
+      newErrors.email = "El correo es requerido";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'El correo no es válido';
+      newErrors.email = "El correo no es válido";
     }
 
     if (!formData.password) {
-      newErrors.password = 'La contraseña es requerida';
+      newErrors.password = "La contraseña es requerida";
     }
 
     setErrors(newErrors);
@@ -63,14 +64,14 @@ export const Login = () => {
     setIsLoading(true);
 
     try {
-      console.log('Datos de login:', formData);
+      console.log("Datos de login:", formData);
 
       const response = await loginUserMutation.post(formData);
-      
+
       // Usar el contexto para guardar la autenticación
       login(response.session.access_token, response.user);
-      
-      navigate('/');
+
+      navigate("/");
     } catch (error) {
       setErrors({
         submit: error.errorMutationMsg,
@@ -82,7 +83,23 @@ export const Login = () => {
 
   return (
     <section className="auth-container">
-      <SubHeader pageTitle="Iniciar Sesión" />
+      <Aurora
+        colorStops={[
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary-color")
+            .trim() || "#ff922d",
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary-color-light")
+            .trim() || "#ffb380",
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary-color-dark")
+            .trim() || "#e07b1f",
+        ]}
+        blend={0.5}
+        amplitude={1.0}
+        speed={0.6}
+      />
+      <div className="auth-bg-overlay" />
 
       <div className="auth-wrapper">
         <div className="auth-card">
@@ -100,7 +117,7 @@ export const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="ejemplo@correo.com"
-                className={errors.email ? 'input-error' : ''}
+                className={errors.email ? "input-error" : ""}
                 disabled={isLoading}
               />
               {errors.email && (
@@ -117,7 +134,7 @@ export const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Ingresa tu contraseña"
-                className={errors.password ? 'input-error' : ''}
+                className={errors.password ? "input-error" : ""}
                 disabled={isLoading}
               />
               {errors.password && (
@@ -126,7 +143,7 @@ export const Login = () => {
               <div className="forgot-password">
                 <Link
                   to="#"
-                  onClick={() => alert('Funcionalidad en desarrollo')}
+                  onClick={() => alert("Funcionalidad en desarrollo")}
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -138,13 +155,13 @@ export const Login = () => {
             )}
 
             <button type="submit" className="btn-submit" disabled={isLoading}>
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              ¿No tienes cuenta?{' '}
+              ¿No tienes cuenta?{" "}
               <Link to="/register" className="auth-link">
                 Regístrate
               </Link>

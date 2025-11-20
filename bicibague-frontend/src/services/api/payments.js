@@ -47,3 +47,59 @@ export const useSimulateRechargeMutation = () => {
       ),
   };
 };
+
+// Obtener Stripe publishable key GET
+export const useGetStripePublishableKey = () => {
+  return {
+    get: useFetch(
+      '/config/stripe-pk',
+      'Error al obtener la clave de Stripe',
+      false // backend URL
+    ).fetchData,
+  };
+};
+
+// Crear PaymentIntent POST
+export const useCreatePaymentIntentMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/payments/create-payment-intent',
+        data,
+        'Error al crear el payment intent',
+        false // backend URL
+      ),
+  };
+};
+
+// Validar tarjeta POST
+export const useValidateCardMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/payments/validate-card',
+        data,
+        'Error al validar la tarjeta',
+        false // backend URL
+      ),
+  };
+};
+
+// Confirmar pago con token POST
+export const useConfirmPaymentWithTokenMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/payments/confirm-with-token',
+        data,
+        'Error al confirmar el pago',
+        false // backend URL
+      ),
+  };
+};

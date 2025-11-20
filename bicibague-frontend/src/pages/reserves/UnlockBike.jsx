@@ -36,8 +36,8 @@ export const UnlockBike = ({ reservation, onClose }) => {
 
     const tripData = {
       id: reservation.id,
-      bikeId: bikeData.id, 
-      bikeType: bikeData.tipo, 
+      bikeId: bikeData.id,
+      bikeType: bikeData.tipo == 'Electrica' ? 'electric' : 'mechanical',
       battery: 85, // Valor temporal fijo para bicicletas eléctricas
       startTime: new Date().toISOString(), // Fecha y hora de inicio
       status: bikeData.estado,
@@ -75,6 +75,7 @@ export const UnlockBike = ({ reservation, onClose }) => {
     try {
       const response = await startTripMutation.post({
         serialNumber: serialNumber,
+        bikeId: reservation.bikeId,
       });
 
       console.log('respuesta de iniciar viaje:', response);

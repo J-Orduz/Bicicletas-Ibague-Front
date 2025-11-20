@@ -233,12 +233,13 @@
         }
       }
 
-      //   .trip-actions {
-      //     .btn-end {
-      //       @include primary-button($bg-color: $red, $bg-color-hover: $dark-red);
-      //       width: 100%;
-      //     }
-      //   }
+        .trip-actions {
+          .btn-end {
+            @include primary-button($bg-color: $red, $bg-color-hover: $dark-red);
+            margin-top: 1rem;
+            width: 100%;
+          }
+        }
     }
   }
 

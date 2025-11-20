@@ -9,11 +9,12 @@ import {
   FaMoneyBillWave,
   FaBatteryHalf,
 } from 'react-icons/fa6';
-// import { MdOutlineStopCircle } from 'react-icons/md';
+import { MdOutlineStopCircle } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
 import { PiSneakerFill } from 'react-icons/pi';
 // components
 import { SubHeader } from '@layouts/SubHeader';
+import { EndTrip } from './EndTrip';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
 // styles
@@ -71,6 +72,9 @@ export const Trips = () => {
   // Estado para el contador del viaje actual
   const [elapsedTime, setElapsedTime] = useState('00:00');
 
+  // Estado para el modal de finalizar viaje
+  const [showEndTripModal, setShowEndTripModal] = useState(false);
+
   // Efecto para calcular el tiempo transcurrido
   useEffect(() => {
     if (!currentTrip) return;
@@ -101,20 +105,21 @@ export const Trips = () => {
     return () => clearInterval(interval);
   }, [currentTrip]);
 
-  // TEMPORAL: Función para finalizar el viaje y limpiar localStorage
-  // TODO: Reemplazar con llamada real a la API
-  // const handleEndTrip = () => {
-  //   const confirmEnd = window.confirm(
-  //     '¿Estás seguro de que deseas finalizar el viaje?'
-  //   );
-  //   if (confirmEnd) {
-  //     console.log('Viaje finalizado:', currentTrip.id);
-  //     // Limpiar el viaje actual del localStorage
-  //     localStorage.removeItem('currentTrip');
-  //     // Actualizar el estado para ocultar el viaje actual
-  //     setCurrentTrip(null);
-  //   }
-  // };
+  // Función para abrir el modal de finalizar viaje
+  const handleEndTrip = () => {
+    setShowEndTripModal(true);
+  };
+
+  // Función para cerrar el modal
+  const handleCloseEndTripModal = () => {
+    setShowEndTripModal(false);
+  };
+
+  // Función para manejar cuando el viaje finaliza exitosamente
+  const handleTripEnded = () => {
+    setCurrentTrip(null);
+    setShowEndTripModal(false);
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -148,7 +153,6 @@ export const Trips = () => {
   };
 
   return (
-    // <section className="trips-container">
     <>
       <div className="trips-container">
         <SubHeader pageTitle="Viajes" />
@@ -214,12 +218,12 @@ export const Trips = () => {
                 </div>
               </div>
 
-              {/* <div className="trip-actions">
+              <div className="trip-actions">
                 <button className="btn btn-end" onClick={handleEndTrip}>
                   <MdOutlineStopCircle className="btn-icon" />
-                  Finalizar Viaje
+                  Finalizar Viaje (boton de simulación)
                 </button>
-              </div> */}
+              </div>
             </div>
           ) : (
             <div className="no-trip">
@@ -293,6 +297,15 @@ export const Trips = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de finalizar viaje */}
+      {showEndTripModal && currentTrip && (
+        <EndTrip
+          trip={currentTrip}
+          onClose={handleCloseEndTripModal}
+          onTripEnded={handleTripEnded}
+        />
+      )}
     </>
   );
 };

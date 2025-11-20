@@ -75,7 +75,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
       // Tarifa base: 500 COP por minuto
       // Convertir minutos a horas y calcular costo (en centavos de COP)
       const costInCents = Math.ceil(diffInMinutes * 500);
-      setTripCost(costInCents <= 2000 ? 2000 : costInCents);
+      setTripCost(costInCents <= 2500 ? 2500 : costInCents);
     }
   }, [trip]);
 

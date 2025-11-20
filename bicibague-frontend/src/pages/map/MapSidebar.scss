@@ -1,0 +1,250 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+.map-sidebar {
+  @include flex(
+    $direction: column,
+    $gap: 1rem,
+    $align: stretch,
+    $justify: flex-start
+  );
+  width: 320px;
+  padding: 1rem;
+  background-color: $bg-secondary;
+  border-radius: 12px;
+  box-shadow: $shadow-md;
+  overflow-y: auto;
+  max-height: calc(100vh - 160px);
+  height: fit-content;
+
+  // Scrollbar personalizado
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $bg-secondary;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $primary-color-light;
+    border-radius: 4px;
+
+    &:hover {
+      background: $primary-color;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    width: 280px;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+
+  .sidebar-card {
+    background-color: $bg-tertiary;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: $shadow-sm;
+    transition: all $transition-normal;
+
+    h3 {
+      margin: 0 0 0.75rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: $primary-color;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // Mensajes de "no data"
+  .no-data {
+    @include flex($justify: center, $align: center);
+    padding: 0.5rem 0rem;
+    text-align: center;
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: $text-secondary;
+      font-style: italic;
+    }
+  }
+
+  // Card de Reserva
+  .reservation-card {
+    .reservation-info {
+      @include flex($direction: column, $gap: 0.75rem, $align: stretch);
+
+      .info-row {
+        @include flex($justify: flex-start, $align: flex-start, $gap: 0.75rem);
+
+        .icon {
+          color: $primary-color;
+          width: 18px;
+          height: 18px;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .info-content {
+          @include flex($direction: column, $gap: 0.15rem, $align: flex-start);
+          flex: 1;
+
+          .info-label {
+            font-size: 0.75rem;
+            color: $text-secondary;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+          }
+
+          .info-value {
+            @include flex($justify: flex-start, $gap: 0.5rem);
+            font-size: 0.9rem;
+            color: $text-primary;
+            font-weight: 600;
+
+            .bike-type-icon {
+              width: 16px;
+              height: 16px;
+              color: $primary-color;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Card de Viaje Actual
+  .trip-card {
+    .trip-info {
+      @include flex($direction: column, $gap: 0.75rem, $align: stretch);
+
+      .trip-timer {
+        @include flex($justify: center, $gap: 0.75rem);
+        padding: 1rem;
+        background-color: $bg-secondary;
+        border-radius: 8px;
+        border: 2px solid $primary-color;
+
+        .timer-icon {
+          width: 24px;
+          height: 24px;
+          color: $primary-color;
+        }
+
+        .timer-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: $primary-color;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: 1px;
+        }
+      }
+
+      .info-row-small {
+        @include flex($justify: center, $gap: 0.5rem);
+        font-size: 0.875rem;
+        color: $text-primary;
+
+        .icon-small {
+          width: 16px;
+          height: 16px;
+          color: $primary-color;
+        }
+
+        .bike-type-icon {
+          width: 14px;
+          height: 14px;
+          color: $primary-color;
+          margin-left: 0.25rem;
+        }
+      }
+    }
+  }
+
+  // Card de Estaciones
+  .stations-card {
+    .stations-summary {
+      @include flex($justify: space-around, $gap: 1rem);
+
+      .summary-item {
+        @include flex($direction: column, $gap: 0.5rem);
+        flex: 1;
+        padding: 0.75rem;
+        background-color: $bg-secondary;
+        border-radius: 8px;
+        text-align: center;
+
+        .summary-icon {
+          width: 24px;
+          height: 24px;
+          color: $primary-color;
+          margin: 0 auto;
+        }
+
+        .summary-content {
+          @include flex($direction: column, $gap: 0.15rem);
+
+          .summary-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: $primary-color;
+            line-height: 1;
+          }
+
+          .summary-label {
+            font-size: 0.75rem;
+            color: $text-secondary;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+
+  // Card de Estadísticas
+  .stats-card {
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+
+      .stat-item {
+        @include flex($direction: column, $gap: 0.25rem);
+        padding: 0.75rem;
+        background-color: $bg-secondary;
+        border-radius: 8px;
+        text-align: center;
+        transition: all $transition-fast;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: $shadow-sm;
+        }
+
+        .stat-value {
+          font-size: 1.75rem;
+          font-weight: 700;
+          color: $primary-color;
+          line-height: 1;
+        }
+
+        .stat-label {
+          font-size: 0.75rem;
+          color: $text-secondary;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}

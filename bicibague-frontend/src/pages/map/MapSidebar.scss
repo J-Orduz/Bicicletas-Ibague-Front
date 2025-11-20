@@ -13,8 +13,9 @@
   background-color: $bg-secondary;
   border-radius: 12px;
   box-shadow: $shadow-md;
-  overflow-y: visible;
-  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  // overflow-y: visible;
+  max-height: calc(100vh - 160px);
   height: fit-content;
 
   // Scrollbar personalizado
@@ -74,20 +75,29 @@
   .user-card {
     display: block;
     .user-center {
-      @include flex($direction: column, $align: center, $justify: center, $gap: 0.5rem);
-      text-align: center;
+      @include flex(
+        $direction: column,
+        $align: flex-start,
+        $justify: center,
+        $gap: 0.5rem
+      );
+      .user-icon-name {
+        @include flex($align: center, $justify: center, $gap: 0.5rem);
+      }
 
+      .user-info {
+        @include flex($direction: column, $align: flex-start, $gap: 0.2rem);
+      }
       .user-icon {
         width: 56px;
         height: 56px;
         color: $primary-color;
+        flex-shrink: 0;
       }
 
       .user-name {
-        display: block;
         font-weight: 800;
         color: $text-primary;
-        margin-top: 0.2rem;
         font-size: 0.95rem;
       }
 
@@ -96,16 +106,14 @@
         color: $text-primary;
         font-weight: 700;
         background: transparent;
-        padding: 0.15rem 0.35rem;
       }
 
       .user-actions {
-        @include flex($gap: 0.5rem, $justify: center, $align: center);
-
+        width: 100%;
         .btn-quick-recharge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
+          display: block;
+          text-align: center;
+          width: 100%;
           gap: 0.3rem;
           padding: 0.32rem 0.5rem;
           background-color: $green;
@@ -118,14 +126,8 @@
 
           &:hover {
             background-color: $dark-green;
+            
           }
-        }
-
-        .user-link.small {
-          font-size: 0.8rem;
-          color: $primary-color;
-          text-decoration: none;
-          align-self: center;
         }
       }
     }

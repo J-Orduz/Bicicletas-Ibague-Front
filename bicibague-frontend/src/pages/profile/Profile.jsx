@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 // components
-import { SubHeader } from '@layouts/SubHeader';
+import { SubHeader } from "@layouts/SubHeader";
 // hooks
-import { useAuth } from '@contexts/AuthContext';
-import { usePreferences } from '@contexts/PreferencesContext';
-import { useCurrency } from '@hooks/useCurrency';
+import { useAuth } from "@contexts/AuthContext";
+import { usePreferences } from "@contexts/PreferencesContext";
+import { useCurrency } from "@hooks/useCurrency";
 // API
 import {
   useGetCurrentBalance,
   useCreateRechargeMutation,
   useSimulateRechargeMutation,
-} from '@api/payments';
+} from "@api/payments";
 // icons
 import {
   BsXLg,
@@ -19,9 +19,9 @@ import {
   BsCashStack,
   BsPencilSquare,
   BsGearFill,
-} from 'react-icons/bs';
+} from "react-icons/bs";
 // styles
-import './Profile.scss';
+import "./Profile.scss";
 
 export const Profile = () => {
   const { logout } = useAuth();
@@ -57,18 +57,18 @@ export const Profile = () => {
   const handleRechargeSuccess = async (amount) => {
     try {
       const rechargeData = {
-        type: 'checkout.session.completed',
+        type: "checkout.session.completed",
         data: {
           object: {
-            id: 'cs_test_abc123',
+            id: "cs_test_abc123",
             metadata: {
-              usuario_id: userData?.userId || 'desconocido',
-              tipo: 'recarga_saldo',
+              usuario_id: userData?.userId || "desconocido",
+              tipo: "recarga_saldo",
               monto: amount.toString(),
             },
-            customer_email: userData?.userEmail || 'desconocido',
-            payment_status: 'paid',
-            status: 'complete',
+            customer_email: userData?.userEmail || "desconocido",
+            payment_status: "paid",
+            status: "complete",
           },
         },
       };
@@ -76,7 +76,7 @@ export const Profile = () => {
       const response = await simulateRechargeMutation.post(rechargeData);
 
       if (response?.received) {
-        alert('Recarga simulada exitosamente');
+        alert("Recarga simulada exitosamente");
         // Refrescar el saldo
         const balanceData = await getCurrentBalance.get();
         setUserData({
@@ -87,7 +87,7 @@ export const Profile = () => {
         });
       }
     } catch (error) {
-      alert(error.errorMutationMsg || 'Error al procesar la recarga');
+      alert(error.errorMutationMsg || "Error al procesar la recarga");
     }
   };
 
@@ -145,7 +145,9 @@ export const Profile = () => {
                     <select
                       className="preference-selector"
                       value={currency}
-                      onChange={(e) => updatePreference('currency', e.target.value)}
+                      onChange={(e) =>
+                        updatePreference("currency", e.target.value)
+                      }
                     >
                       {Object.entries(CURRENCIES).map(([code, info]) => (
                         <option key={code} value={code}>
@@ -196,20 +198,20 @@ export const Profile = () => {
 const RechargeModal = ({ onClose, onRecharge }) => {
   const { token } = useAuth();
   const [selectedAmount, setSelectedAmount] = useState(null);
-  const [customAmount, setCustomAmount] = useState('');
+  const [customAmount, setCustomAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const createRechargeMutation = useCreateRechargeMutation();
 
   const predefinedAmounts = [
-    { value: 10000, label: '$10.000' },
-    { value: 20000, label: '$20.000' },
-    { value: 50000, label: '$50.000' },
-    { value: 100000, label: '$100.000' },
-    { value: 'custom', label: 'Otro monto' },
+    { value: 10000, label: "$10.000" },
+    { value: 20000, label: "$20.000" },
+    { value: 50000, label: "$50.000" },
+    { value: 100000, label: "$100.000" },
+    { value: "custom", label: "Otro monto" },
   ];
 
   const getSelectedAmountValue = () => {
-    if (selectedAmount === 'custom') {
+    if (selectedAmount === "custom") {
       return parseInt(customAmount);
     }
     return selectedAmount;
@@ -217,18 +219,18 @@ const RechargeModal = ({ onClose, onRecharge }) => {
 
   const validateAmount = () => {
     if (!selectedAmount) {
-      alert('Por favor selecciona un monto');
+      alert("Por favor selecciona un monto");
       return false;
     }
 
-    if (selectedAmount === 'custom') {
+    if (selectedAmount === "custom") {
       const amount = parseInt(customAmount);
       if (!amount || amount <= 0) {
-        alert('Por favor ingresa un monto válido');
+        alert("Por favor ingresa un monto válido");
         return false;
       }
       if (amount < 5000) {
-        alert('El monto mínimo de recarga es $5.000');
+        alert("El monto mínimo de recarga es $5.000");
         return false;
       }
     }
@@ -258,19 +260,19 @@ const RechargeModal = ({ onClose, onRecharge }) => {
 
       if (response?.url) {
         // Navegar a la URL de Stripe en otra pestaña
-        window.open(response.url, '_blank');
+        window.open(response.url, "_blank");
       } else {
-        alert('No se pudo obtener la URL de pago');
+        alert("No se pudo obtener la URL de pago");
       }
     } catch (error) {
-      alert(error.errorMutationMsg || 'Error al procesar el pago con tarjeta');
+      alert(error.errorMutationMsg || "Error al procesar el pago con tarjeta");
       setIsProcessing(false);
     }
     setIsProcessing(false);
   };
 
   const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('recharge-modal-overlay')) {
+    if (e.target.classList.contains("recharge-modal-overlay")) {
       onClose();
     }
   };
@@ -298,14 +300,14 @@ const RechargeModal = ({ onClose, onRecharge }) => {
                     checked={selectedAmount === amount.value}
                     onChange={(e) => {
                       setSelectedAmount(amount.value);
-                      if (amount.value !== 'custom') {
-                        setCustomAmount('');
+                      if (amount.value !== "custom") {
+                        setCustomAmount("");
                       }
                     }}
                   />
                   <span className="amount-content">
                     <span className="amount-icon">
-                      {amount.value === 'custom' ? (
+                      {amount.value === "custom" ? (
                         <BsPencilSquare />
                       ) : (
                         <BsCashStack />
@@ -318,7 +320,7 @@ const RechargeModal = ({ onClose, onRecharge }) => {
             </div>
           </div>
 
-          {selectedAmount === 'custom' && (
+          {selectedAmount === "custom" && (
             <div className="custom-amount-field">
               <label htmlFor="customAmount" className="field-label">
                 Ingresa el monto:
@@ -355,19 +357,12 @@ const RechargeModal = ({ onClose, onRecharge }) => {
             disabled={!selectedAmount || isProcessing}
           >
             {isProcessing ? (
-              'Procesando...'
+              "Procesando..."
             ) : (
               <>
                 <BsCreditCard2Front /> Usar Tarjeta
               </>
             )}
-          </button>
-          <button
-            className="btn-confirm"
-            onClick={handleRecharge}
-            disabled={!selectedAmount || isProcessing}
-          >
-            Recargar automáticamente
           </button>
         </div>
       </div>

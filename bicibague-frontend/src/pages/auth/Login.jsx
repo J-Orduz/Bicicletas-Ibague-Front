@@ -166,6 +166,14 @@ export const Login = () => {
                 Regístrate
               </Link>
             </p>
+            <button
+              type="button"
+              className="btn-landing-link"
+              onClick={() => navigate("/landing")}
+              style={{ marginTop: 16 }}
+            >
+              Volver al inicio
+            </button>
           </div>
         </div>
       </div>

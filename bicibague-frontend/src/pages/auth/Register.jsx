@@ -186,6 +186,14 @@ export const Register = () => {
                 Inicia sesión
               </Link>
             </p>
+            <button
+              type="button"
+              className="btn-landing-link"
+              onClick={() => (window.location.href = "/landing")}
+              style={{ marginTop: 16 }}
+            >
+              Volver al inicio
+            </button>
           </div>
         </div>
       </div>

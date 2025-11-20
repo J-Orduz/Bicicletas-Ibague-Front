@@ -1,6 +1,29 @@
 @use '@styles/variables' as *;
 @use '@styles/mixins' as *;
 
+// Botón bonito para volver al landing
+.btn-landing-link {
+  display: inline-block;
+  margin-top: 1.2rem;
+  padding: 0.7rem 1.6rem;
+  background: #fff;
+  color: #18181b;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(24,24,27,0.08);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s, border 0.18s;
+  outline: none;
+}
+.btn-landing-link:hover, .btn-landing-link:focus {
+  background: #f3f3f3;
+  color: #18181b;
+  border: 1.5px solid #bdbdbd;
+  box-shadow: 0 4px 18px rgba(24,24,27,0.13);
+}
+
 // Estilos base compartidos para todas las páginas de autenticación
 .auth-container {
   max-width: 1200px;

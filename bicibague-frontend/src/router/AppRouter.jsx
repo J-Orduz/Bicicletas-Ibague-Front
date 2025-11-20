@@ -3,17 +3,18 @@ import {
   Routes,
   Route,
   Navigate,
-} from 'react-router-dom';
+} from "react-router-dom";
 // components
-import { MainLayout } from '@layouts/MainLayout';
-import { Home } from '@pages/home/Home';
-import { Reserves } from '@pages/reserves/Reserves';
-import { Trips } from '@pages/trips/trips';
-import { Register } from '@pages/auth/Register';
-import { Login } from '@pages/auth/Login';
-import { NotFound } from '../pages/notFound/NotFound';
-import { Profile } from '@pages/profile/Profile';
-import { ProtectedRoute } from '../router/ProtectedRoute';
+import { MainLayout } from "@layouts/MainLayout";
+import { Home } from "@pages/home/Home";
+import { Reserves } from "@pages/reserves/Reserves";
+import { Trips } from "@pages/trips/trips";
+import { Register } from "@pages/auth/Register";
+import { Login } from "@pages/auth/Login";
+import { NotFound } from "../pages/notFound/NotFound";
+import { Profile } from "@pages/profile/Profile";
+import { ProtectedRoute } from "../router/ProtectedRoute";
+import Landing from "@pages/landing/Landing";
 
 export const AppRouter = () => {
   return (
@@ -36,6 +37,9 @@ export const AppRouter = () => {
         {/* Rutas de autenticación */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+
+        {/* Landing page demo */}
+        <Route path="/landing" element={<Landing />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

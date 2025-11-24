@@ -40,87 +40,54 @@ export const MapView = ({ onStationsLoaded }) => {
       try {
         const stationsData = await getStations.get();
 
-        // llamar las bicicletas de cada estación
-        let bikesData = [];
-        await Promise.all(
-          stationsData.map(async (station) => {
-            bikesData = await getStationBikes.get(
-              `/bikes/${station.id}/EstacionesBici`
-            );
-
-            // agregar bicicletas a la estación y formatear
-            bikesData = bikesData.map((bike) => ({
-              id: bike.id,
-              type: bike.tipo == 'Mecanica' ? 'mechanical' : 'electric',
-              available: bike.estado == 'Disponible' ? true : false,
-            }));
-            station.bikes = bikesData;
-          })
-        );
-
-        console.log('Stations Data:', stationsData);
-
         // formatear datos de la estacion para el mapa
         const formattedStations = stationsData.map((station) => ({
           id: station.id,
           name: station.nombre,
           position: [station.posicion.latitud, station.posicion.longitud],
-          bikes: station.bikes || [],
+          bikes: [],
         }));
-        
+
         setBikeStations(formattedStations);
-        
+
         // Notificar al componente padre
         if (onStationsLoaded) {
           onStationsLoaded(formattedStations);
         }
       } catch (error) {
-        // mostrar error al usuario en vista
+        console.error(error);
       }
     };
 
     fetchStations();
   }, []);
-  // Estaciones de bicicletas con coordenadas de ejemplo en Ibagué
-  // const bikeStations = [
-  //   {
-  //     id: 1,
-  //     name: 'Estación Centro',
-  //     position: [4.4389, -75.2322],
-  //     bikes: [
-  //       { id: 'M001', type: 'mechanical', available: true },
-  //       { id: 'M002', type: 'mechanical', available: true },
-  //       { id: 'M003', type: 'mechanical', available: false },
-  //       { id: 'E001', type: 'electric', available: true },
-  //       { id: 'E002', type: 'electric', available: true },
-  //     ],
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'Estación Norte',
-  //     position: [4.4489, -75.2222],
-  //     bikes: [
-  //       { id: 'M004', type: 'mechanical', available: true },
-  //       { id: 'M005', type: 'mechanical', available: false },
-  //       { id: 'E003', type: 'electric', available: false },
-  //     ],
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'Estación Sur',
-  //     position: [4.4289, -75.2422],
-  //     bikes: [
-  //       { id: 'M006', type: 'mechanical', available: true },
-  //       { id: 'M007', type: 'mechanical', available: true },
-  //       { id: 'M008', type: 'mechanical', available: true },
-  //       { id: 'M009', type: 'mechanical', available: true },
-  //       { id: 'E004', type: 'electric', available: true },
-  //       { id: 'E005', type: 'electric', available: true },
-  //       { id: 'E006', type: 'electric', available: true },
-  //       { id: 'E007', type: 'electric', available: false },
-  //     ],
-  //   },
-  // ];
+
+  // funcion para obtner las bicicletas de una estacion al seleccionar ubicacion en el mapa
+  const fetchStationBikes = async (stationId) => {
+    try {
+      const bikesData = await getStationBikes.get(
+        `/bikes/${stationId}/EstacionesBici`
+      );
+
+      // formatear bicicletas
+      const formattedBikes = bikesData.map((bike) => ({
+        id: bike.id,
+        type: bike.tipo === 'Mecanica' ? 'mechanical' : 'electric',
+        available: bike.estado === 'Disponible',
+      }));
+
+      // actualizar lista de bicicletas en la estacion correspondiente
+      setBikeStations((prevStations) =>
+        prevStations.map((station) =>
+          station.id === stationId
+            ? { ...station, bikes: formattedBikes }
+            : station
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleOpenReserve = (station) => {
     setSelectedStation(station);
@@ -148,7 +115,13 @@ export const MapView = ({ onStationsLoaded }) => {
           />
 
           {bikeStations.map((station) => (
-            <Marker key={station.id} position={station.position}>
+            <Marker
+              key={station.id}
+              position={station.position}
+              eventHandlers={{
+                click: () => fetchStationBikes(station.id),
+              }}
+            >
               <Popup maxWidth={350} className="custom-popup">
                 <BikeStationPopup
                   name={station.name}

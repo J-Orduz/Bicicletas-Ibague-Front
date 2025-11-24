@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
-import {
-  FaBicycle,
-  FaRegClock,
-  FaLocationDot,
-  FaBolt,
-  //   FaLocationDot,
-} from 'react-icons/fa6';
+import { Link } from 'react-router-dom';
+// icons
+import { FaBicycle, FaRegClock, FaLocationDot, FaBolt } from 'react-icons/fa6';
 import { PiSneakerFill } from 'react-icons/pi';
 import { BsPersonCircle } from 'react-icons/bs';
-import { Link } from 'react-router-dom';
+// context / hooks
 import { useAuth } from '@contexts/AuthContext';
+import { useCurrency } from '@hooks/useCurrency';
+// api
+import { useGetAllBikes } from '@api/bikes';
 import { useGetReservationStats } from '@api/reserves';
 import { useGetCurrentBalance } from '@api/payments';
-import { useCurrency } from '@hooks/useCurrency';
+// styles
 import './MapSidebar.scss';
 
 export const MapSidebar = ({ currentReservation, bikeStations }) => {
@@ -140,12 +139,28 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
 
   // Calcular totales de estaciones
   const totalStations = bikeStations?.length || 0;
-  const totalAvailableBikes =
-    bikeStations?.reduce((total, station) => {
-      const available =
-        station.bikes?.filter((bike) => bike.available).length || 0;
-      return total + available;
-    }, 0) || 0;
+
+  // obtener total de bicicletas disponibles
+  const [totalAvailableBikes, setTotalAvailableBikes] = useState(0);
+  const getAllBikes = useGetAllBikes();
+
+  useEffect(() => {
+    const fetchAllBikes = async () => {
+      try {
+        const bikesData = await getAllBikes.get();
+        
+        // total bicicletas disponibles
+        const availableBikes = bikesData.filter(
+          (bike) => bike.estado === 'Disponible'
+        );
+        setTotalAvailableBikes(availableBikes.length);
+      } catch (error) {
+        console.error(error)
+      }
+    };
+
+    fetchAllBikes();
+  }, []);
 
   const getBikeTypeIcon = (type) => {
     return type === 'Electrica' || type === 'electric' ? (

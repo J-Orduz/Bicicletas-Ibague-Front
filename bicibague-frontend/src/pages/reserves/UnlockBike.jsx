@@ -26,8 +26,6 @@ export const UnlockBike = ({ reservation, onClose }) => {
     };
   }, []);
 
-  const startTripMutation = useStartTripMutation();
-
   const onUnlock = (serialNumber, bikeData) => {
     console.log('Viaje iniciado con número de serie:', serialNumber);
 
@@ -54,6 +52,8 @@ export const UnlockBike = ({ reservation, onClose }) => {
     );
     navigate('/trips');
   };
+
+  const startTripMutation = useStartTripMutation();
 
   const handleUnlock = async () => {
     setError('');

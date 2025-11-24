@@ -68,7 +68,7 @@ export const Reserves = () => {
         };
         setCurrentReservation(reservationData);
       } catch (error) {
-        console.error(error.errorFetchMsg || error);
+        console.error(error);
       }
     };
 
@@ -92,17 +92,14 @@ export const Reserves = () => {
           bikeType: reservation.Bicicleta.tipo,
           reserveDate:
             reservation.estado_reserva === 'programada'
-              ? new Date(
-                  new Date(reservation.timestamp_expiracion).getTime() -
-                    10 * 60000
-                ).toISOString() // TEMPORAL: Se usa la hora de expiracion si es programada, y se restan 10 minutos para mostrar la hora de inicio
+              ? reservation.timestamp_programada
               : reservation.timestamp_reserva,
           status: reservation.estado_reserva,
         }));
 
         setReservationHistory(formattedHistory);
       } catch (error) {
-        console.error(error.errorFetchMsg || error);
+        console.error(error);
       }
     };
 
@@ -179,8 +176,6 @@ export const Reserves = () => {
   }, [currentReservation]);
 
   const handleCancelReservation = () => {
-    // TEMPORAL: Cancelar reserva y eliminar del localStorage
-    // TODO: Implementar la lógica para cancelar la reserva en la API
     const confirmCancel = window.confirm(
       '¿Estás seguro de que deseas cancelar esta reserva?'
     );

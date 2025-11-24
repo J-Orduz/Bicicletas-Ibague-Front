@@ -17,7 +17,6 @@ import {
   BsPersonCircle,
   BsCreditCard2Front,
   BsCashStack,
-  BsPencilSquare,
   BsGearFill,
 } from "react-icons/bs";
 // styles
@@ -198,7 +197,6 @@ export const Profile = () => {
 const RechargeModal = ({ onClose, onRecharge }) => {
   const { token } = useAuth();
   const [selectedAmount, setSelectedAmount] = useState(null);
-  const [customAmount, setCustomAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const createRechargeMutation = useCreateRechargeMutation();
 
@@ -207,13 +205,9 @@ const RechargeModal = ({ onClose, onRecharge }) => {
     { value: 20000, label: "$20.000" },
     { value: 50000, label: "$50.000" },
     { value: 100000, label: "$100.000" },
-    { value: "custom", label: "Otro monto" },
   ];
 
   const getSelectedAmountValue = () => {
-    if (selectedAmount === "custom") {
-      return parseInt(customAmount);
-    }
     return selectedAmount;
   };
 
@@ -221,18 +215,6 @@ const RechargeModal = ({ onClose, onRecharge }) => {
     if (!selectedAmount) {
       alert("Por favor selecciona un monto");
       return false;
-    }
-
-    if (selectedAmount === "custom") {
-      const amount = parseInt(customAmount);
-      if (!amount || amount <= 0) {
-        alert("Por favor ingresa un monto válido");
-        return false;
-      }
-      if (amount < 5000) {
-        alert("El monto mínimo de recarga es $5.000");
-        return false;
-      }
     }
 
     return true;
@@ -298,20 +280,11 @@ const RechargeModal = ({ onClose, onRecharge }) => {
                     name="amount"
                     value={amount.value}
                     checked={selectedAmount === amount.value}
-                    onChange={(e) => {
-                      setSelectedAmount(amount.value);
-                      if (amount.value !== "custom") {
-                        setCustomAmount("");
-                      }
-                    }}
+                    onChange={(e) => setSelectedAmount(amount.value)}
                   />
                   <span className="amount-content">
                     <span className="amount-icon">
-                      {amount.value === "custom" ? (
-                        <BsPencilSquare />
-                      ) : (
-                        <BsCashStack />
-                      )}
+                      <BsCashStack />
                     </span>
                     <span className="amount-label">{amount.label}</span>
                   </span>
@@ -319,28 +292,6 @@ const RechargeModal = ({ onClose, onRecharge }) => {
               ))}
             </div>
           </div>
-
-          {selectedAmount === "custom" && (
-            <div className="custom-amount-field">
-              <label htmlFor="customAmount" className="field-label">
-                Ingresa el monto:
-              </label>
-              <div className="input-wrapper">
-                <span className="currency-symbol">$</span>
-                <input
-                  type="number"
-                  id="customAmount"
-                  className="field-input"
-                  placeholder="Ej: 15000"
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(e.target.value)}
-                  min="5000"
-                  step="1000"
-                />
-              </div>
-              <small className="field-hint">Monto mínimo: $5.000</small>
-            </div>
-          )}
         </div>
 
         <div className="modal-footer">
@@ -360,7 +311,7 @@ const RechargeModal = ({ onClose, onRecharge }) => {
               "Procesando..."
             ) : (
               <>
-                <BsCreditCard2Front /> Usar Tarjeta
+                <BsCreditCard2Front /> Recargar
               </>
             )}
           </button>

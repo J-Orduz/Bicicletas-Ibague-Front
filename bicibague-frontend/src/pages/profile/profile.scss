@@ -438,92 +438,6 @@
         }
       }
 
-      // Campo de monto personalizado
-      .custom-amount-field {
-        margin-top: 20px;
-        padding: 20px;
-        background: linear-gradient(135deg, $bg-secondary, $bg-tertiary);
-        border-radius: 12px;
-        border-left: 4px solid $primary-color;
-        animation: slideDown 0.3s ease;
-
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .field-label {
-          display: block;
-          margin-bottom: 12px;
-          font-weight: 600;
-          color: $text-primary;
-          font-size: 1rem;
-        }
-
-        .input-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-
-          .currency-symbol {
-            position: absolute;
-            left: 16px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: $text-secondary;
-          }
-
-          .field-input {
-            width: 100%;
-            padding: 12px 12px 12px 36px;
-            border: 2px solid $border-color;
-            border-radius: 8px;
-            background-color: $bg-primary;
-            color: $text-primary;
-            font-size: 1.1rem;
-            font-weight: 600;
-            font-family: inherit;
-            transition: all $transition-fast;
-
-            &:focus {
-              outline: none;
-              border-color: $primary-color;
-              box-shadow: 0 0 0 3px rgba(255, 146, 45, 0.1);
-            }
-
-            &:hover {
-              border-color: $primary-color-light;
-            }
-
-            // Ocultar flechas de número
-            &::-webkit-inner-spin-button,
-            &::-webkit-outer-spin-button {
-              -webkit-appearance: none;
-              margin: 0;
-            }
-
-            &[type='number'] {
-              -moz-appearance: textfield;
-              appearance: textfield;
-            }
-          }
-        }
-
-        .field-hint {
-          display: block;
-          margin-top: 8px;
-          font-size: 0.85rem;
-          color: $text-secondary;
-          font-style: italic;
-        }
-      }
-
       // Scrollbar personalizado
       &::-webkit-scrollbar {
         width: 8px;
@@ -580,8 +494,7 @@
       }
 
       .btn-use-card {
-        // background: linear-gradient(135deg, #667eea, #764ba2);
-        background-color: $purple;
+        background-color: $primary-color;
         color: white;
         box-shadow: $shadow-md;
         @include flex($gap: 8px);

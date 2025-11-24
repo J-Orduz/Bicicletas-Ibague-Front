@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 
+// Ref global compartida entre todas las instancias del hook (si sirvio OMG :v)
+let globalAlertShown = false;
+
 export const useFetch = (
   baseUrl = '',
   errorMessage = 'Hubo un error',
@@ -12,36 +15,9 @@ export const useFetch = (
   const [error, setError] = useState(null);
   const { token, logout } = useAuth();
 
-  //   const { isAuthenticated, authIsLoading } = useAuth();
-
-  // useRef para mantener el valor actual de authIsLoading
-  //   const authIsLoadingRef = useRef(authIsLoading);
-  //   const isAuthenticatedRef = useRef(isAuthenticated);
-
-  // Actualizar las referencias cuando cambien los valores
-  //   useEffect(() => {
-  //     authIsLoadingRef.current = authIsLoading;
-  //     isAuthenticatedRef.current = isAuthenticated;
-  //   }, [authIsLoading, isAuthenticated]);
-
   // No hace fetch hasta que se llame a fetchData directamente
   const fetchData = useCallback(
     async (newUrl = '') => {
-      //   if (verifyAuth) {
-      //     // Espera a que la autenticación se complete antes de hacer la petición
-      //     await new Promise((resolve) => {
-      //       const checkAuthStatus = () => {
-      //         if (!authIsLoadingRef.current) resolve();
-      //         // Esperar 50ms y volver a verificar
-      //         else setTimeout(checkAuthStatus, 50);
-      //       };
-      //       checkAuthStatus();
-      //     });
-
-      //     if (!isAuthenticatedRef.current) {
-      //       throw new Error('Usuario no autenticado');
-      //     }
-      //   }
 
       setLoading(true);
       setError(null);
@@ -78,7 +54,8 @@ export const useFetch = (
         console.error(`${errorMessage}:: ${err.message}`); // desarrollador
 
         // Si el error es 401 (Unauthorized), cerrar sesión
-        if (err.status === 401) {
+        if (err.status === 401 && !globalAlertShown) {
+          globalAlertShown = true; 
           logout();
           alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
         }
@@ -92,7 +69,7 @@ export const useFetch = (
         setLoading(false);
       }
     },
-    [baseUrl] //, verifyAuth, isAuthenticated, authIsLoading]
+    [baseUrl, errorMessage, token, logout] //, verifyAuth, isAuthenticated, authIsLoading]
   );
 
   return { fetchData, loading, error };

@@ -179,6 +179,34 @@
             }
           }
 
+          &.subscription {
+            background: linear-gradient(
+              135deg,
+              rgba(255, 215, 0, 0.15),
+              rgba(255, 215, 0, 0.05)
+            );
+            border-color: #ffd700;
+            margin-top: 0.5rem;
+
+            .summary-label {
+              .summary-icon {
+                color: #ffd700;
+              }
+
+              span {
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: $text-primary;
+              }
+            }
+
+            .summary-value {
+              font-weight: 700;
+              font-size: 1.1rem;
+              color: #10b981;
+            }
+          }
+
           .summary-label {
             @include flex($justify: flex-start, $gap: 0.5rem);
             color: $text-secondary;
@@ -192,6 +220,60 @@
           .summary-value {
             font-weight: 600;
             color: $text-primary;
+          }
+        }
+      }
+
+      // Caja de información de suscripción
+      .subscription-info-box {
+        @include flex($justify: flex-start, $gap: 1rem);
+        padding: 1.25rem;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 215, 0, 0.15),
+          rgba(255, 215, 0, 0.05)
+        );
+        border: 2px solid #ffd700;
+        border-radius: 12px;
+
+        .info-icon {
+          @include flex();
+          width: 50px;
+          height: 50px;
+          background-color: #ffd700;
+          border-radius: 50%;
+          flex-shrink: 0;
+
+          svg {
+            font-size: 1.5rem;
+            color: $white;
+          }
+        }
+
+        .info-content {
+          flex: 1;
+
+          .info-title {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: $text-primary;
+          }
+
+          .info-description {
+            margin: 0;
+            font-size: 0.95rem;
+            color: $text-secondary;
+            line-height: 1.5;
+          }
+        }
+
+        @media (max-width: 480px) {
+          flex-direction: column;
+          text-align: center;
+
+          .info-icon {
+            margin: 0 auto;
           }
         }
       }
@@ -219,6 +301,163 @@
           font-size: 2rem;
           font-weight: 700;
           color: $primary-color;
+        }
+      }
+
+      // Selector de método de pago
+      .payment-method-selector {
+        @include flex($direction: column, $align: stretch, $gap: 1rem);
+
+        .selector-title {
+          font-size: 1rem;
+          font-weight: 600;
+          color: $text-primary;
+          margin: 0;
+        }
+
+        .payment-methods {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.75rem;
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+          }
+
+          @media (min-width: 769px) and (max-width: 1024px) {
+            grid-template-columns: repeat(2, 1fr);
+            
+            .payment-method-option:last-child {
+              grid-column: span 2;
+            }
+          }
+
+          .payment-method-option {
+            @include flex($direction: column, $gap: 0.5rem);
+            padding: 0.9rem;
+            background-color: $bg-secondary;
+            border: 2px solid $border-color;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all $transition-fast;
+            color: $text-primary;
+
+            &:hover:not(:disabled) {
+              border-color: $primary-color-light;
+              background-color: $bg-tertiary;
+              transform: translateY(-2px);
+            }
+
+            &.active {
+              border-color: $primary-color;
+              background: linear-gradient(
+                135deg,
+                rgba(255, 146, 45, 0.1),
+                rgba(255, 146, 45, 0.05)
+              );
+              box-shadow: 0 0 0 3px rgba(255, 146, 45, 0.2);
+
+              .method-icon {
+                color: $primary-color;
+              }
+            }
+
+            &:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+
+            .method-icon {
+              font-size: 1.5rem;
+              color: $text-secondary;
+              transition: color $transition-fast;
+            }
+
+            span {
+              font-size: 0.9rem;
+              font-weight: 600;
+              text-align: center;
+            }
+          }
+        }
+      }
+
+      // Información de pago CityPass
+      .citypass-payment-info {
+        @include flex($direction: column, $gap: 1rem);
+        padding: 1.25rem;
+        background-color: $bg-secondary;
+        border-radius: 10px;
+        border: 1px solid $border-color;
+
+        .info-text {
+          margin: 0;
+          font-size: 0.95rem;
+          color: $text-secondary;
+          text-align: center;
+          line-height: 1.5;
+        }
+
+        .balance-display {
+          @include flex($direction: column, $gap: 0.5rem);
+          padding: 1rem;
+          background: linear-gradient(
+            135deg,
+            rgba(255, 146, 45, 0.1),
+            rgba(255, 146, 45, 0.05)
+          );
+          border-radius: 8px;
+          border: 1px solid $primary-color-light;
+
+          .balance-label {
+            font-size: 0.85rem;
+            color: $text-secondary;
+            font-weight: 500;
+          }
+
+          .balance-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: $primary-color;
+          }
+        }
+
+        .error-container {
+          @include flex($direction: column, $gap: 0.75rem);
+          padding: 1rem;
+          background-color: rgba(220, 53, 69, 0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(220, 53, 69, 0.3);
+
+          .error-text {
+            margin: 0;
+            font-size: 0.95rem;
+            color: $red;
+            font-weight: 600;
+            text-align: center;
+          }
+
+          .error-hint {
+            margin: 0;
+            font-size: 0.85rem;
+            color: $red;
+            opacity: 0.8;
+            text-align: center;
+          }
+
+          .link-card-button {
+            @include primary-button();
+            text-decoration: none;
+            text-align: center;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            background-color: #2d9cff;
+            color: white;
+
+            &:hover:not(:disabled) {
+              background-color: #1e7ed9;
+            }
+          }
         }
       }
 

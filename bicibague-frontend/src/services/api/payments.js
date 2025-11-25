@@ -49,6 +49,21 @@ export const useSimulateRechargeMutation = () => {
   };
 };
 
+// Pagar con Saldo POST
+export const usePayWithBalanceMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/pagar-con-saldo',
+        data,
+        'Error al pagar con saldo',
+        true // supabaseURL
+      ),
+  };
+}
+
 // ------------ PAYMENT -------------- //
 // Obtener Stripe publishable key GET
 export const useGetStripePublishableKey = () => {
@@ -144,6 +159,44 @@ export const useCancelSubscriptionMutation = () => {
         {},
         'Error al cancelar la suscripción',
         true // supabaseURL
+      ),
+  };
+};
+
+// // ------------ CITYPASS -------------- //
+
+// Obtener saldo citypass GET
+export const useGetCityPassBalance = () => {
+  return {
+    get: useFetch('/citypass/saldo', 'Error al obtener el saldo de CityPass')
+      .fetchData,
+  };
+};
+
+// Vincular numero de citypass POST
+export const useLinkCityPassMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/citypass/vincular',
+        data,
+        'Error al vincular CityPass'
+      ),
+  };
+};
+
+// Pagar con citypass POST
+export const usePayWithCityPassMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/citypass/pago',
+        data,
+        'Error al pagar con CityPass'
       ),
   };
 };

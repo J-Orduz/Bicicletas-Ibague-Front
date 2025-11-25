@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 // components
 import { StripePayment, StripePaymentForm } from '@components/StripePayment';
 // API
-import { useCreatePaymentIntentMutation } from '@api/payments';
+import { 
+  useCreatePaymentIntentMutation, 
+  usePayWithCityPassMutation,
+  usePayWithBalanceMutation,
+  useGetCurrentBalance,
+  useGetCityPassBalance,
+  useGetSubscription 
+} from '@api/payments';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
 // icons
-import { BsXLg } from 'react-icons/bs';
+import { BsXLg, BsStarFill } from 'react-icons/bs';
 import { FaBicycle, FaRegClock, FaMoneyBillWave } from 'react-icons/fa6';
 import { FaCreditCard } from 'react-icons/fa';
 // styles
@@ -21,8 +28,20 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
   const [paymentStep, setPaymentStep] = useState('summary'); // 'summary', 'payment', 'processing', 'success'
   const [tripCost, setTripCost] = useState(0);
   const [clientSecret, setClientSecret] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('card'); // 'card', 'citypass', or 'balance'
+  const [cityPassError, setCityPassError] = useState('');
+  const [balanceError, setBalanceError] = useState('');
+  const [userBalance, setUserBalance] = useState(null);
+  const [cityPassBalance, setCityPassBalance] = useState(null);
+  const [subscriptionData, setSubscriptionData] = useState(null);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(true);
 
   const createPaymentIntentMutation = useCreatePaymentIntentMutation();
+  const payWithCityPassMutation = usePayWithCityPassMutation();
+  const payWithBalanceMutation = usePayWithBalanceMutation();
+  const getCurrentBalance = useGetCurrentBalance();
+  const getCityPassBalance = useGetCityPassBalance();
+  const getSubscription = useGetSubscription();
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -32,6 +51,22 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  // Verificar suscripción al abrir el modal
+  useEffect(() => {
+    checkSubscription();
+  }, []);
+
+  const checkSubscription = async () => {
+    try {
+      const subData = await getSubscription.get();
+      setSubscriptionData(subData);
+    } catch (error) {
+      console.error('Error al verificar suscripción:', error);
+    } finally {
+      setIsCheckingSubscription(false);
+    }
+  };
 
   // Calcular costo del viaje
   useEffect(() => {
@@ -47,6 +82,30 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     }
   }, [trip]);
 
+  // Obtener saldos cuando se llega al paso de pago
+  useEffect(() => {
+    if (paymentStep === 'payment') {
+      fetchBalances();
+    }
+  }, [paymentStep]);
+
+  const fetchBalances = async () => {
+    try {
+      const balanceData = await getCurrentBalance.get();
+      setUserBalance(balanceData.usuario.saldo);
+    } catch (error) {
+      console.error('Error al obtener saldo:', error);
+    }
+
+    try {
+      const cityPassData = await getCityPassBalance.get();
+      setCityPassBalance(cityPassData.data.tarjeta.saldo);
+    } catch (error) {
+      // Si no tiene tarjeta vinculada, establecer como null
+      setCityPassBalance(null);
+    }
+  };
+
   const calculateDuration = () => {
     if (!trip) return '00:00';
     const start = new Date(trip.startTime);
@@ -61,6 +120,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
 
   const handleProceedToPayment = async () => {
     setIsLoading(true);
+    setCityPassError('');
     try {
       // Crear PaymentIntent en el backend
       const paymentIntentData = {
@@ -85,6 +145,116 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     } catch (error) {
       console.error('Error al crear el PaymentIntent:', error);
       alert(error.errorMutationMsg || 'Error al procesar el pago');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePayWithCityPass = async () => {
+    setIsLoading(true);
+    setCityPassError('');
+    try {
+      const response = await payWithCityPassMutation.post({ monto: tripCost });
+      
+      if (response?.success) {
+        // Pago exitoso, proceder a finalizar el viaje
+        setPaymentStep('success');
+        setTimeout(() => {
+          // Guardar el viaje finalizado en el historial de localStorage
+          const completedTrip = {
+            id: Date.now(),
+            bikeId: trip.bikeId,
+            bikeType: trip.bikeType,
+            startTime: trip.startTime,
+            endTime: new Date().toISOString(),
+            duration: calculateDuration(),
+            charge: tripCost,
+          };
+
+          // Obtener historial existente o crear uno nuevo
+          const existingHistory = JSON.parse(
+            localStorage.getItem('tripHistory') || '[]'
+          );
+
+          // Agregar el viaje completado al inicio del historial
+          const updatedHistory = [completedTrip, ...existingHistory];
+
+          // Guardar el historial actualizado
+          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
+
+          // Limpiar el viaje actual del localStorage
+          localStorage.removeItem('currentTrip');
+          onTripEnded();
+          onClose();
+          navigate('/trips');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error al pagar con CityPass:', error);
+      const errorMsg = error.errorJsonMsg;
+      
+      // Verificar si es error de tarjeta no vinculada o saldo insuficiente
+      if (errorMsg.includes('No tienes una tarjeta')) {
+        setCityPassError('no_card');
+      } else if (errorMsg.includes('Saldo insuficiente')) {
+        setCityPassError('insufficient_balance');
+      } else {
+        setCityPassError('generic');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePayWithBalance = async () => {
+    setIsLoading(true);
+    setBalanceError('');
+    try {
+      const response = await payWithBalanceMutation.post({ monto: tripCost });
+      
+      if (response?.success) {
+        // Pago exitoso, proceder a finalizar el viaje
+        setPaymentStep('success');
+        setTimeout(() => {
+          // Guardar el viaje finalizado en el historial de localStorage
+          const completedTrip = {
+            id: Date.now(),
+            bikeId: trip.bikeId,
+            bikeType: trip.bikeType,
+            startTime: trip.startTime,
+            endTime: new Date().toISOString(),
+            duration: calculateDuration(),
+            charge: tripCost,
+          };
+
+          // Obtener historial existente o crear uno nuevo
+          const existingHistory = JSON.parse(
+            localStorage.getItem('tripHistory') || '[]'
+          );
+
+          // Agregar el viaje completado al inicio del historial
+          const updatedHistory = [completedTrip, ...existingHistory];
+
+          // Guardar el historial actualizado
+          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
+
+          // Limpiar el viaje actual del localStorage
+          localStorage.removeItem('currentTrip');
+          onTripEnded();
+          onClose();
+          navigate('/trips');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error al pagar con saldo:', error);
+      const errorMsg = error.errorJsonMsg;
+      
+      // Verificar si es error de saldo insuficiente
+      if (errorMsg.includes('Saldo insuficiente')) {
+        setBalanceError('insufficient_balance');
+      } else {
+        setBalanceError('generic');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -200,16 +370,41 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                   </div>
                   <span className="summary-value">{calculateDuration()}</span>
                 </div>
-                <div className="summary-item total">
-                  <div className="summary-label">
-                    <FaMoneyBillWave className="summary-icon" />
-                    <span>Total a pagar</span>
+                
+                {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0 ? (
+                  <div className="summary-item subscription">
+                    <div className="summary-label">
+                      <BsStarFill className="summary-icon" />
+                      <span>Suscripción Activa</span>
+                    </div>
+                    <span className="summary-value">Gratis</span>
                   </div>
-                  <span className="summary-value">
-                    {formatCurrency(tripCost)}
-                  </span>
-                </div>
+                ) : (
+                  <div className="summary-item total">
+                    <div className="summary-label">
+                      <FaMoneyBillWave className="summary-icon" />
+                      <span>Total a pagar</span>
+                    </div>
+                    <span className="summary-value">
+                      {formatCurrency(tripCost)}
+                    </span>
+                  </div>
+                )}
               </div>
+
+              {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0 && (
+                <div className="subscription-info-box">
+                  <div className="info-icon">
+                    <BsStarFill />
+                  </div>
+                  <div className="info-content">
+                    <p className="info-title">¡Viaje incluido en tu suscripción!</p>
+                    <p className="info-description">
+                      Este viaje será descontado de tus {subscriptionData.viajes_disponibles} viajes disponibles.
+                    </p>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
@@ -221,7 +416,113 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                 <span className="amount-value">{formatCurrency(tripCost)}</span>
               </div>
 
-              <StripePaymentForm error={stripePayment.error} />
+              {/* Selector de método de pago */}
+              <div className="payment-method-selector">
+                <h3 className="selector-title">Selecciona el método de pago:</h3>
+                <div className="payment-methods">
+                  <button
+                    className={`payment-method-option ${paymentMethod === 'card' ? 'active' : ''}`}
+                    onClick={() => {
+                      setPaymentMethod('card');
+                      setCityPassError('');
+                      setBalanceError('');
+                    }}
+                    disabled={isLoading}
+                  >
+                    <FaCreditCard className="method-icon" />
+                    <span>Tarjeta de Crédito/Débito</span>
+                  </button>
+                  <button
+                    className={`payment-method-option ${paymentMethod === 'balance' ? 'active' : ''}`}
+                    onClick={() => {
+                      setPaymentMethod('balance');
+                      setCityPassError('');
+                      setBalanceError('');
+                    }}
+                    disabled={isLoading}
+                  >
+                    <FaMoneyBillWave className="method-icon" />
+                    <span>Saldo BiciBague</span>
+                  </button>
+                  <button
+                    className={`payment-method-option ${paymentMethod === 'citypass' ? 'active' : ''}`}
+                    onClick={() => {
+                      setPaymentMethod('citypass');
+                      setCityPassError('');
+                      setBalanceError('');
+                    }}
+                    disabled={isLoading}
+                  >
+                    <FaCreditCard className="method-icon" />
+                    <span>CityPass</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Formulario Stripe (siempre montado pero oculto cuando no está activo) */}
+              <div style={{ display: paymentMethod === 'card' ? 'block' : 'none' }}>
+                <StripePaymentForm error={stripePayment.error} />
+              </div>
+
+              {/* Mensaje Saldo BiciBague */}
+              {paymentMethod === 'balance' && (
+                <div className="citypass-payment-info">
+                  <p className="info-text">
+                    El monto será descontado de tu saldo BiciBague.
+                  </p>
+                  {userBalance !== null && (
+                    <div className="balance-display">
+                      <span className="balance-label">Tu saldo actual:</span>
+                      <span className="balance-value">{formatCurrency(userBalance)}</span>
+                    </div>
+                  )}
+                  {balanceError === 'insufficient_balance' && (
+                    <div className="error-container">
+                      <p className="error-text">Saldo insuficiente en tu cuenta BiciBague</p>
+                      <p className="error-hint">Por favor, selecciona otro método de pago o recarga tu saldo</p>
+                    </div>
+                  )}
+                  {balanceError === 'generic' && (
+                    <div className="error-container">
+                      <p className="error-text">Error al procesar el pago con saldo</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Mensaje CityPass */}
+              {paymentMethod === 'citypass' && (
+                <div className="citypass-payment-info">
+                  <p className="info-text">
+                    El monto será descontado de tu tarjeta CityPass vinculada.
+                  </p>
+                  {cityPassBalance !== null && (
+                    <div className="balance-display">
+                      <span className="balance-label">Tu saldo CityPass:</span>
+                      <span className="balance-value">{formatCurrency(cityPassBalance)}</span>
+                    </div>
+                  )}
+                  {cityPassError === 'no_card' && (
+                    <div className="error-container">
+                      <p className="error-text">No tienes una tarjeta CityPass vinculada</p>
+                      <Link to="/profile" className="link-card-button">
+                        Vincular Tarjeta Ahora
+                      </Link>
+                    </div>
+                  )}
+                  {cityPassError === 'insufficient_balance' && (
+                    <div className="error-container">
+                      <p className="error-text">Saldo insuficiente en tu tarjeta CityPass</p>
+                      <p className="error-hint">Por favor, selecciona otro método de pago</p>
+                    </div>
+                  )}
+                  {cityPassError === 'generic' && (
+                    <div className="error-container">
+                      <p className="error-text">Error al procesar el pago con CityPass</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -257,9 +558,15 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                   />
                 </svg>
               </div>
-              <h2 className="success-title">¡Pago realizado con éxito!</h2>
+              <h2 className="success-title">
+                {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0
+                  ? '¡Viaje completado!'
+                  : '¡Pago realizado con éxito!'}
+              </h2>
               <p className="success-text">
-                Tu viaje ha sido finalizado. Gracias por usar nuestro servicio.
+                {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0
+                  ? `Este viaje fue descontado de tu suscripción. Te quedan ${subscriptionData.viajes_disponibles - 1} viajes disponibles este mes.`
+                  : 'Tu viaje ha sido finalizado. Gracias por usar nuestro servicio.'}
               </p>
             </div>
           )}
@@ -277,7 +584,34 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
             {paymentStep === 'summary' && (
               <button
                 className="btn-proceed"
-                onClick={handleProceedToPayment}
+                onClick={
+                  subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0
+                    ? () => {
+                        setPaymentStep('success');
+                        setTimeout(() => {
+                          const completedTrip = {
+                            id: Date.now(),
+                            bikeId: trip.bikeId,
+                            bikeType: trip.bikeType,
+                            startTime: trip.startTime,
+                            endTime: new Date().toISOString(),
+                            duration: calculateDuration(),
+                            charge: 0, // Gratis por suscripción
+                          };
+
+                          const existingHistory = JSON.parse(
+                            localStorage.getItem('tripHistory') || '[]'
+                          );
+                          const updatedHistory = [completedTrip, ...existingHistory];
+                          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
+                          localStorage.removeItem('currentTrip');
+                          onTripEnded();
+                          onClose();
+                          navigate('/trips');
+                        }, 2000);
+                      }
+                    : handleProceedToPayment
+                }
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -285,6 +619,8 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                     <span className="spinner"></span>
                     Cargando...
                   </>
+                ) : subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0 ? (
+                  'Finalizar Viaje'
                 ) : (
                   'Proceder al Pago'
                 )}
@@ -293,8 +629,17 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
             {paymentStep === 'payment' && (
               <button
                 className="btn-pay"
-                onClick={handlePayment}
-                disabled={isLoading || !stripePayment.isReady}
+                onClick={
+                  paymentMethod === 'card' 
+                    ? handlePayment 
+                    : paymentMethod === 'citypass' 
+                      ? handlePayWithCityPass 
+                      : handlePayWithBalance
+                }
+                disabled={
+                  isLoading || 
+                  (paymentMethod === 'card' && !stripePayment.isReady)
+                }
               >
                 {isLoading ? (
                   <>
@@ -303,7 +648,11 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                   </>
                 ) : (
                   <>
-                    <FaCreditCard className="btn-icon" />
+                    {paymentMethod === 'card' || paymentMethod === 'citypass' ? (
+                      <FaCreditCard className="btn-icon" />
+                    ) : (
+                      <FaMoneyBillWave className="btn-icon" />
+                    )}
                     Pagar {formatCurrency(tripCost)}
                   </>
                 )}

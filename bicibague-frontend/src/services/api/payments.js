@@ -1,6 +1,7 @@
 import { useFetch } from '@hooks/useFetch';
 import { useMutation } from '@hooks/useMutation';
 
+// ------------ RECHARGE -------------- //
 // Obtener saldo actual GET
 export const useGetCurrentBalance = () => {
   return {
@@ -48,6 +49,7 @@ export const useSimulateRechargeMutation = () => {
   };
 };
 
+// ------------ PAYMENT -------------- //
 // Obtener Stripe publishable key GET
 export const useGetStripePublishableKey = () => {
   return {
@@ -75,31 +77,73 @@ export const useCreatePaymentIntentMutation = () => {
 };
 
 // Validar tarjeta POST
-export const useValidateCardMutation = () => {
+// export const useValidateCardMutation = () => {
+//   const post = useMutation();
+//   return {
+//     post: (data) =>
+//       post.mutate(
+//         'POST',
+//         '/payments/validate-card',
+//         data,
+//         'Error al validar la tarjeta',
+//         false // backend URL
+//       ),
+//   };
+// };
+
+// Confirmar pago con token POST
+// export const useConfirmPaymentWithTokenMutation = () => {
+//   const post = useMutation();
+//   return {
+//     post: (data) =>
+//       post.mutate(
+//         'POST',
+//         '/payments/confirm-with-token',
+//         data,
+//         'Error al confirmar el pago',
+//         false // backend URL
+//       ),
+//   };
+// };
+
+// ------------ SUBSCRIPTION -------------- //
+// Obtener suscripcion GET
+export const useGetSubscription = () => {
+  return {
+    get: useFetch(
+      '/consultar-suscripcion',
+      'Error al obtener la suscripción',
+      true // supabaseURL
+    ).fetchData,
+  };
+};
+
+// Crear suscripcion POST
+export const useCreateSubscriptionMutation = () => {
   const post = useMutation();
   return {
-    post: (data) =>
+    post: () =>
       post.mutate(
         'POST',
-        '/payments/validate-card',
-        data,
-        'Error al validar la tarjeta',
-        false // backend URL
+        '/crear-suscripcion',
+        {},
+        'Error al crear la suscripción',
+        true // supabaseURL
       ),
   };
 };
 
-// Confirmar pago con token POST
-export const useConfirmPaymentWithTokenMutation = () => {
+// Cancelar suscripcion POST
+export const useCancelSubscriptionMutation = () => {
   const post = useMutation();
   return {
-    post: (data) =>
+    post: () =>
       post.mutate(
         'POST',
-        '/payments/confirm-with-token',
-        data,
-        'Error al confirmar el pago',
-        false // backend URL
+        '/cancelar-suscripcion',
+        {},
+        'Error al cancelar la suscripción',
+        true // supabaseURL
       ),
   };
 };

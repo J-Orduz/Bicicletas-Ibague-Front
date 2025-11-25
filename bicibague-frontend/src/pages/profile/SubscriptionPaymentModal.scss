@@ -1,8 +1,7 @@
 @use '@styles/variables' as *;
 @use '@styles/mixins' as *;
 
-// Modal de finalizar viaje
-.endtrip-modal-overlay {
+.subscription-payment-modal-overlay {
   @include flex();
   position: fixed;
   top: 0;
@@ -11,6 +10,7 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 10000;
+  padding: 20px;
   animation: fadeIn 0.3s ease;
 
   @keyframes fadeIn {
@@ -22,13 +22,12 @@
     }
   }
 
-  .endtrip-modal {
+  .subscription-payment-modal {
     @include flex($direction: column, $align: initial);
     background-color: $bg-primary;
     border-radius: 16px;
-    max-width: 500px;
+    max-width: 550px;
     width: 100%;
-    max-height: 90vh;
     box-shadow: $shadow-lg;
     animation: slideUp 0.3s ease;
     overflow: hidden;
@@ -46,7 +45,6 @@
 
     @media (max-width: 768px) {
       max-width: 100%;
-      max-height: 100svh;
       height: 100svh;
       border-radius: 0;
     }
@@ -95,8 +93,8 @@
         gap: 1.25rem;
       }
 
-      // Info de la bicicleta
-      .bike-info-card {
+      // Card de información de la suscripción
+      .subscription-info-card {
         @include flex($justify: flex-start, $gap: 1rem);
         padding: 1.25rem;
         background: linear-gradient(135deg, $bg-secondary, $bg-tertiary);
@@ -107,7 +105,7 @@
           padding: 1rem;
         }
 
-        .bike-icon-container {
+        .subscription-icon-container {
           @include flex();
           width: 60px;
           height: 60px;
@@ -120,7 +118,7 @@
             height: 50px;
           }
 
-          .bike-icon {
+          .subscription-icon {
             width: 32px;
             height: 32px;
             color: $white;
@@ -132,67 +130,89 @@
           }
         }
 
-        .bike-details {
-          .bike-id {
-            margin-bottom: 0;
+        .subscription-details {
+          flex: 1;
+
+          .subscription-name {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: $text-primary;
+
+            @media (max-width: 480px) {
+              font-size: 1.1rem;
+            }
           }
 
-          .bike-status {
-            font-size: 0.9rem;
-            color: $text-secondary;
+          .subscription-price {
+            margin: 0;
+            font-size: 1.1rem;
+            color: $primary-color;
             font-weight: 600;
           }
         }
       }
 
-      // Resumen del viaje
-      .trip-summary {
-        @include flex($direction: column, $align: stretch, $gap: 0.75rem);
+      // Card de beneficios
+      .subscription-benefits-card {
+        padding: 1.25rem;
+        background-color: $bg-secondary;
+        border-radius: 12px;
+        box-shadow: $shadow-sm;
 
-        .summary-title {
+        .benefits-title {
+          margin: 0 0 1rem 0;
+          font-size: 1.1rem;
           font-weight: 600;
-          margin-bottom: 0.5rem;
           color: $text-primary;
         }
 
-        .summary-item {
-          @include flex($justify: space-between);
-          padding: 0.875rem 1rem;
-          background-color: $bg-secondary;
-          border-radius: 10px;
-          border: 1px solid $border-color;
+        .benefits-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          @include flex($direction: column, $align: initial, $gap: 0.875rem);
 
-          &.total {
-            background: linear-gradient(
-              135deg,
-              rgba(255, 146, 45, 0.1),
-              rgba(255, 146, 45, 0.05)
-            );
-            border-color: $primary-color-light;
-            margin-top: 0.5rem;
-
-            .summary-label span,
-            .summary-value {
-              font-weight: 700;
-              font-size: 1.1rem;
-              color: $primary-color;
-            }
-          }
-
-          .summary-label {
-            @include flex($justify: flex-start, $gap: 0.5rem);
-            color: $text-secondary;
-
-            .summary-icon {
-              width: 18px;
-              height: 18px;
-            }
-          }
-
-          .summary-value {
-            font-weight: 600;
+          li {
+            @include flex($gap: 0.75rem, $justify: flex-start, $align: center);
+            font-size: 1rem;
             color: $text-primary;
+
+            .benefit-icon {
+              color: $primary-color;
+              font-size: 1.1rem;
+              flex-shrink: 0;
+            }
+
+            span {
+              line-height: 1.4;
+            }
           }
+        }
+      }
+
+      // Total de la suscripción
+      .subscription-total {
+        @include flex($justify: space-between, $align: center);
+        padding: 1.25rem;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 146, 45, 0.15),
+          rgba(255, 146, 45, 0.08)
+        );
+        border-radius: 12px;
+        border: 2px solid $primary-color-light;
+
+        .total-label {
+          font-size: 1rem;
+          color: $text-secondary;
+          font-weight: 600;
+        }
+
+        .total-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: $primary-color;
         }
       }
 
@@ -219,41 +239,6 @@
           font-size: 2rem;
           font-weight: 700;
           color: $primary-color;
-        }
-      }
-
-      // Contenedor de procesamiento
-      .processing-container {
-        @include flex($direction: column, $gap: 1rem);
-        padding: 3rem 2rem;
-        text-align: center;
-
-        .spinner-large {
-          width: 60px;
-          height: 60px;
-          border: 4px solid $border-color;
-          border-top-color: $primary-color;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        .processing-text {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: $text-primary;
-          margin: 0;
-        }
-
-        .processing-subtext {
-          font-size: 0.95rem;
-          color: $text-secondary;
-          margin: 0;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
         }
       }
 
@@ -309,36 +294,7 @@
           font-size: 1rem;
           color: $text-secondary;
           margin: 0;
-        }
-      }
-
-      // Error message
-      .error-message {
-        @include flex($justify: flex-start, $gap: 0.5rem);
-        padding: 0.75rem;
-        background-color: rgba(220, 53, 69, 0.1);
-        border-radius: 8px;
-        color: $red;
-        font-size: 0.9rem;
-        animation: shake 0.3s ease;
-
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          75% {
-            transform: translateX(5px);
-          }
-        }
-
-        .error-icon {
-          width: 20px;
-          height: 20px;
-          flex-shrink: 0;
+          line-height: 1.5;
         }
       }
 
@@ -397,7 +353,25 @@
           animation: spin 0.8s linear infinite;
           margin-right: 0.5rem;
         }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      }
+
+      @media (max-width: 480px) {
+        flex-direction: column;
+
+        button {
+          width: 100%;
+        }
       }
     }
+  }
+
+  @media (max-width: 768px) {
+    padding: 0;
   }
 }

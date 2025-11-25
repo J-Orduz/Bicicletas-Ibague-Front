@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 // components
 import { SubHeader } from "@layouts/SubHeader";
+import { SubscriptionSection } from "./SubscriptionSection";
 // hooks
 import { useAuth } from "@contexts/AuthContext";
 import { usePreferences } from "@contexts/PreferencesContext";
@@ -10,6 +11,9 @@ import {
   useGetCurrentBalance,
   useCreateRechargeMutation,
   useSimulateRechargeMutation,
+  useGetSubscription,
+  useCreateSubscriptionMutation,
+  useCancelSubscriptionMutation,
 } from "@api/payments";
 // icons
 import {
@@ -30,9 +34,13 @@ export const Profile = () => {
   // Estados
   const [userData, setUserData] = useState(null);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
+  const [subscriptionData, setSubscriptionData] = useState(null);
   // API hooks
   const getCurrentBalance = useGetCurrentBalance();
   const simulateRechargeMutation = useSimulateRechargeMutation();
+  const getSubscription = useGetSubscription();
+  const createSubscriptionMutation = useCreateSubscriptionMutation();
+  const cancelSubscriptionMutation = useCancelSubscriptionMutation();
 
   useEffect(() => {
     // document.title = 'Perfil de Usuario'; // :o
@@ -46,11 +54,21 @@ export const Profile = () => {
           userBalance: balanceData.usuario.saldo,
         });
       } catch (error) {
-        // console.error(error.errorFetchMsg || error);
+        console.error(error);
+      }
+    };
+
+    const fetchSubscription = async () => {
+      try {
+        const subData = await getSubscription.get();
+        setSubscriptionData(subData);
+      } catch (error) {
+        console.error(error);
       }
     };
 
     fetchBalance();
+    fetchSubscription();
   }, []);
 
   const handleRechargeSuccess = async (amount) => {
@@ -90,9 +108,40 @@ export const Profile = () => {
     }
   };
 
+
+
+  const handleCancelSubscription = async () => {
+    const confirmed = window.confirm(
+      "¿Estás seguro de cancelar tu suscripción? No se realizarán reembolsos."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await cancelSubscriptionMutation.post();
+      alert("Suscripción cancelada exitosamente");
+      
+      // Refrescar datos de suscripción
+      const subData = await getSubscription.get();
+      setSubscriptionData(subData);
+    } catch (error) {
+      alert(error.errorMutationMsg || "Error al procesar la recarga");
+    }
+  };
+
+  const handleSubscriptionChange = async () => {
+    try {
+      // Refrescar datos de suscripción
+      const subData = await getSubscription.get();
+      setSubscriptionData(subData);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="profile-container">
-      <SubHeader pageTitle="Perfil de Usuario" />
+      <SubHeader pageTitle="Perfil" />
       <div className="profile-content">
         {userData ? (
           <>
@@ -124,6 +173,14 @@ export const Profile = () => {
                 </button>
               </div>
             </div>
+
+            {/* Sección de Suscripción */}
+            <SubscriptionSection
+              subscriptionData={subscriptionData}
+              createSubscription={createSubscriptionMutation}
+              cancelSubscription={cancelSubscriptionMutation}
+              onSubscriptionChange={handleSubscriptionChange}
+            />
 
             {/* Sección de Preferencias */}
             <div className="preferences-section">

@@ -1,20 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 // components
-import { SubHeader } from "@layouts/SubHeader";
-import { SubscriptionSection } from "./SubscriptionSection";
+import { SubHeader } from '@layouts/SubHeader';
+import { SubscriptionSection } from './SubscriptionSection';
 // hooks
-import { useAuth } from "@contexts/AuthContext";
-import { usePreferences } from "@contexts/PreferencesContext";
-import { useCurrency } from "@hooks/useCurrency";
+import { useAuth } from '@contexts/AuthContext';
+import { usePreferences } from '@contexts/PreferencesContext';
+import { useCurrency } from '@hooks/useCurrency';
 // API
 import {
   useGetCurrentBalance,
   useCreateRechargeMutation,
-  useSimulateRechargeMutation,
   useGetSubscription,
   useCreateSubscriptionMutation,
   useCancelSubscriptionMutation,
-} from "@api/payments";
+  useGetCityPassBalance,
+  useLinkCityPassMutation,
+} from '@api/payments';
 // icons
 import {
   BsXLg,
@@ -22,9 +23,9 @@ import {
   BsCreditCard2Front,
   BsCashStack,
   BsGearFill,
-} from "react-icons/bs";
+} from 'react-icons/bs';
 // styles
-import "./Profile.scss";
+import './Profile.scss';
 
 export const Profile = () => {
   const { logout } = useAuth();
@@ -35,12 +36,15 @@ export const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState(null);
+  const [cityPassData, setCityPassData] = useState(null);
+  const [showLinkCityPassModal, setShowLinkCityPassModal] = useState(false);
   // API hooks
   const getCurrentBalance = useGetCurrentBalance();
-  const simulateRechargeMutation = useSimulateRechargeMutation();
   const getSubscription = useGetSubscription();
   const createSubscriptionMutation = useCreateSubscriptionMutation();
   const cancelSubscriptionMutation = useCancelSubscriptionMutation();
+  const getCityPassBalance = useGetCityPassBalance();
+  const linkCityPassMutation = useLinkCityPassMutation();
 
   useEffect(() => {
     // document.title = 'Perfil de Usuario'; // :o
@@ -67,73 +71,40 @@ export const Profile = () => {
       }
     };
 
+    const fetchCityPassBalance = async () => {
+      try {
+        const cityPassResponse = await getCityPassBalance.get();
+        setCityPassData(cityPassResponse.data);
+      } catch (error) {
+        // Si no tiene tarjeta vinculada, establecer como null
+        if (error.status === 400) {
+          setCityPassData(null);
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
     fetchBalance();
     fetchSubscription();
+    fetchCityPassBalance();
   }, []);
-
-  const handleRechargeSuccess = async (amount) => {
-    try {
-      const rechargeData = {
-        type: "checkout.session.completed",
-        data: {
-          object: {
-            id: "cs_test_abc123",
-            metadata: {
-              usuario_id: userData?.userId || "desconocido",
-              tipo: "recarga_saldo",
-              monto: amount.toString(),
-            },
-            customer_email: userData?.userEmail || "desconocido",
-            payment_status: "paid",
-            status: "complete",
-          },
-        },
-      };
-
-      const response = await simulateRechargeMutation.post(rechargeData);
-
-      if (response?.received) {
-        alert("Recarga simulada exitosamente");
-        // Refrescar el saldo
-        const balanceData = await getCurrentBalance.get();
-        setUserData({
-          userId: balanceData.usuario.id,
-          userEmail: balanceData.usuario.email,
-          userName: balanceData.usuario.nombre,
-          userBalance: balanceData.usuario.saldo,
-        });
-      }
-    } catch (error) {
-      alert(error.errorMutationMsg || "Error al procesar la recarga");
-    }
-  };
-
-
-
-  const handleCancelSubscription = async () => {
-    const confirmed = window.confirm(
-      "¿Estás seguro de cancelar tu suscripción? No se realizarán reembolsos."
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await cancelSubscriptionMutation.post();
-      alert("Suscripción cancelada exitosamente");
-      
-      // Refrescar datos de suscripción
-      const subData = await getSubscription.get();
-      setSubscriptionData(subData);
-    } catch (error) {
-      alert(error.errorMutationMsg || "Error al procesar la recarga");
-    }
-  };
 
   const handleSubscriptionChange = async () => {
     try {
       // Refrescar datos de suscripción
       const subData = await getSubscription.get();
       setSubscriptionData(subData);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleLinkCityPassSuccess = async () => {
+    try {
+      // Refrescar datos de CityPass
+      const cityPassResponse = await getCityPassBalance.get();
+      setCityPassData(cityPassResponse.data);
     } catch (error) {
       console.error(error);
     }
@@ -160,8 +131,9 @@ export const Profile = () => {
             </div>
 
             <div className="balance-section">
+              {/* Saldo Principal */}
               <div className="balance-card">
-                <span className="balance-label">Saldo Disponible</span>
+                <span className="balance-label">Saldo BiciBague</span>
                 <span className="balance-amount">
                   {formatCurrency(userData.userBalance)}
                 </span>
@@ -171,6 +143,33 @@ export const Profile = () => {
                 >
                   <BsCreditCard2Front /> Recargar Saldo
                 </button>
+              </div>
+
+              {/* Saldo CityPass */}
+              <div className="balance-card citypass-card">
+                <span className="balance-label">Saldo CityPass</span>
+                {cityPassData ? (
+                  <>
+                    <span className="balance-amount citypass-amount">
+                      {formatCurrency(cityPassData.tarjeta.saldo)}
+                    </span>
+                    <span className="card-number">
+                      {cityPassData.tarjeta.card_number}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="no-card-message">
+                      No tienes una tarjeta vinculada
+                    </span>
+                    <button
+                      className="btn-link-citypass"
+                      onClick={() => setShowLinkCityPassModal(true)}
+                    >
+                      <BsCreditCard2Front /> Vincular Tarjeta
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -202,7 +201,7 @@ export const Profile = () => {
                       className="preference-selector"
                       value={currency}
                       onChange={(e) =>
-                        updatePreference("currency", e.target.value)
+                        updatePreference('currency', e.target.value)
                       }
                     >
                       {Object.entries(CURRENCIES).map(([code, info]) => (
@@ -244,24 +243,142 @@ export const Profile = () => {
       {showRechargeModal && (
         <RechargeModal
           onClose={() => setShowRechargeModal(false)}
-          onRecharge={handleRechargeSuccess}
+        />
+      )}
+
+      {showLinkCityPassModal && (
+        <LinkCityPassModal
+          onClose={() => setShowLinkCityPassModal(false)}
+          onSuccess={handleLinkCityPassSuccess}
+          linkCityPassMutation={linkCityPassMutation}
         />
       )}
     </div>
   );
 };
 
-const RechargeModal = ({ onClose, onRecharge }) => {
+const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
+  const [cardSuffix, setCardSuffix] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleCardSuffixChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Solo números
+    if (value.length <= 4) {
+      setCardSuffix(value);
+      setError('');
+    }
+  };
+
+  const validateCardNumber = () => {
+    if (cardSuffix.length !== 4) {
+      setError('Debes ingresar exactamente 4 dígitos');
+      return false;
+    }
+    return true;
+  };
+
+  const handleLinkCard = async () => {
+    if (!validateCardNumber()) return;
+
+    const fullCardNumber = `1010${cardSuffix}`;
+    setIsProcessing(true);
+    setError('');
+
+    try {
+      await linkCityPassMutation.post({ cardNumber: fullCardNumber });
+      alert('Tarjeta CityPass vinculada exitosamente');
+      onSuccess();
+      onClose();
+    } catch (err) {
+      if (err.errorJsonMsg?.includes('ya está en uso')) {
+        setError('El número de tarjeta ya está en uso');
+      } else {
+        setError(err.errorMutationMsg || 'Error al vincular la tarjeta');
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target.classList.contains('recharge-modal-overlay')) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="recharge-modal-overlay" onClick={handleOverlayClick}>
+      <div className="recharge-modal">
+        <div className="modal-header">
+          <h1>Vincular Tarjeta CityPass</h1>
+          <button className="btn-close" onClick={onClose} aria-label="Cerrar">
+            <BsXLg className="btn-icon" />
+          </button>
+        </div>
+
+        <div className="modal-body">
+          <div className="citypass-form">
+            <p className="form-description">
+              Ingresa los últimos 4 dígitos de tu tarjeta CityPass que comienza
+              con 1010.
+            </p>
+
+            <div className="card-number-input">
+              <div className="input-group">
+                <span className="input-prefix">1010</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength="4"
+                  value={cardSuffix}
+                  onChange={handleCardSuffixChange}
+                  placeholder="0000"
+                  className="suffix-input"
+                  disabled={isProcessing}
+                />
+              </div>
+              {error && <p className="error-message">{error}</p>}
+              <p className="input-hint">
+                Número completo: 1010{cardSuffix || ' _ _ _ _'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button
+            className="btn-cancel"
+            onClick={onClose}
+            disabled={isProcessing}
+          >
+            Cancelar
+          </button>
+          <button
+            className="btn-confirm"
+            onClick={handleLinkCard}
+            disabled={cardSuffix.length !== 4 || isProcessing}
+          >
+            {isProcessing ? 'Vinculando...' : 'Vincular Tarjeta'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RechargeModal = ({ onClose }) => {
   const { token } = useAuth();
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const createRechargeMutation = useCreateRechargeMutation();
 
   const predefinedAmounts = [
-    { value: 10000, label: "$10.000" },
-    { value: 20000, label: "$20.000" },
-    { value: 50000, label: "$50.000" },
-    { value: 100000, label: "$100.000" },
+    { value: 10000, label: '$10.000' },
+    { value: 20000, label: '$20.000' },
+    { value: 50000, label: '$50.000' },
+    { value: 100000, label: '$100.000' },
   ];
 
   const getSelectedAmountValue = () => {
@@ -270,19 +387,11 @@ const RechargeModal = ({ onClose, onRecharge }) => {
 
   const validateAmount = () => {
     if (!selectedAmount) {
-      alert("Por favor selecciona un monto");
+      alert('Por favor selecciona un monto');
       return false;
     }
 
     return true;
-  };
-
-  const handleRecharge = () => {
-    if (!validateAmount()) return;
-
-    const amount = getSelectedAmountValue();
-    onRecharge(amount);
-    onClose();
   };
 
   const handleUseCard = async () => {
@@ -299,19 +408,19 @@ const RechargeModal = ({ onClose, onRecharge }) => {
 
       if (response?.url) {
         // Navegar a la URL de Stripe en otra pestaña
-        window.open(response.url, "_blank");
+        window.open(response.url, '_blank');
       } else {
-        alert("No se pudo obtener la URL de pago");
+        alert('No se pudo obtener la URL de pago');
       }
     } catch (error) {
-      alert(error.errorMutationMsg || "Error al procesar el pago con tarjeta");
+      alert(error.errorMutationMsg || 'Error al procesar el pago con tarjeta');
       setIsProcessing(false);
     }
     setIsProcessing(false);
   };
 
   const handleOverlayClick = (e) => {
-    if (e.target.classList.contains("recharge-modal-overlay")) {
+    if (e.target.classList.contains('recharge-modal-overlay')) {
       onClose();
     }
   };
@@ -365,7 +474,7 @@ const RechargeModal = ({ onClose, onRecharge }) => {
             disabled={!selectedAmount || isProcessing}
           >
             {isProcessing ? (
-              "Procesando..."
+              'Procesando...'
             ) : (
               <>
                 <BsCreditCard2Front /> Recargar

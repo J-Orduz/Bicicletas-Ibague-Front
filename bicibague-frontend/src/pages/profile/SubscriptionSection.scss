@@ -1,0 +1,244 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+// Sección de Suscripción
+.subscription-section {
+  background: linear-gradient(135deg, $bg-secondary, $bg-tertiary);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: $shadow-md;
+
+  .subscription-header {
+    @include flex($gap: 12px, $justify: flex-start);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid $primary-color;
+
+    .subscription-icon {
+      font-size: 1.5rem;
+      color: $primary-color;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: $text-primary;
+    }
+  }
+
+  // Suscripción Activa
+  .subscription-active {
+    @include flex($direction: column, $align: initial, $gap: 20px);
+
+    .subscription-info {
+      @include flex($direction: column, $align: initial, $gap: 12px);
+      padding: 20px;
+      background-color: $bg-primary;
+      border-radius: 12px;
+      box-shadow: $shadow-sm;
+
+      .info-item {
+        @include flex($justify: space-between, $align: center);
+        padding: 10px 0;
+        border-bottom: 1px solid $border-color;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .info-label {
+          font-size: 1rem;
+          color: $text-secondary;
+          font-weight: 500;
+        }
+
+        .info-value {
+          font-size: 1rem;
+          color: $primary-color;
+          font-weight: 600;
+
+          &.highlight {
+            color: $primary-color;
+            font-size: 1.1rem;
+          }
+
+          &.status-active {
+            color: $green;
+            text-transform: capitalize;
+          }
+        }
+      }
+    }
+
+    .subscription-stats {
+      @include flex($gap: 12px, $justify: space-between);
+
+      .stat-card {
+        @include flex($gap: 12px, $justify: flex-start, $align: center);
+        flex: 1;
+        padding: 16px;
+        background-color: $bg-primary;
+        border-radius: 12px;
+        box-shadow: $shadow-sm;
+
+        .stat-icon {
+          @include flex();
+          width: 40px;
+          height: 40px;
+          background-color: rgba(255, 146, 45, 0.1);
+          border-radius: 10px;
+          color: $primary-color;
+          font-size: 1.2rem;
+          flex-shrink: 0;
+        }
+
+        .stat-content {
+          @include flex($direction: column, $align: flex-start, $gap: 4px);
+
+          .stat-label {
+            font-size: 0.85rem;
+            color: $text-secondary;
+            font-weight: 500;
+          }
+
+          .stat-value {
+            font-size: 1.3rem;
+            color: $text-primary;
+            font-weight: 700;
+
+            &.highlight {
+              color: $primary-color;
+            }
+          }
+        }
+      }
+
+      @media (max-width: 768px) {
+        flex-wrap: wrap;
+        
+        .stat-card {
+          flex: 1 1 calc(50% - 6px);
+          min-width: 200px;
+        }
+      }
+    }
+
+    .subscription-benefits {
+      padding: 20px;
+      background-color: $bg-primary;
+      border-radius: 12px;
+      box-shadow: $shadow-sm;
+
+      .benefits-title {
+        margin: 0 0 12px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: $text-primary;
+      }
+
+      .benefits-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        @include flex($direction: column, $align: initial, $gap: 10px);
+
+        li {
+          @include flex($gap: 10px, $justify: flex-start, $align: center);
+          font-size: 1rem;
+          color: $text-primary;
+
+          .benefit-icon {
+            color: $green;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+          }
+        }
+      }
+    }
+
+    .btn-cancel-subscription {
+      @include primary-button($bg-color: $red, $bg-color-hover: $dark-red);
+      padding: 12px 24px;
+      font-size: 1rem;
+    }
+  }
+
+  // Suscripción Inactiva
+  .subscription-inactive {
+    @include flex($direction: column, $align: initial, $gap: 20px);
+
+    .subscription-promo {
+      text-align: center;
+      padding: 24px;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 146, 45, 0.15),
+        rgba(255, 146, 45, 0.05)
+      );
+      border: 2px solid $primary-color;
+      border-radius: 12px;
+
+      .promo-title {
+        margin: 0 0 12px 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: $text-primary;
+      }
+
+      .promo-price {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: $primary-color;
+      }
+    }
+
+    .subscription-benefits {
+      padding: 20px;
+      background-color: $bg-primary;
+      border-radius: 12px;
+      box-shadow: $shadow-sm;
+
+      .benefits-title {
+        margin: 0 0 12px 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: $text-primary;
+      }
+
+      .benefits-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        @include flex($direction: column, $align: initial, $gap: 10px);
+
+        li {
+          @include flex($gap: 10px, $justify: flex-start, $align: center);
+          font-size: 1rem;
+          color: $text-primary;
+
+          .benefit-icon {
+            color: $primary-color;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+          }
+        }
+      }
+    }
+
+    .btn-subscribe {
+      @include primary-button();
+      padding: 14px 32px;
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px;
+
+    .subscription-header {
+      margin-bottom: 16px;
+    }
+  }
+}

@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+// components
+import { StripePayment, StripePaymentForm } from '@components/StripePayment';
 // API
-import {
-  useCreatePaymentIntentMutation,
-  useGetStripePublishableKey,
-} from '@api/payments';
+import { useCreatePaymentIntentMutation } from '@api/payments';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
 // icons
-import { MdOutlineStopCircle } from 'react-icons/md';
 import { BsXLg } from 'react-icons/bs';
 import { FaBicycle, FaRegClock, FaMoneyBillWave } from 'react-icons/fa6';
-import { FaExclamationCircle, FaCreditCard } from 'react-icons/fa';
+import { FaCreditCard } from 'react-icons/fa';
 // styles
 import './EndTrip.scss';
 
@@ -19,16 +17,12 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
 
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState('summary'); // 'summary', 'payment', 'processing', 'success'
   const [tripCost, setTripCost] = useState(0);
-  const [stripe, setStripe] = useState(null);
-  const [cardElement, setCardElement] = useState(null);
   const [clientSecret, setClientSecret] = useState('');
 
   const createPaymentIntentMutation = useCreatePaymentIntentMutation();
-  const getStripeKey = useGetStripePublishableKey();
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -37,32 +31,6 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, []);
-
-  // Inicializar Stripe
-  useEffect(() => {
-    const initializeStripe = async () => {
-      try {
-        const response = await getStripeKey.get();
-        const publishableKey = response.publishableKey;
-        console.log('Clave pública de Stripe obtenida:', publishableKey);
-
-        if (window.Stripe) {
-          const stripeInstance = window.Stripe(publishableKey);
-          setStripe(stripeInstance);
-          console.log('Stripe inicializado:', stripeInstance);
-        } else {
-          setError(
-            'Error al cargar Stripe. Por favor recarga la página e intenta nuevamente.'
-          );
-        }
-      } catch (error) {
-        console.error('Error al obtener la clave de Stripe:', error);
-        setError('Error al inicializar el sistema de pagos');
-      }
-    };
-
-    initializeStripe();
   }, []);
 
   // Calcular costo del viaje
@@ -92,10 +60,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
   };
 
   const handleProceedToPayment = async () => {
-    setError('');
     setIsLoading(true);
-    setPaymentStep('payment');
-
     try {
       // Crear PaymentIntent en el backend
       const paymentIntentData = {
@@ -103,129 +68,81 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
         currency: 'cop',
         metadata: {
           bookingId: 'abc1234',
+          tipo: 'viaje',
         },
       };
-      console.log('Datos para PaymentIntent:', paymentIntentData);
+
       const response = await createPaymentIntentMutation.post(
         paymentIntentData
       );
 
-      setClientSecret(response.paymentIntent.client_secret);
-
-      // Montar Stripe Elements
-      setTimeout(() => {
-        if (stripe) {
-          const elements = stripe.elements();
-          const card = elements.create('card', {
-            style: {
-              base: {
-                fontSize: '16px',
-                color: getComputedStyle(document.documentElement)
-                  .getPropertyValue('--text-primary')
-                  .trim(),
-                '::placeholder': {
-                  color: getComputedStyle(document.documentElement)
-                    .getPropertyValue('--text-secondary')
-                    .trim(),
-                },
-              },
-            },
-          });
-
-          card.mount('#card-element');
-          setCardElement(card);
-
-          card.on('change', (event) => {
-            if (event.error) {
-              setError(event.error.message);
-            } else {
-              setError('');
-            }
-          });
-        }
-        setIsLoading(false);
-      }, 100);
+      if (response?.paymentIntent?.client_secret) {
+        setClientSecret(response.paymentIntent.client_secret);
+        setPaymentStep('payment');
+      } else {
+        alert('Error al crear el pago');
+      }
     } catch (error) {
+      console.error('Error al crear el PaymentIntent:', error);
+      alert(error.errorMutationMsg || 'Error al procesar el pago');
+    } finally {
       setIsLoading(false);
-      setPaymentStep('summary');
-      setError(error.errorMutationMsg || 'Error al procesar el pago');
     }
   };
 
+  const handlePaymentSuccess = (paymentIntent) => {
+    setPaymentStep('success');
+    setTimeout(() => {
+      // TEMPORAL: Guardar el viaje finalizado en el historial de localStorage
+      const completedTrip = {
+        id: Date.now(),
+        bikeId: trip.bikeId,
+        bikeType: trip.bikeType,
+        startTime: trip.startTime,
+        endTime: new Date().toISOString(),
+        duration: calculateDuration(),
+        charge: tripCost,
+      };
+
+      // Obtener historial existente o crear uno nuevo
+      const existingHistory = JSON.parse(
+        localStorage.getItem('tripHistory') || '[]'
+      );
+
+      // Agregar el viaje completado al inicio del historial
+      const updatedHistory = [completedTrip, ...existingHistory];
+
+      // Guardar el historial actualizado
+      localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
+
+      // Limpiar el viaje actual del localStorage
+      localStorage.removeItem('currentTrip');
+      onTripEnded();
+      onClose();
+      navigate('/trips');
+    }, 2000);
+  };
+
+  // Hook del componente Stripe reutilizable (siempre llamado, pero solo activo cuando enabled es true)
+  const stripePayment = StripePayment({
+    clientSecret,
+    onSuccess: handlePaymentSuccess,
+    onError: (errorMsg) => {
+      console.error('Error en el pago:', errorMsg);
+    },
+    isLoading,
+    setIsLoading,
+    enabled: paymentStep === 'payment', // Solo inicializar cuando esté en el paso de pago
+  });
+
   const handlePayment = async () => {
-    if (!stripe || !cardElement) {
-      setError('El sistema de pagos no está listo');
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-    // setPaymentStep('processing');
-
-    try {
-      const { error: stripeError, paymentIntent } =
-        await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: cardElement,
-          },
-        });
-
-      console.log('Resultado de confirmCardPayment:', {
-        stripeError,
-        paymentIntent,
-      });
-
-      if (stripeError) {
-        setError(stripeError.message);
-        setPaymentStep('payment');
-        setIsLoading(false);
-        return;
-      }
-
-      if (paymentIntent.status === 'succeeded') {
-        setPaymentStep('success');
-        setTimeout(() => {
-          // TEMPORAL: Guardar el viaje finalizado en el historial de localStorage
-          const completedTrip = {
-            id: Date.now(),
-            bikeId: trip.bikeId,
-            bikeType: trip.bikeType,
-            startTime: trip.startTime,
-            endTime: new Date().toISOString(),
-            duration: calculateDuration(),
-            charge: tripCost,
-          };
-
-          // Obtener historial existente o crear uno nuevo
-          const existingHistory = JSON.parse(
-            localStorage.getItem('tripHistory') || '[]'
-          );
-
-          // Agregar el viaje completado al inicio del historial
-          const updatedHistory = [completedTrip, ...existingHistory];
-
-          // Guardar el historial actualizado
-          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-
-          // Limpiar el viaje actual del localStorage
-          localStorage.removeItem('currentTrip');
-          onTripEnded();
-          onClose();
-          navigate('/trips');
-        }, 2000);
-      }
-    } catch (error) {
-      setIsLoading(false);
-      setPaymentStep('payment');
-      setError('Error al procesar el pago. Intenta nuevamente.');
+    if (stripePayment.isReady) {
+      await stripePayment.handlePayment();
     }
   };
 
   const handleCancel = () => {
     if (paymentStep === 'processing') return;
-    if (cardElement) {
-      cardElement.unmount();
-    }
     onClose();
   };
 
@@ -304,20 +221,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                 <span className="amount-value">{formatCurrency(tripCost)}</span>
               </div>
 
-              <div className="payment-form">
-                <label className="payment-label">
-                  <FaCreditCard className="payment-icon" />
-                  Información de la tarjeta
-                </label>
-                <div id="card-element" className="card-element"></div>
-              </div>
-
-              {error && (
-                <div className="error-message">
-                  <FaExclamationCircle className="error-icon" />
-                  <span>{error}</span>
-                </div>
-              )}
+              <StripePaymentForm error={stripePayment.error} />
             </>
           )}
 
@@ -382,10 +286,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                     Cargando...
                   </>
                 ) : (
-                  <>
-                    {/* <MdOutlineStopCircle className="btn-icon" /> */}
-                    Proceder al Pago
-                  </>
+                  'Proceder al Pago'
                 )}
               </button>
             )}
@@ -393,7 +294,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
               <button
                 className="btn-pay"
                 onClick={handlePayment}
-                disabled={isLoading}
+                disabled={isLoading || !stripePayment.isReady}
               >
                 {isLoading ? (
                   <>

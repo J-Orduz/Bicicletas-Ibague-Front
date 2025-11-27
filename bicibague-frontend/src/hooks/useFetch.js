@@ -61,7 +61,6 @@ export const useFetch = (
           alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
         } 
 
-
         const errorMsgs = {
           errorFetchMsg: errorMessage,
           errorJsonMsg: err.message,

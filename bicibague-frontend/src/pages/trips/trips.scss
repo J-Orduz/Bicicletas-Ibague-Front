@@ -442,6 +442,47 @@
           }
         }
       }
+
+      .history-card-footer {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid $border-color-secondary;
+
+        .btn-pay-trip {
+          @include flex($justify: center, $gap: 0.5rem);
+          width: 100%;
+          padding: 0.75rem 1.25rem;
+          background-color: $primary-color;
+          color: $white;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.9375rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all $transition-fast;
+
+          &:hover {
+            // background-color: darken($primary-color, 10%);
+            background-color: $primary-color-dark;
+            transform: translateY(-2px);
+            box-shadow: $shadow-md;
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+
+          .btn-icon {
+            width: 16px;
+            height: 16px;
+          }
+
+          @media (max-width: 768px) {
+            padding: 0.65rem 1rem;
+            font-size: 0.875rem;
+          }
+        }
+      }
     }
 
     .no-history {

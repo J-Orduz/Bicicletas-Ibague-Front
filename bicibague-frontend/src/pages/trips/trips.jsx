@@ -20,7 +20,7 @@ import { EndTrip } from './EndTrip';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
 // api
-import { useGetCurrentTrip, useGetTripHistory } from '@api/trips';
+import { useGetCurrentTrip, useGetTripHistory, useEndTripMutation } from '@api/trips';
 // styles
 import './trips.scss';
 
@@ -28,11 +28,13 @@ export const Trips = () => {
   const { formatCurrency } = useCurrency();
   const { get: getCurrentTrip } = useGetCurrentTrip();
   const { get: getTripHistory } = useGetTripHistory();
+  const { post: endTrip } = useEndTripMutation();
 
   const [currentTrip, setCurrentTrip] = useState(null);
   const [loadingCurrentTrip, setLoadingCurrentTrip] = useState(true);
   const [tripHistory, setTripHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [tripEndData, setTripEndData] = useState(null);
 
   // Cargar viaje actual desde la API
   useEffect(() => {
@@ -111,9 +113,48 @@ export const Trips = () => {
     return () => clearInterval(interval);
   }, [currentTrip]);
 
-  // Función para abrir el modal de finalizar viaje
-  const handleEndTrip = () => {
-    setShowEndTripModal(true);
+  // Función para finalizar el viaje y abrir el modal
+  const handleEndTrip = async () => {
+    if (!currentTrip) return;
+    
+    try {
+      setLoadingCurrentTrip(true);
+      const response = await endTrip({ viajeId: currentTrip.id });
+      
+      if (response?.success && response?.data) {
+        // Guardar datos de finalización
+        const paymentData = {
+          ...response.data,
+          bicicletaId: currentTrip.bicicleta.id,
+        };
+        setTripEndData(paymentData);
+        
+        // Recargar viaje actual y historial
+        const [currentResponse, historyResponse] = await Promise.all([
+          getCurrentTrip(),
+          getTripHistory(),
+        ]);
+        
+        if (currentResponse?.success && currentResponse?.data) {
+          setCurrentTrip(currentResponse.data);
+        } else {
+          setCurrentTrip(null);
+        }
+        
+        if (historyResponse?.success && historyResponse?.data?.viajes) {
+          setTripHistory(historyResponse.data.viajes);
+        }
+        
+        setShowEndTripModal(true);
+      } else {
+        alert('Error al finalizar el viaje');
+      }
+    } catch (error) {
+      console.error('Error al finalizar el viaje:', error);
+      alert('Error al finalizar el viaje. Por favor, intenta de nuevo.');
+    } finally {
+      setLoadingCurrentTrip(false);
+    }
   };
 
   // Función para cerrar el modal
@@ -121,10 +162,28 @@ export const Trips = () => {
     setShowEndTripModal(false);
   };
 
-  // Función para manejar cuando el viaje finaliza exitosamente
+  // Función para abrir modal de pago desde el historial
+  const handlePayTrip = (trip) => {
+    // Crear datos de pago del viaje basados en el historial
+    const paymentData = {
+      id: trip.id,
+      tiempoViaje: trip.duracion,
+      precioSubtotal: trip.subtotal, // Aproximación quitando impuesto
+      impuesto: trip.impuesto, // 3% de impuesto
+      tiempoExtra: Math.max(0, trip.duracion - (trip.tipo_viaje === 'MILLA' ? 45 : 75)),
+      precioTotal: trip.precio,
+      bicicletaId: trip.bicicleta.id,
+    };
+    setTripEndData(paymentData);
+    setShowEndTripModal(true);
+  };
+
+  // Función para manejar cuando el viaje finaliza exitosamente (pago completado)
   const handleTripEnded = async () => {
+    setTripEndData(null);
     setCurrentTrip(null);
     setShowEndTripModal(false);
+    
     // Recargar el viaje actual y el historial desde la API
     try {
       const [currentResponse, historyResponse] = await Promise.all([
@@ -426,6 +485,19 @@ export const Trips = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Botón para pagar si el estado es PENDIENTE */}
+                  {trip.estado_pago === 'PENDIENTE' && trip.precio && (
+                    <div className="history-card-footer">
+                      <button 
+                        className="btn btn-pay-trip" 
+                        onClick={() => handlePayTrip(trip)}
+                      >
+                        <FaMoneyBillWave className="btn-icon" />
+                        Pagar {formatCurrency(trip.precio)}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -438,9 +510,10 @@ export const Trips = () => {
       </div>
 
       {/* Modal de finalizar viaje */}
-      {showEndTripModal && currentTrip && (
+      {showEndTripModal && tripEndData && (
         <EndTrip
           trip={currentTrip}
+          tripEndData={tripEndData}
           onClose={handleCloseEndTripModal}
           onTripEnded={handleTripEnded}
         />

@@ -162,6 +162,19 @@
           border-radius: 10px;
           border: 1px solid $border-color;
 
+          &.extra-time {
+            border-color: $light-red;
+            background-color: rgba(255, 193, 7, 0.05);
+
+            .summary-label span {
+              color: $red;
+            }
+
+            .summary-value {
+              color: $red;
+            }
+          }
+
           &.total {
             background: linear-gradient(
               135deg,

@@ -8,6 +8,8 @@ import {
   FaRegCalendarCheck,
   FaMoneyBillWave,
   FaBatteryHalf,
+  FaCircleCheck,
+  // FaTimesCircle,
 } from 'react-icons/fa6';
 import { MdOutlineStopCircle } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
@@ -17,54 +19,60 @@ import { SubHeader } from '@layouts/SubHeader';
 import { EndTrip } from './EndTrip';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
+// api
+import { useGetCurrentTrip, useGetTripHistory } from '@api/trips';
 // styles
 import './trips.scss';
 
 export const Trips = () => {
   const { formatCurrency } = useCurrency();
+  const { get: getCurrentTrip } = useGetCurrentTrip();
+  const { get: getTripHistory } = useGetTripHistory();
 
-  // TEMPORAL: Cargar viaje actual desde localStorage para simular persistencia
-  // TODO: Reemplazar con datos reales de la API
-  const [currentTrip, setCurrentTrip] = useState(() => {
-    const savedTrip = localStorage.getItem('currentTrip');
-    return savedTrip ? JSON.parse(savedTrip) : null;
-  });
+  const [currentTrip, setCurrentTrip] = useState(null);
+  const [loadingCurrentTrip, setLoadingCurrentTrip] = useState(true);
+  const [tripHistory, setTripHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
-  // TEMPORAL: Cargar historial de viajes desde localStorage para simular persistencia
-  // TODO: Reemplazar con datos reales de la API
-  const [tripHistory, setTripHistory] = useState(() => {
-    const savedHistory = localStorage.getItem('tripHistory');
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  });
-
-  // setear 2 viajes de prueba en el historial
+  // Cargar viaje actual desde la API
   useEffect(() => {
-    const sampleHistory = [
-      {
-        id: 'trip1',
-        bikeId: 'M001',
-        bikeType: 'mechanical',
-        startTime: '2024-06-20T10:00:00Z',
-        endTime: '2024-06-20T10:30:00Z',
-        duration: '30 minutos',
-        charge: 1500,
-      },
-      {
-        id: 'trip2',
-        bikeId: 'E002',
-        bikeType: 'electric',
-        startTime: '2024-06-18T14:00:00Z',
-        endTime: '2024-06-18T14:45:00Z',
-        duration: '45 minutos',
-        charge: 2500,
-      },
-    ];
+    const loadCurrentTrip = async () => {
+      try {
+        setLoadingCurrentTrip(true);
+        const response = await getCurrentTrip();
+        if (response?.success && response?.data) {
+          setCurrentTrip(response.data);
+        } else {
+          setCurrentTrip(null);
+        }
+      } catch (error) {
+        console.error('Error al cargar el viaje actual:', error);
+        setCurrentTrip(null);
+      } finally {
+        setLoadingCurrentTrip(false);
+      }
+    };
 
-    const savedHistory = localStorage.getItem('tripHistory');
-    if (!savedHistory) {
-      localStorage.setItem('tripHistory', JSON.stringify(sampleHistory));
-      setTripHistory(sampleHistory);
-    }
+    loadCurrentTrip();
+  }, []);
+
+  // Cargar historial de viajes desde la API
+  useEffect(() => {
+    const loadTripHistory = async () => {
+      try {
+        setLoadingHistory(true);
+        const response = await getTripHistory();
+        if (response?.success && response?.data?.viajes) {
+          setTripHistory(response.data.viajes);
+        }
+      } catch (error) {
+        console.error('Error al cargar el historial:', error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    loadTripHistory();
   }, []);
 
   // Estado para el contador del viaje actual
@@ -78,7 +86,7 @@ export const Trips = () => {
     if (!currentTrip) return;
 
     const updateElapsedTime = () => {
-      const start = new Date(currentTrip.startTime);
+      const start = new Date(currentTrip.fecha_inicio);
       const now = new Date();
       const diff = now - start;
 
@@ -114,12 +122,28 @@ export const Trips = () => {
   };
 
   // Función para manejar cuando el viaje finaliza exitosamente
-  const handleTripEnded = () => {
+  const handleTripEnded = async () => {
     setCurrentTrip(null);
     setShowEndTripModal(false);
-    // TEMPORAL: Recargar el historial desde localStorage
-    const savedHistory = localStorage.getItem('tripHistory');
-    setTripHistory(savedHistory ? JSON.parse(savedHistory) : []);
+    // Recargar el viaje actual y el historial desde la API
+    try {
+      const [currentResponse, historyResponse] = await Promise.all([
+        getCurrentTrip(),
+        getTripHistory(),
+      ]);
+      
+      if (currentResponse?.success && currentResponse?.data) {
+        setCurrentTrip(currentResponse.data);
+      } else {
+        setCurrentTrip(null);
+      }
+      
+      if (historyResponse?.success && historyResponse?.data?.viajes) {
+        setTripHistory(historyResponse.data.viajes);
+      }
+    } catch (error) {
+      console.error('Error al recargar los datos:', error);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -137,6 +161,49 @@ export const Trips = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const formatDuration = (minutes) => {
+    if (!minutes) return 'N/A';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0) {
+      return `${hours}h ${mins}min`;
+    }
+    return `${mins} min`;
+  };
+
+  const formatDistance = (km) => {
+    if (!km) return 'N/A';
+    return `${km.toFixed(2)} km`;
+  };
+
+  const getTripTypeLabel = (type) => {
+    return type === 'MILLA' ? 'Última Milla' : 'Recorrido Largo';
+  };
+
+  const getTripMaxTime = (type) => {
+    return type === 'MILLA' ? '45 min' : '75 min';
+  };
+
+  const getTripBasePrice = (type) => {
+    return type === 'MILLA' ? 17500 : 25000;
+  };
+
+  const getTripExtraMinutePrice = (type) => {
+    return type === 'MILLA' ? 250 : 1000;
+  };
+
+  const getPaymentStatusIcon = (status) => {
+    return status === 'PAGADO' ? (
+      <FaCircleCheck className="payment-icon paid" />
+    ) : (
+      <FaRegClock className="payment-icon pending" />
+    );
+  };
+
+  const getPaymentStatusLabel = (status) => {
+    return status === 'PAGADO' ? 'Pagado' : 'Pendiente';
   };
 
   const getBikeTypeIcon = (type) => {
@@ -162,29 +229,37 @@ export const Trips = () => {
         <div className="current-trip-section">
           <h2 className="section-title">Viaje Actual</h2>
 
-          {currentTrip ? (
+          {loadingCurrentTrip ? (
+            <div className="no-trip">
+              <p className="no-trip-text">Cargando viaje actual...</p>
+            </div>
+          ) : currentTrip ? (
             <div className="current-trip-card">
               <div className="trip-header">
                 <div className="bike-info">
                   <div className="bike-id-container">
                     <FaBicycle className="bike-icon" />
-                    <h3 className="bike-id">{currentTrip.bikeId}</h3>
-                    {getBikeTypeIcon(currentTrip.bikeType)}
+                    <h3 className="bike-id">{currentTrip.bicicleta.id}</h3>
+                    {getBikeTypeIcon(
+                      currentTrip.bicicleta.tipo === 'Electrica'
+                        ? 'electric'
+                        : 'mechanical'
+                    )}
                   </div>
-                  {currentTrip.bikeType === 'electric' && (
+                  {currentTrip.bicicleta.tipo === 'Electrica' && currentTrip.bicicleta.bateria && (
                     <div className="battery-indicator">
                       <div
                         className={`battery-bar ${getBatteryClass(
-                          currentTrip.battery
+                          currentTrip.bicicleta.bateria
                         )}`}
                       >
                         <div
                           className="battery-fill"
-                          style={{ width: `${currentTrip.battery}%` }}
+                          style={{ width: `${currentTrip.bicicleta.bateria}%` }}
                         >
                           <FaBatteryHalf className="battery-icon" />
                           <span className="battery-percentage">
-                            {currentTrip.battery}%
+                            {currentTrip.bicicleta.bateria}%
                           </span>
                         </div>
                       </div>
@@ -204,7 +279,7 @@ export const Trips = () => {
                   <div className="detail-content">
                     <span className="detail-label">Fecha de inicio</span>
                     <span className="detail-value">
-                      {formatDate(currentTrip.startTime)}
+                      {formatDate(currentTrip.fecha_inicio)}
                     </span>
                   </div>
                 </div>
@@ -213,7 +288,25 @@ export const Trips = () => {
                   <div className="detail-content">
                     <span className="detail-label">Hora de inicio</span>
                     <span className="detail-value">
-                      {formatTime(currentTrip.startTime)}
+                      {formatTime(currentTrip.fecha_inicio)}
+                    </span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FaBicycle className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Tipo de viaje</span>
+                    <span className="detail-value">
+                      {getTripTypeLabel(currentTrip.tipo_viaje)} (máx: {getTripMaxTime(currentTrip.tipo_viaje)})
+                    </span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <FaMoneyBillWave className="detail-icon" />
+                  <div className="detail-content">
+                    <span className="detail-label">Precio del viaje</span>
+                    <span className="detail-value">
+                      {formatCurrency(getTripBasePrice(currentTrip.tipo_viaje))} + {formatCurrency(getTripExtraMinutePrice(currentTrip.tipo_viaje))}/min. extra
                     </span>
                   </div>
                 </div>
@@ -241,19 +334,27 @@ export const Trips = () => {
         <div className="history-section">
           <h2 className="section-title">Historial de Viajes</h2>
 
-          {tripHistory.length > 0 ? (
+          {loadingHistory ? (
+            <div className="no-history">
+              <p>Cargando historial...</p>
+            </div>
+          ) : tripHistory.length > 0 ? (
             <div className="history-list">
               {tripHistory.map((trip) => (
                 <div key={trip.id} className="history-card">
                   <div className="history-card-header">
                     <div className="bike-info-small">
                       <FaBicycle className="bike-icon-small" />
-                      <h3 className="bike-id-small">{trip.bikeId}</h3>
-                      {getBikeTypeIcon(trip.bikeType)}
+                      <h3 className="bike-id-small">{trip.bicicleta.id}</h3>
+                      {getBikeTypeIcon(
+                        trip.bicicleta.tipo === 'Electrica'
+                          ? 'electric'
+                          : 'mechanical'
+                      )}
                     </div>
                     <div className="charge-amount">
                       <FaMoneyBillWave className="charge-icon" />
-                      {formatCurrency(trip.charge)}
+                      {trip.precio ? formatCurrency(trip.precio) : 'N/A'}
                     </div>
                   </div>
 
@@ -263,8 +364,8 @@ export const Trips = () => {
                       <div className="history-content">
                         <span className="history-label">Inicio:</span>
                         <span className="history-value">
-                          {formatDate(trip.startTime)} -{' '}
-                          {formatTime(trip.startTime)}
+                          {formatDate(trip.fechas.inicio)} -{' '}
+                          {formatTime(trip.fechas.inicio)}
                         </span>
                       </div>
                     </div>
@@ -274,8 +375,21 @@ export const Trips = () => {
                       <div className="history-content">
                         <span className="history-label">Fin:</span>
                         <span className="history-value">
-                          {formatDate(trip.endTime)} -{' '}
-                          {formatTime(trip.endTime)}
+                          {trip.fechas.fin
+                            ? `${formatDate(trip.fechas.fin)} - ${formatTime(
+                                trip.fechas.fin
+                              )}`
+                            : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="history-detail">
+                      <FaRegClock className="history-icon" />
+                      <div className="history-content">
+                        <span className="history-label">Duración:</span>
+                        <span className="history-value">
+                          {formatDuration(trip.duracion)}
                         </span>
                       </div>
                     </div>
@@ -283,8 +397,32 @@ export const Trips = () => {
                     <div className="history-detail">
                       <GiPathDistance className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Duración:</span>
-                        <span className="history-value">{trip.duration}</span>
+                        <span className="history-label">Distancia:</span>
+                        <span className="history-value">
+                          {formatDistance(trip.distancia)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="history-detail">
+                      <FaBicycle className="history-icon" />
+                      <div className="history-content">
+                        <span className="history-label">Tipo de viaje:</span>
+                        <span className="history-value">
+                          {getTripTypeLabel(trip.tipo_viaje)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="history-detail payment-status">
+                      {getPaymentStatusIcon(trip.estado_pago)}
+                      <div className="history-content">
+                        <span className="history-label">Estado de pago:</span>
+                        <span
+                          className={`history-value payment-${trip.estado_pago.toLowerCase()}`}
+                        >
+                          {getPaymentStatusLabel(trip.estado_pago)}
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -11,6 +11,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { ReserveBike } from './ReserveBike.jsx';
 // api
 import { useGetStations, useGetStationBikes } from '@api/bikes';
+import { useGetCurrentTrip } from '@api/trips';
 
 // styles
 import './MapView.scss';
@@ -25,6 +26,7 @@ L.Icon.Default.mergeOptions({
 export const MapView = ({ onStationsLoaded }) => {
   const [selectedStation, setSelectedStation] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
+  const [hasActiveTrip, setHasActiveTrip] = useState(false);
 
   // Coordenadas de Ibagué, Colombia
   const center = [4.4389, -75.2322];
@@ -34,6 +36,23 @@ export const MapView = ({ onStationsLoaded }) => {
 
   const getStations = useGetStations();
   const getStationBikes = useGetStationBikes();
+  const getCurrentTrip = useGetCurrentTrip();
+
+  // Verificar si hay viaje activo
+  useEffect(() => {
+    const checkActiveTrip = async () => {
+      try {
+        const tripData = await getCurrentTrip.get();
+        console.log('Datos del viaje activo:', tripData);
+        setHasActiveTrip(tripData.data !== null);
+      } catch (error) {
+        console.error('Error al verificar viaje activo:', error);
+        setHasActiveTrip(false);
+      }
+    };
+
+    checkActiveTrip();
+  }, []);
 
   useEffect(() => {
     const fetchStations = async () => {
@@ -127,6 +146,7 @@ export const MapView = ({ onStationsLoaded }) => {
                   name={station.name}
                   bikes={station.bikes}
                   onReserveClick={() => handleOpenReserve(station)}
+                  hasActiveTrip={hasActiveTrip}
                 />
               </Popup>
             </Marker>
@@ -141,9 +161,33 @@ export const MapView = ({ onStationsLoaded }) => {
   );
 };
 
-export const BikeStationPopup = ({ name, bikes, onReserveClick }) => {
+export const BikeStationPopup = ({ name, bikes, onReserveClick, hasActiveTrip }) => {
   const totalCapacity = 15;
   const availableBikes = bikes.filter((bike) => bike.available);
+
+  const getButtonConfig = () => {
+    if (hasActiveTrip) {
+      return {
+        text: 'Ya tienes un viaje activo. Finalízalo para iniciar una nueva reserva',
+        className: 'btn-reserve active-trip',
+        disabled: true
+      };
+    }
+    if (availableBikes.length === 0) {
+      return {
+        text: 'No hay bicicletas disponibles',
+        className: 'btn-reserve',
+        disabled: true
+      };
+    }
+    return {
+      text: 'Ver Bicicletas Disponibles',
+      className: 'btn-reserve',
+      disabled: false
+    };
+  };
+
+  const buttonConfig = getButtonConfig();
 
   return (
     <div className="bike-station-popup">
@@ -158,13 +202,11 @@ export const BikeStationPopup = ({ name, bikes, onReserveClick }) => {
       </div>
 
       <button
-        className="btn-reserve"
+        className={buttonConfig.className}
         onClick={onReserveClick}
-        disabled={availableBikes.length === 0}
+        disabled={buttonConfig.disabled}
       >
-        {availableBikes.length > 0
-          ? 'Ver Bicicletas Disponibles'
-          : 'No hay bicicletas disponibles'}
+        {buttonConfig.text}
       </button>
     </div>
   );

@@ -71,14 +71,21 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
   // Calcular costo del viaje
   useEffect(() => {
     if (trip) {
-      const start = new Date(trip.startTime);
+      const start = new Date(trip.fecha_inicio);
       const now = new Date();
       const diffInMinutes = Math.floor((now - start) / (1000 * 60));
 
-      // Tarifa base: 500 COP por minuto
-      // Convertir minutos a horas y calcular costo (en centavos de COP)
-      const costInCents = Math.ceil(diffInMinutes * 500);
-      setTripCost(costInCents <= 2500 ? 2500 : costInCents);
+      // Determinar tipo de viaje y calcular costo
+      const basePrice = trip.tipo_viaje === 'MILLA' ? 17500 : 25000;
+      const maxMinutes = trip.tipo_viaje === 'MILLA' ? 45 : 75;
+      const extraMinutePrice = trip.tipo_viaje === 'MILLA' ? 250 : 1000;
+
+      if (diffInMinutes <= maxMinutes) {
+        setTripCost(basePrice);
+      } else {
+        const extraMinutes = diffInMinutes - maxMinutes;
+        setTripCost(basePrice + (extraMinutes * extraMinutePrice));
+      }
     }
   }, [trip]);
 
@@ -108,7 +115,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
 
   const calculateDuration = () => {
     if (!trip) return '00:00';
-    const start = new Date(trip.startTime);
+    const start = new Date(trip.fecha_inicio);
     const now = new Date();
     const diff = now - start;
 
@@ -157,33 +164,10 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
       const response = await payWithCityPassMutation.post({ monto: tripCost });
       
       if (response?.success) {
+        console.log('Pago con CityPass exitoso:', response);
         // Pago exitoso, proceder a finalizar el viaje
         setPaymentStep('success');
         setTimeout(() => {
-          // Guardar el viaje finalizado en el historial de localStorage
-          const completedTrip = {
-            id: Date.now(),
-            bikeId: trip.bikeId,
-            bikeType: trip.bikeType,
-            startTime: trip.startTime,
-            endTime: new Date().toISOString(),
-            duration: calculateDuration(),
-            charge: tripCost,
-          };
-
-          // Obtener historial existente o crear uno nuevo
-          const existingHistory = JSON.parse(
-            localStorage.getItem('tripHistory') || '[]'
-          );
-
-          // Agregar el viaje completado al inicio del historial
-          const updatedHistory = [completedTrip, ...existingHistory];
-
-          // Guardar el historial actualizado
-          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-
-          // Limpiar el viaje actual del localStorage
-          localStorage.removeItem('currentTrip');
           onTripEnded();
           onClose();
           navigate('/trips');
@@ -213,33 +197,10 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
       const response = await payWithBalanceMutation.post({ monto: tripCost });
       
       if (response?.success) {
+        console.log('Pago con saldo exitoso:', response);
         // Pago exitoso, proceder a finalizar el viaje
         setPaymentStep('success');
         setTimeout(() => {
-          // Guardar el viaje finalizado en el historial de localStorage
-          const completedTrip = {
-            id: Date.now(),
-            bikeId: trip.bikeId,
-            bikeType: trip.bikeType,
-            startTime: trip.startTime,
-            endTime: new Date().toISOString(),
-            duration: calculateDuration(),
-            charge: tripCost,
-          };
-
-          // Obtener historial existente o crear uno nuevo
-          const existingHistory = JSON.parse(
-            localStorage.getItem('tripHistory') || '[]'
-          );
-
-          // Agregar el viaje completado al inicio del historial
-          const updatedHistory = [completedTrip, ...existingHistory];
-
-          // Guardar el historial actualizado
-          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-
-          // Limpiar el viaje actual del localStorage
-          localStorage.removeItem('currentTrip');
           onTripEnded();
           onClose();
           navigate('/trips');
@@ -261,32 +222,10 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
   };
 
   const handlePaymentSuccess = (paymentIntent) => {
+    console.log('Pago exitoso con tarjeta:', stripePayment);
+    console.log('Pago exitoso con tarjeta:', stripePayment.paymentMethodDetails);
     setPaymentStep('success');
     setTimeout(() => {
-      // TEMPORAL: Guardar el viaje finalizado en el historial de localStorage
-      const completedTrip = {
-        id: Date.now(),
-        bikeId: trip.bikeId,
-        bikeType: trip.bikeType,
-        startTime: trip.startTime,
-        endTime: new Date().toISOString(),
-        duration: calculateDuration(),
-        charge: tripCost,
-      };
-
-      // Obtener historial existente o crear uno nuevo
-      const existingHistory = JSON.parse(
-        localStorage.getItem('tripHistory') || '[]'
-      );
-
-      // Agregar el viaje completado al inicio del historial
-      const updatedHistory = [completedTrip, ...existingHistory];
-
-      // Guardar el historial actualizado
-      localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-
-      // Limpiar el viaje actual del localStorage
-      localStorage.removeItem('currentTrip');
       onTripEnded();
       onClose();
       navigate('/trips');
@@ -356,7 +295,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                   <FaBicycle className="bike-icon" />
                 </div>
                 <div className="bike-details">
-                  <h2 className="bike-id">{trip.bikeId}</h2>
+                  <h2 className="bike-id">{trip.bicicleta.id}</h2>
                   <p className="bike-status">Viaje Completado</p>
                 </div>
               </div>
@@ -589,22 +528,6 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                     ? () => {
                         setPaymentStep('success');
                         setTimeout(() => {
-                          const completedTrip = {
-                            id: Date.now(),
-                            bikeId: trip.bikeId,
-                            bikeType: trip.bikeType,
-                            startTime: trip.startTime,
-                            endTime: new Date().toISOString(),
-                            duration: calculateDuration(),
-                            charge: 0, // Gratis por suscripción
-                          };
-
-                          const existingHistory = JSON.parse(
-                            localStorage.getItem('tripHistory') || '[]'
-                          );
-                          const updatedHistory = [completedTrip, ...existingHistory];
-                          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-                          localStorage.removeItem('currentTrip');
                           onTripEnded();
                           onClose();
                           navigate('/trips');

@@ -48,6 +48,7 @@ export const useFetch = (
           };
           throw errorMsgs;
         }
+        globalAlertShown = false; 
         return result;
       } catch (err) {
         setError('Ha ocurrido un error'); // usuario
@@ -58,7 +59,8 @@ export const useFetch = (
           globalAlertShown = true; 
           logout();
           alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
-        }
+        } 
+
 
         const errorMsgs = {
           errorFetchMsg: errorMessage,

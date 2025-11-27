@@ -172,6 +172,7 @@
         .input-label {
           font-weight: 600;
           color: $text-primary;
+          width: fit-content;
         }
 
         .input-wrapper {
@@ -211,6 +212,196 @@
             &:disabled {
               opacity: 0.6;
               cursor: not-allowed;
+            }
+          }
+
+          &.autocomplete-wrapper {
+            .destination-input {
+              padding-left: 2.75rem;
+              padding-right: 2.75rem;
+              letter-spacing: normal;
+              text-transform: none;
+            }
+
+            .input-icon-container {
+              @include flex();
+              position: absolute;
+              left: 0.875rem;
+              top: 50%;
+              transform: translateY(-50%);
+              pointer-events: none;
+              z-index: 1;
+
+              .input-icon {
+                width: 18px;
+                height: 18px;
+                color: $primary-color;
+              }
+            }
+
+            .dropdown-icon {
+              position: absolute;
+              right: 0.875rem;
+              top: 50%;
+              transform: translateY(-50%);
+              height: 30px;
+              padding: 7px 0;
+              color: $text-secondary;
+              // cursor: pointer;
+              transition: transform $transition-fast;
+              z-index: 2;
+
+              &.open {
+                transform: translateY(-50%) rotate(180deg);
+              }
+
+              // &:hover {
+              //   color: $primary-color;
+              // }
+            }
+
+            .stations-list {
+              position: absolute;
+              top: calc(100% + 0.5rem);
+              left: 0;
+              right: 0;
+              background-color: $bg-secondary;
+              border: 2px solid $border-color;
+              border-radius: 10px;
+              max-height: 250px;
+              overflow-y: auto;
+              box-shadow: $shadow-lg;
+              z-index: 1000;
+              animation: slideDown 0.2s ease;
+
+              @keyframes slideDown {
+                from {
+                  opacity: 0;
+                  transform: translateY(-10px);
+                }
+                to {
+                  opacity: 1;
+                  transform: translateY(0);
+                }
+              }
+
+              .station-item {
+                padding: 0.875rem;
+                cursor: pointer;
+                transition: all $transition-fast;
+                border-bottom: 1px solid $border-color;
+
+                &:last-child {
+                  border-bottom: none;
+                }
+
+                &:hover {
+                  background-color: rgba(255, 146, 45, 0.1);
+                }
+
+                &.selected {
+                  background-color: rgba(255, 146, 45, 0.15);
+                  border-left: 3px solid $primary-color;
+                }
+
+                &.no-results {
+                  cursor: default;
+                  color: $text-secondary;
+                  text-align: center;
+                  font-style: italic;
+
+                  &:hover {
+                    background-color: transparent;
+                  }
+                }
+
+                .station-info {
+                  @include flex($justify: space-between, $align: center);
+
+                  .station-name {
+                    font-weight: 500;
+                    color: $text-primary;
+                  }
+
+                  .station-type {
+                    font-size: 0.85rem;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 6px;
+                    font-weight: 600;
+
+                    &.bicicleta {
+                      background-color: rgba(40, 167, 69, 0.15);
+                      color: #28a745;
+                    }
+
+                    &.metro {
+                      background-color: rgba(0, 123, 255, 0.15);
+                      color: #007bff;
+                    }
+                  }
+                }
+              }
+
+              &::-webkit-scrollbar {
+                width: 6px;
+              }
+
+              &::-webkit-scrollbar-track {
+                background: transparent;
+              }
+
+              &::-webkit-scrollbar-thumb {
+                background: $primary-color-light;
+                border-radius: 3px;
+
+                &:hover {
+                  background: $primary-color;
+                }
+              }
+            }
+          }
+        }
+
+        .selected-station-info {
+          @include flex($justify: flex-start, $gap: 0.75rem, $align: center);
+          padding: 1rem;
+          background: linear-gradient(
+            135deg,
+            rgba(255, 146, 45, 0.1),
+            rgba(255, 146, 45, 0.05)
+          );
+          border-radius: 8px;
+          animation: fadeIn 0.3s ease;
+
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+
+          .station-type-label {
+            font-size: 0.9rem;
+            color: $text-secondary;
+            font-weight: 600;
+          }
+
+          .station-type-badge {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+
+            &.bicicleta {
+              background-color: rgba(40, 167, 69, 0.15);
+              color: #28a745;
+            }
+
+            &.metro {
+              background-color: rgba(0, 123, 255, 0.15);
+              color: #007bff;
             }
           }
         }

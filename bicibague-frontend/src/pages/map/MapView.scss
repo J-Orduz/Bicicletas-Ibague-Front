@@ -19,7 +19,6 @@
 
   // Popup simple de las estaciones
   .bike-station-popup {
-    min-width: 280px;
     padding: 4px;
 
     h3 {
@@ -83,6 +82,19 @@
         cursor: not-allowed;
         box-shadow: none;
       }
+
+      &.active-trip {
+        background: $bg-tertiary;
+        color: $red;
+        border: 2px solid $red;
+        cursor: not-allowed;
+        box-shadow: none;
+        font-weight: 600;
+
+        &:hover {
+          transform: none;
+        }
+      }
     }
   }
 
@@ -107,5 +119,7 @@
     font-size: 16px !important;
     line-height: 1.5 !important;
     margin: 12px;
+    min-width: 280px;
+    max-width: 300px;
   }
 }

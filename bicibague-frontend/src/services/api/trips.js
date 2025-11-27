@@ -33,3 +33,19 @@ export const useEndTripMutation = () => {
       ),
   };
 };
+
+
+// Pago exitoso POST
+export const useSuccessfulPaymentMutation = () => {
+  const post = useMutation();
+
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/trips/pagoExito',
+        data,
+        'Error al registrar el pago exitoso'
+      ),
+  };
+};

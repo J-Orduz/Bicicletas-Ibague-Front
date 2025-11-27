@@ -11,6 +11,7 @@ import {
   useGetCityPassBalance,
   useGetSubscription 
 } from '@api/payments';
+import { useSuccessfulPaymentMutation } from '@api/trips';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
 // icons
@@ -41,6 +42,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
   const getCurrentBalance = useGetCurrentBalance();
   const getCityPassBalance = useGetCityPassBalance();
   const getSubscription = useGetSubscription();
+  const successfulPaymentMutation = useSuccessfulPaymentMutation();
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -139,6 +141,10 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
       
       if (response?.success) {
         console.log('Pago con CityPass exitoso:', response);
+        
+        // Registrar pago exitoso
+        await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+        
         // Pago exitoso, proceder a finalizar el viaje
         setPaymentStep('success');
         setTimeout(() => {
@@ -172,6 +178,10 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
       
       if (response?.success) {
         console.log('Pago con saldo exitoso:', response);
+        
+        // Registrar pago exitoso
+        await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+        
         // Pago exitoso, proceder a finalizar el viaje
         setPaymentStep('success');
         setTimeout(() => {
@@ -195,9 +205,13 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
     }
   };
 
-  const handlePaymentSuccess = (paymentIntent) => {
+  const handlePaymentSuccess = async (paymentIntent) => {
     console.log('Pago exitoso con tarjeta:', stripePayment);
     console.log('Pago exitoso con tarjeta:', stripePayment.paymentMethodDetails);
+    
+    // Registrar pago exitoso
+    await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+    
     setPaymentStep('success');
     setTimeout(() => {
       onTripEnded();
@@ -531,7 +545,10 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                 className="btn-proceed"
                 onClick={
                   subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0
-                    ? () => {
+                    ? async () => {
+                        // Registrar pago exitoso por suscripción
+                        await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+                        
                         setPaymentStep('success');
                         setTimeout(() => {
                           onTripEnded();

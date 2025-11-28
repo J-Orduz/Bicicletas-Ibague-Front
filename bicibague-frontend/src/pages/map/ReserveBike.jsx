@@ -69,7 +69,7 @@ export const ReserveBike = ({ station, onClose }) => {
       onClose();
       navigate('/reserves');
     } catch (error) {
-      alert(error.errorMutationMsg);
+      alert(error.errorMutationMsg, error.errorJsonMsg);
       return;
     }
   };

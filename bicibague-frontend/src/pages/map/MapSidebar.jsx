@@ -11,6 +11,7 @@ import { useCurrency } from '@hooks/useCurrency';
 import { useGetAllBikes } from '@api/bikes';
 import { useGetReservationStats } from '@api/reserves';
 import { useGetCurrentBalance } from '@api/payments';
+import { useGetCurrentTrip, useGetTripHistory } from '@api/trips';
 // styles
 import './MapSidebar.scss';
 
@@ -18,6 +19,8 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const getCurrentBalance = useGetCurrentBalance();
+  const getCurrentTrip = useGetCurrentTrip();
+  const getTripHistory = useGetTripHistory();
   const [balance, setBalance] = useState(null);
   const [stats, setStats] = useState({ totalReserves: 0, totalTrips: 0 });
   const [currentTrip, setCurrentTrip] = useState(null);
@@ -26,28 +29,24 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
 
   const getReservationStats = useGetReservationStats();
 
-  // Obtener estadísticas de reservas
+  // Obtener estadísticas de reservas y viajes
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await getReservationStats.get();
+        const [reservationResponse, tripHistoryResponse] = await Promise.all([
+          getReservationStats.get(),
+          getTripHistory.get()
+        ]);
 
-        const tripHistory = localStorage.getItem('tripHistory');
-        const trips = tripHistory ? JSON.parse(tripHistory) : [];
-
-        if (response.data) {
-          setStats({
-            totalReserves: response.data.total_reservas || 0,
-            totalTrips: trips.length || 0,
-          });
-        }
+        setStats({
+          totalReserves: reservationResponse?.data?.total_reservas || 0,
+          totalTrips: tripHistoryResponse?.data?.total_viajes || 0,
+        });
       } catch (error) {
-        // Fallback a historial local
-        const tripHistory = localStorage.getItem('tripHistory');
-        const trips = tripHistory ? JSON.parse(tripHistory) : [];
+        console.error('Error al obtener estadísticas:', error);
         setStats({
           totalReserves: 0,
-          totalTrips: trips.length,
+          totalTrips: 0,
         });
       }
     };
@@ -70,12 +69,23 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
     fetchBalance();
   }, []);
 
-  // Obtener viaje actual desde localStorage
+  // Obtener viaje actual desde la API
   useEffect(() => {
-    const savedTrip = localStorage.getItem('currentTrip');
-    if (savedTrip) {
-      setCurrentTrip(JSON.parse(savedTrip));
-    }
+    const fetchCurrentTrip = async () => {
+      try {
+        const response = await getCurrentTrip.get();
+        if (response?.success && response?.data) {
+          setCurrentTrip(response.data);
+        } else {
+          setCurrentTrip(null);
+        }
+      } catch (error) {
+        console.error('Error al obtener viaje actual:', error);
+        setCurrentTrip(null);
+      }
+    };
+
+    fetchCurrentTrip();
   }, []);
 
   // Contador de tiempo transcurrido del viaje
@@ -83,7 +93,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
     if (!currentTrip) return;
 
     const updateElapsedTime = () => {
-      const start = new Date(currentTrip.startTime);
+      const start = new Date(currentTrip.fecha_inicio);
       const now = new Date();
       const diff = now - start;
 
@@ -245,7 +255,7 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
             </div>
             <div className="info-row-small">
               <FaBicycle className="icon-small" />
-              <span>{currentTrip.bikeId}</span>
+              <span>{currentTrip.bicicleta.id}</span>
             </div>
           </div>
         ) : (

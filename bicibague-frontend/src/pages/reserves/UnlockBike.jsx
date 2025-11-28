@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // API
 import { useStartTripMutation } from '@api/reserves';
+import { useGetStations } from '@api/bikes';
 // icons
 import { IoLockOpenOutline } from 'react-icons/io5';
 import { BsXLg } from 'react-icons/bs';
 import { FaBicycle } from 'react-icons/fa6';
-import { FaExclamationCircle } from 'react-icons/fa';
+import {
+  FaExclamationCircle,
+  FaMapMarkerAlt,
+  FaChevronDown,
+} from 'react-icons/fa';
 // styles
 import './UnlockBike.scss';
 
@@ -14,8 +19,14 @@ export const UnlockBike = ({ reservation, onClose }) => {
   const navigate = useNavigate();
 
   const [serialNumber, setSerialNumber] = useState('');
+  const [destinationSearch, setDestinationSearch] = useState('');
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [stations, setStations] = useState([]);
+  const [showStationsList, setShowStationsList] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const getStations = useGetStations();
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -26,26 +37,40 @@ export const UnlockBike = ({ reservation, onClose }) => {
     };
   }, []);
 
-  const onUnlock = (serialNumber, bikeData) => {
-    console.log('Viaje iniciado con número de serie:', serialNumber);
-
-    // TEMPORAL: Guardar datos del viaje en localStorage para simular persistencia
-    // TODO: Reemplazar con datos reales de la API cuando esté disponible (bikeId, bikeType, status ya son datos reales)
-
-    const tripData = {
-      id: reservation.id,
-      bikeId: bikeData.id,
-      bikeType: bikeData.tipo == 'Electrica' ? 'electric' : 'mechanical',
-      battery: 85, // Valor temporal fijo para bicicletas eléctricas
-      startTime: new Date().toISOString(), // Fecha y hora de inicio
-      status: bikeData.estado,
-      serialNumber: serialNumber,
+  // Obtener estaciones al montar el componente
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const stationsData = await getStations.get();
+        setStations(stationsData);
+      } catch (error) {
+        console.error('Error al obtener estaciones:', error);
+      }
     };
 
-    localStorage.setItem('currentTrip', JSON.stringify(tripData));
+    fetchStations();
+  }, []);
 
-    // TEMPORAL: Eliminar la reserva del localStorage al iniciar el viaje
-    localStorage.removeItem('currentReservation');
+  // Función para normalizar texto (quitar tildes y convertir a minúsculas)
+  const normalizeText = (text) => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  };
+
+  // Filtrar estaciones según búsqueda y ordenar por id
+  const filteredStations = stations
+    .filter((station) => {
+      if (!destinationSearch.trim()) return true;
+      const normalizedSearch = normalizeText(destinationSearch);
+      const normalizedName = normalizeText(station.nombre);
+      return normalizedName.includes(normalizedSearch);
+    })
+    .sort((a, b) => a.id - b.id);
+
+  const onUnlock = (serialNumber, bikeData) => {
+    console.log('Viaje iniciado con número de serie:', serialNumber);
 
     alert(
       `¡Bicicleta desbloqueada! Número de serie: ${serialNumber}\n¡Disfruta tu viaje!`
@@ -60,7 +85,6 @@ export const UnlockBike = ({ reservation, onClose }) => {
 
     // Validación básica
     if (!serialNumber.trim()) {
-      // cadena vacia es falsy: !"" = true
       setError('Por favor ingresa el número de serie');
       return;
     }
@@ -70,12 +94,18 @@ export const UnlockBike = ({ reservation, onClose }) => {
       return;
     }
 
+    if (!selectedStation) {
+      setError('Por favor selecciona una estación de destino');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await startTripMutation.post({
         serialNumber: serialNumber,
         bikeId: reservation.bikeId,
+        estacionFin: selectedStation.id,
       });
 
       console.log('respuesta de iniciar viaje:', response);
@@ -97,8 +127,48 @@ export const UnlockBike = ({ reservation, onClose }) => {
   const handleInputChange = (e) => {
     const value = e.target.value.toUpperCase();
     setSerialNumber(value);
-    setError(''); // Limpiar error al escribir
+    setError('');
   };
+
+  const handleDestinationChange = (e) => {
+    const value = e.target.value;
+    setDestinationSearch(value);
+    setShowStationsList(true);
+    setError('');
+  };
+
+  const handleStationSelect = (station) => {
+    setSelectedStation(station);
+    setDestinationSearch(station.nombre);
+    setShowStationsList(false);
+    setError('');
+  };
+
+  const handleDestinationFocus = () => {
+    setShowStationsList(true);
+  };
+
+  // detectar clics fuera del componente de la lista de estaciones para cerrarla
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        !e.target.classList.contains('station-item') &&
+        !e.target.classList.contains('destination-input') &&
+        !e.target.classList.contains('input-label')
+      ) {
+        setShowStationsList(false);
+        // validar si destinationSearch no coincide con la estacion previamente seleccionada para no mostrar nombre incorrecto
+        if ( destinationSearch !== selectedStation?.nombre ) {
+          setDestinationSearch(selectedStation?.nombre || '');
+        }
+        
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [destinationSearch, selectedStation]);
 
   // Cerrar modal al hacer clic en el overlay
   const handleOverlayClick = (e) => {
@@ -133,17 +203,78 @@ export const UnlockBike = ({ reservation, onClose }) => {
             </div>
           </div>
 
-          <div className="unlock-instructions">
-            <h3 className="instructions-title">Instrucciones:</h3>
-            <ol className="instructions-list">
-              <li>
-                1. Localiza el número de serie en la barra de la bicicleta
-              </li>
-              <li>
-                2. Ingresa el código exactamente como aparece (sin espacios)
-              </li>
-              <li>3. Presiona "Desbloquear" para iniciar tu viaje</li>
-            </ol>
+          <div className="input-section">
+            <label htmlFor="destination" className="input-label">
+              Estación de Destino:
+            </label>
+            <div className="input-wrapper autocomplete-wrapper">
+              <div className="input-icon-container">
+                <FaMapMarkerAlt className="input-icon" />
+              </div>
+              <input
+                type="text"
+                id="destination"
+                className={`serial-input destination-input ${
+                  error && !selectedStation ? 'error' : ''
+                }`}
+                placeholder="Buscar estación..."
+                value={destinationSearch}
+                onChange={handleDestinationChange}
+                onFocus={handleDestinationFocus}
+                disabled={isLoading}
+                autoComplete="off"
+              />
+              <FaChevronDown
+                className={`dropdown-icon ${showStationsList ? 'open' : ''}`}
+              />
+
+              {showStationsList && filteredStations.length > 0 && (
+                <div className="stations-list">
+                  {filteredStations.map((station) => (
+                    <div
+                      key={station.id}
+                      className={`station-item ${
+                        selectedStation?.id === station.id ? 'selected' : ''
+                      }`}
+                      onClick={() => handleStationSelect(station)}
+                    >
+                      <div className="station-info">
+                        <span className="station-name">{station.nombre}</span>
+                        <span
+                          className={`station-type ${station.tipoEstacion.toLowerCase()}`}
+                        >
+                          {station.tipoEstacion === 'BICICLETA'
+                            ? '🚲 Bicicleta'
+                            : '🚇 Metro'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {showStationsList &&
+                filteredStations.length === 0 &&
+                destinationSearch && (
+                  <div className="stations-list">
+                    <div className="station-item no-results">
+                      No se encontraron estaciones
+                    </div>
+                  </div>
+                )}
+            </div>
+            {selectedStation && (
+              <div className="selected-station-info">
+                <span className="station-type-label">Tipo de estación:</span>
+                <span
+                  className={`station-type-badge ${selectedStation.tipoEstacion.toLowerCase()}`}
+                >
+                  {selectedStation.tipoEstacion === 'BICICLETA'
+                    ? '🚲 Bicicleta'
+                    : '🚇 Metro'}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="input-section">
@@ -170,6 +301,20 @@ export const UnlockBike = ({ reservation, onClose }) => {
               </div>
             )}
           </div>
+
+          <div className="unlock-instructions">
+            <h3 className="instructions-title">
+              Instrucciones del numero de serie:
+            </h3>
+            <ol className="instructions-list">
+              <li>
+                1. Localiza el número de serie en la barra de la bicicleta
+              </li>
+              <li>
+                2. Ingresa el código exactamente como aparece (sin espacios)
+              </li>
+            </ol>
+          </div>
         </div>
 
         <div className="modal-footer">
@@ -179,7 +324,7 @@ export const UnlockBike = ({ reservation, onClose }) => {
           <button
             className="btn-unlock"
             onClick={handleUnlock}
-            disabled={!serialNumber.trim() || isLoading}
+            disabled={!serialNumber.trim() || !selectedStation || isLoading}
           >
             {isLoading ? (
               <>

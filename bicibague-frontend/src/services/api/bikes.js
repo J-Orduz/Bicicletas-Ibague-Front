@@ -4,7 +4,7 @@ import { useMutation } from '@hooks/useMutation';
 // Obtener estaciones GET
 export const useGetStations = () => {
   return {
-    get: useFetch('/bikes/estaciones', 'Error al obtener las estaciones')
+    get: useFetch('/stations/getAll', 'Error al obtener las estaciones')
       .fetchData,
   };
 };

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 
+let globalAlertShown = false;
+
 export const useMutation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
 
   const mutate = async (
     method,
@@ -55,10 +57,19 @@ export const useMutation = () => {
         throw errorMsgs;
       }
 
+      globalAlertShown = false;
       return result;
     } catch (err) {
       setError('Ha ocurrido un error'); // usuario
       console.error(`${errorMessage}:: ${err?.message || err}`); // desarrollador
+
+      // Si el error es 401 (Unauthorized), cerrar sesión
+      if (err.status === 401 && !globalAlertShown) {
+        globalAlertShown = true;
+        logout();
+        alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
+      }
+
       const errorMsgs = {
         errorStatus: err?.status || 500,
         errorMutationMsg: errorMessage, // para usuario

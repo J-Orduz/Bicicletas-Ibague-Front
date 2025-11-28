@@ -11,6 +11,7 @@ import {
   useGetCityPassBalance,
   useGetSubscription 
 } from '@api/payments';
+import { useSuccessfulPaymentMutation } from '@api/trips';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
 // icons
@@ -20,13 +21,12 @@ import { FaCreditCard } from 'react-icons/fa';
 // styles
 import './EndTrip.scss';
 
-export const EndTrip = ({ trip, onClose, onTripEnded }) => {
+export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
 
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState('summary'); // 'summary', 'payment', 'processing', 'success'
-  const [tripCost, setTripCost] = useState(0);
   const [clientSecret, setClientSecret] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('card'); // 'card', 'citypass', or 'balance'
   const [cityPassError, setCityPassError] = useState('');
@@ -42,6 +42,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
   const getCurrentBalance = useGetCurrentBalance();
   const getCityPassBalance = useGetCityPassBalance();
   const getSubscription = useGetSubscription();
+  const successfulPaymentMutation = useSuccessfulPaymentMutation();
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -68,20 +69,6 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     }
   };
 
-  // Calcular costo del viaje
-  useEffect(() => {
-    if (trip) {
-      const start = new Date(trip.startTime);
-      const now = new Date();
-      const diffInMinutes = Math.floor((now - start) / (1000 * 60));
-
-      // Tarifa base: 500 COP por minuto
-      // Convertir minutos a horas y calcular costo (en centavos de COP)
-      const costInCents = Math.ceil(diffInMinutes * 500);
-      setTripCost(costInCents <= 2500 ? 2500 : costInCents);
-    }
-  }, [trip]);
-
   // Obtener saldos cuando se llega al paso de pago
   useEffect(() => {
     if (paymentStep === 'payment') {
@@ -107,15 +94,11 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
   };
 
   const calculateDuration = () => {
-    if (!trip) return '00:00';
-    const start = new Date(trip.startTime);
-    const now = new Date();
-    const diff = now - start;
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    return `${hours}h ${minutes}m`;
+    if (!tripEndData) return '00:00';
+    const minutes = tripEndData.tiempoViaje || 0;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
   };
 
   const handleProceedToPayment = async () => {
@@ -124,7 +107,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     try {
       // Crear PaymentIntent en el backend
       const paymentIntentData = {
-        amount: tripCost,
+        amount: tripEndData.precioTotal,
         currency: 'cop',
         metadata: {
           bookingId: 'abc1234',
@@ -154,36 +137,17 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     setIsLoading(true);
     setCityPassError('');
     try {
-      const response = await payWithCityPassMutation.post({ monto: tripCost });
+      const response = await payWithCityPassMutation.post({ monto: tripEndData.precioTotal });
       
       if (response?.success) {
+        console.log('Pago con CityPass exitoso:', response);
+        
+        // Registrar pago exitoso
+        await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+        
         // Pago exitoso, proceder a finalizar el viaje
         setPaymentStep('success');
         setTimeout(() => {
-          // Guardar el viaje finalizado en el historial de localStorage
-          const completedTrip = {
-            id: Date.now(),
-            bikeId: trip.bikeId,
-            bikeType: trip.bikeType,
-            startTime: trip.startTime,
-            endTime: new Date().toISOString(),
-            duration: calculateDuration(),
-            charge: tripCost,
-          };
-
-          // Obtener historial existente o crear uno nuevo
-          const existingHistory = JSON.parse(
-            localStorage.getItem('tripHistory') || '[]'
-          );
-
-          // Agregar el viaje completado al inicio del historial
-          const updatedHistory = [completedTrip, ...existingHistory];
-
-          // Guardar el historial actualizado
-          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-
-          // Limpiar el viaje actual del localStorage
-          localStorage.removeItem('currentTrip');
           onTripEnded();
           onClose();
           navigate('/trips');
@@ -210,36 +174,17 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     setIsLoading(true);
     setBalanceError('');
     try {
-      const response = await payWithBalanceMutation.post({ monto: tripCost });
+      const response = await payWithBalanceMutation.post({ monto: tripEndData.precioTotal });
       
       if (response?.success) {
+        console.log('Pago con saldo exitoso:', response);
+        
+        // Registrar pago exitoso
+        await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+        
         // Pago exitoso, proceder a finalizar el viaje
         setPaymentStep('success');
         setTimeout(() => {
-          // Guardar el viaje finalizado en el historial de localStorage
-          const completedTrip = {
-            id: Date.now(),
-            bikeId: trip.bikeId,
-            bikeType: trip.bikeType,
-            startTime: trip.startTime,
-            endTime: new Date().toISOString(),
-            duration: calculateDuration(),
-            charge: tripCost,
-          };
-
-          // Obtener historial existente o crear uno nuevo
-          const existingHistory = JSON.parse(
-            localStorage.getItem('tripHistory') || '[]'
-          );
-
-          // Agregar el viaje completado al inicio del historial
-          const updatedHistory = [completedTrip, ...existingHistory];
-
-          // Guardar el historial actualizado
-          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-
-          // Limpiar el viaje actual del localStorage
-          localStorage.removeItem('currentTrip');
           onTripEnded();
           onClose();
           navigate('/trips');
@@ -260,33 +205,15 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
     }
   };
 
-  const handlePaymentSuccess = (paymentIntent) => {
+  const handlePaymentSuccess = async (paymentIntent) => {
+    console.log('Pago exitoso con tarjeta:', stripePayment);
+    console.log('Pago exitoso con tarjeta:', stripePayment.paymentMethodDetails);
+    
+    // Registrar pago exitoso
+    await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+    
     setPaymentStep('success');
     setTimeout(() => {
-      // TEMPORAL: Guardar el viaje finalizado en el historial de localStorage
-      const completedTrip = {
-        id: Date.now(),
-        bikeId: trip.bikeId,
-        bikeType: trip.bikeType,
-        startTime: trip.startTime,
-        endTime: new Date().toISOString(),
-        duration: calculateDuration(),
-        charge: tripCost,
-      };
-
-      // Obtener historial existente o crear uno nuevo
-      const existingHistory = JSON.parse(
-        localStorage.getItem('tripHistory') || '[]'
-      );
-
-      // Agregar el viaje completado al inicio del historial
-      const updatedHistory = [completedTrip, ...existingHistory];
-
-      // Guardar el historial actualizado
-      localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-
-      // Limpiar el viaje actual del localStorage
-      localStorage.removeItem('currentTrip');
       onTripEnded();
       onClose();
       navigate('/trips');
@@ -356,7 +283,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                   <FaBicycle className="bike-icon" />
                 </div>
                 <div className="bike-details">
-                  <h2 className="bike-id">{trip.bikeId}</h2>
+                  <h2 className="bike-id">{trip?.bicicleta?.id || tripEndData?.bicicletaId || 'N/A'}</h2>
                   <p className="bike-status">Viaje Completado</p>
                 </div>
               </div>
@@ -369,6 +296,38 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                     <span>Duración</span>
                   </div>
                   <span className="summary-value">{calculateDuration()}</span>
+                </div>
+                
+                <div className="summary-item">
+                  <div className="summary-label">
+                    <FaMoneyBillWave className="summary-icon" />
+                    <span>Precio del viaje</span>
+                  </div>
+                  <span className="summary-value">
+                    {formatCurrency(tripEndData?.precioSubtotal || 0)}
+                  </span>
+                </div>
+
+                {tripEndData?.tiempoExtra > 0 && (
+                  <div className="summary-item extra-time">
+                    <div className="summary-label">
+                      <FaRegClock className="summary-icon" />
+                      <span>Tiempo extra ({tripEndData.tiempoExtra} min)</span>
+                    </div>
+                    <span className="summary-value">
+                      {formatCurrency((tripEndData.precioTotal - tripEndData.precioSubtotal - tripEndData.impuesto) || 0)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="summary-item">
+                  <div className="summary-label">
+                    <FaMoneyBillWave className="summary-icon" />
+                    <span>Impuesto</span>
+                  </div>
+                  <span className="summary-value">
+                    {formatCurrency(tripEndData?.impuesto || 0)}
+                  </span>
                 </div>
                 
                 {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0 ? (
@@ -386,7 +345,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                       <span>Total a pagar</span>
                     </div>
                     <span className="summary-value">
-                      {formatCurrency(tripCost)}
+                      {formatCurrency(tripEndData?.precioTotal || 0)}
                     </span>
                   </div>
                 )}
@@ -413,7 +372,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
             <>
               <div className="payment-amount">
                 <span className="amount-label">Total a pagar:</span>
-                <span className="amount-value">{formatCurrency(tripCost)}</span>
+                <span className="amount-value">{formatCurrency(tripEndData?.precioTotal || 0)}</span>
               </div>
 
               {/* Selector de método de pago */}
@@ -586,25 +545,12 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                 className="btn-proceed"
                 onClick={
                   subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0
-                    ? () => {
+                    ? async () => {
+                        // Registrar pago exitoso por suscripción
+                        await successfulPaymentMutation.post({ viajeId: tripEndData.id });
+                        
                         setPaymentStep('success');
                         setTimeout(() => {
-                          const completedTrip = {
-                            id: Date.now(),
-                            bikeId: trip.bikeId,
-                            bikeType: trip.bikeType,
-                            startTime: trip.startTime,
-                            endTime: new Date().toISOString(),
-                            duration: calculateDuration(),
-                            charge: 0, // Gratis por suscripción
-                          };
-
-                          const existingHistory = JSON.parse(
-                            localStorage.getItem('tripHistory') || '[]'
-                          );
-                          const updatedHistory = [completedTrip, ...existingHistory];
-                          localStorage.setItem('tripHistory', JSON.stringify(updatedHistory));
-                          localStorage.removeItem('currentTrip');
                           onTripEnded();
                           onClose();
                           navigate('/trips');
@@ -653,7 +599,7 @@ export const EndTrip = ({ trip, onClose, onTripEnded }) => {
                     ) : (
                       <FaMoneyBillWave className="btn-icon" />
                     )}
-                    Pagar {formatCurrency(tripCost)}
+                    Pagar {formatCurrency(tripEndData?.precioTotal || 0)}
                   </>
                 )}
               </button>

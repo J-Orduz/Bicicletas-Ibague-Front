@@ -12,7 +12,6 @@ import { ReserveBike } from './ReserveBike.jsx';
 // api
 import { useGetStations, useGetStationBikes } from '@api/bikes';
 import { useGetCurrentTrip } from '@api/trips';
-
 // styles
 import './MapView.scss';
 
@@ -54,30 +53,32 @@ export const MapView = ({ onStationsLoaded }) => {
     checkActiveTrip();
   }, []);
 
-  useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        const stationsData = await getStations.get();
+  // Función para cargar/refrescar estaciones
+  const fetchStations = async () => {
+    try {
+      const stationsData = await getStations.get();
 
-        // formatear datos de la estacion para el mapa
-        const formattedStations = stationsData.map((station) => ({
-          id: station.id,
-          name: station.nombre,
-          position: [station.posicion.latitud, station.posicion.longitud],
-          bikes: [],
-        }));
+      // formatear datos de la estacion para el mapa
+      const formattedStations = stationsData.map((station) => ({
+        id: station.id,
+        name: station.nombre,
+        position: [station.posicion.latitud, station.posicion.longitud],
+        bikes: [],
+        redistributionDate: station.fecha_redistribucion,
+      }));
 
-        setBikeStations(formattedStations);
+      setBikeStations(formattedStations);
 
-        // Notificar al componente padre
-        if (onStationsLoaded) {
-          onStationsLoaded(formattedStations);
-        }
-      } catch (error) {
-        console.error(error);
+      // Notificar al componente padre
+      if (onStationsLoaded) {
+        onStationsLoaded(formattedStations);
       }
-    };
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
+  useEffect(() => {
     fetchStations();
   }, []);
 
@@ -147,6 +148,8 @@ export const MapView = ({ onStationsLoaded }) => {
                   bikes={station.bikes}
                   onReserveClick={() => handleOpenReserve(station)}
                   hasActiveTrip={hasActiveTrip}
+                  redistributionDate={station.redistributionDate}
+                  onRefreshStations={fetchStations}
                 />
               </Popup>
             </Marker>
@@ -161,7 +164,55 @@ export const MapView = ({ onStationsLoaded }) => {
   );
 };
 
-export const BikeStationPopup = ({ name, bikes, onReserveClick, hasActiveTrip }) => {
+const CountdownTimer = ({ redistributionDate, onCountdownComplete }) => {
+  const [timeLeft, setTimeLeft] = useState('');
+  const [hasCompleted, setHasCompleted] = useState(false);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const redistribution = new Date(redistributionDate);
+      const difference = redistribution - now;
+
+      if (difference <= 0) {
+        setTimeLeft('Redistribución en progreso');
+        
+        // Ejecutar callback solo una vez cuando llegue a 0
+        if (!hasCompleted && onCountdownComplete) {
+          setHasCompleted(true);
+          onCountdownComplete();
+        }
+        return;
+      }
+
+      const minutes = Math.floor(difference / 1000 / 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+
+      setTimeLeft(
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(
+          2,
+          '0'
+        )}`
+      );
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(interval);
+  }, [redistributionDate, hasCompleted, onCountdownComplete]);
+
+  return <span className="countdown-timer">{timeLeft}</span>;
+};
+
+export const BikeStationPopup = ({
+  name,
+  bikes,
+  onReserveClick,
+  hasActiveTrip,
+  redistributionDate,
+  onRefreshStations,
+}) => {
   const totalCapacity = 15;
   const availableBikes = bikes.filter((bike) => bike.available);
 
@@ -170,20 +221,20 @@ export const BikeStationPopup = ({ name, bikes, onReserveClick, hasActiveTrip })
       return {
         text: 'Ya tienes un viaje activo. Finalízalo para iniciar una nueva reserva',
         className: 'btn-reserve active-trip',
-        disabled: true
+        disabled: true,
       };
     }
     if (availableBikes.length === 0) {
       return {
         text: 'No hay bicicletas disponibles',
         className: 'btn-reserve',
-        disabled: true
+        disabled: true,
       };
     }
     return {
       text: 'Ver Bicicletas Disponibles',
       className: 'btn-reserve',
-      disabled: false
+      disabled: false,
     };
   };
 
@@ -199,6 +250,15 @@ export const BikeStationPopup = ({ name, bikes, onReserveClick, hasActiveTrip })
             {availableBikes.length} / {totalCapacity}
           </span>
         </div>
+        {redistributionDate && (
+          <div className="redistribution-info">
+            <span className="redistribution-text">Llegarán nuevas bicicletas en: </span>
+            <CountdownTimer 
+              redistributionDate={redistributionDate}
+              onCountdownComplete={onRefreshStations}
+            />
+          </div>
+        )}
       </div>
 
       <button

@@ -54,6 +54,30 @@
       }
     }
 
+    .redistribution-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: linear-gradient(135deg, rgba($primary-color, 0.1), rgba($primary-color, 0.05));
+      border: 1px solid rgba($primary-color, 0.3);
+      border-radius: 6px;
+      font-size: 0.85rem;
+
+      .redistribution-text {
+        color: $text-secondary;
+        font-weight: 500;
+      }
+
+      .countdown-timer {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: $primary-color;
+        letter-spacing: 1px;
+      }
+    }
+
     .btn-reserve {
       width: 100%;
       padding: 10px 16px;

@@ -15,6 +15,7 @@ import {
   useCancelSubscriptionMutation,
   useGetCityPassBalance,
   useLinkCityPassMutation,
+  useGetPoints,
 } from '@api/payments';
 // icons
 import {
@@ -23,6 +24,7 @@ import {
   BsCreditCard2Front,
   BsCashStack,
   BsGearFill,
+  BsStarFill,
 } from 'react-icons/bs';
 // styles
 import './Profile.scss';
@@ -38,6 +40,7 @@ export const Profile = () => {
   const [subscriptionData, setSubscriptionData] = useState(null);
   const [cityPassData, setCityPassData] = useState(null);
   const [showLinkCityPassModal, setShowLinkCityPassModal] = useState(false);
+  const [pointsData, setPointsData] = useState(null);
   // API hooks
   const getCurrentBalance = useGetCurrentBalance();
   const getSubscription = useGetSubscription();
@@ -45,6 +48,7 @@ export const Profile = () => {
   const cancelSubscriptionMutation = useCancelSubscriptionMutation();
   const getCityPassBalance = useGetCityPassBalance();
   const linkCityPassMutation = useLinkCityPassMutation();
+  const getPoints = useGetPoints();
 
   useEffect(() => {
     // document.title = 'Perfil de Usuario'; // :o
@@ -85,9 +89,19 @@ export const Profile = () => {
       }
     };
 
+    const fetchPoints = async () => {
+      try {
+        const points = await getPoints.get();
+        setPointsData(points.data);
+      } catch (error) {
+        console.error('Error al obtener puntos:', error);
+      }
+    };
+
     fetchBalance();
     fetchSubscription();
     fetchCityPassBalance();
+    fetchPoints();
   }, []);
 
   const handleSubscriptionChange = async () => {
@@ -131,6 +145,20 @@ export const Profile = () => {
             </div>
 
             <div className="balance-section">
+              {/* BiciPuntos */}
+              {pointsData && (
+                <div className="balance-card points-card">
+                  <span className="balance-label">BiciPuntos</span>
+                  <span className="balance-amount points-amount">
+                    {pointsData.puntos}
+                  </span>
+                  <div className="points-equivalence">
+                    <span className="equivalence-text">
+                      {formatCurrency(pointsData.puntos * 100)}
+                    </span>
+                  </div>
+                </div>
+              )}
               {/* Saldo Principal */}
               <div className="balance-card">
                 <span className="balance-label">Saldo BiciBague</span>
@@ -241,9 +269,7 @@ export const Profile = () => {
       </div>
 
       {showRechargeModal && (
-        <RechargeModal
-          onClose={() => setShowRechargeModal(false)}
-        />
+        <RechargeModal onClose={() => setShowRechargeModal(false)} />
       )}
 
       {showLinkCityPassModal && (

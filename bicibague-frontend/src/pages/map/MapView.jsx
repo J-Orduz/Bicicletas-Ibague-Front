@@ -12,6 +12,7 @@ import { ReserveBike } from './ReserveBike.jsx';
 // api
 import { useGetStations, useGetStationBikes } from '@api/bikes';
 import { useGetCurrentTrip } from '@api/trips';
+import { useGetCurrentReservation } from '@api/reserves';
 // styles
 import './MapView.scss';
 
@@ -26,6 +27,7 @@ export const MapView = ({ onStationsLoaded }) => {
   const [selectedStation, setSelectedStation] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [hasActiveTrip, setHasActiveTrip] = useState(false);
+  const [hasActiveReservation, setHasActiveReservation] = useState(false);
 
   // Coordenadas de Ibagué, Colombia
   const center = [4.4389, -75.2322];
@@ -36,6 +38,7 @@ export const MapView = ({ onStationsLoaded }) => {
   const getStations = useGetStations();
   const getStationBikes = useGetStationBikes();
   const getCurrentTrip = useGetCurrentTrip();
+  const getCurrentReservation = useGetCurrentReservation();
 
   // Verificar si hay viaje activo
   useEffect(() => {
@@ -51,6 +54,22 @@ export const MapView = ({ onStationsLoaded }) => {
     };
 
     checkActiveTrip();
+  }, []);
+
+  // Verificar si hay reserva activa
+  useEffect(() => {
+    const checkActiveReservation = async () => {
+      try {
+        const reservationData = await getCurrentReservation.get();
+        console.log('Datos de la reserva activa:', reservationData);
+        setHasActiveReservation(reservationData.data !== null);
+      } catch (error) {
+        console.error('Error al verificar reserva activa:', error);
+        setHasActiveReservation(false);
+      }
+    };
+
+    checkActiveReservation();
   }, []);
 
   // Función para cargar/refrescar estaciones
@@ -148,6 +167,7 @@ export const MapView = ({ onStationsLoaded }) => {
                   bikes={station.bikes}
                   onReserveClick={() => handleOpenReserve(station)}
                   hasActiveTrip={hasActiveTrip}
+                  hasActiveReservation={hasActiveReservation}
                   redistributionDate={station.redistributionDate}
                   onRefreshStations={fetchStations}
                 />
@@ -210,6 +230,7 @@ export const BikeStationPopup = ({
   bikes,
   onReserveClick,
   hasActiveTrip,
+  hasActiveReservation,
   redistributionDate,
   onRefreshStations,
 }) => {
@@ -219,8 +240,15 @@ export const BikeStationPopup = ({
   const getButtonConfig = () => {
     if (hasActiveTrip) {
       return {
-        text: 'Ya tienes un viaje activo. Finalízalo para iniciar una nueva reserva',
+        text: 'Tienes un viaje en curso',
         className: 'btn-reserve active-trip',
+        disabled: true,
+      };
+    }
+    if (hasActiveReservation) {
+      return {
+        text: 'Ya tienes una reserva activa',
+        className: 'btn-reserve active-reservation',
         disabled: true,
       };
     }

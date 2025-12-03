@@ -9,7 +9,9 @@ import {
   usePayWithBalanceMutation,
   useGetCurrentBalance,
   useGetCityPassBalance,
-  useGetSubscription 
+  useGetSubscription,
+  useGetPoints,
+  useRedeemPointsMutation
 } from '@api/payments';
 import { useSuccessfulPaymentMutation } from '@api/trips';
 // hooks
@@ -35,6 +37,10 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
   const [cityPassBalance, setCityPassBalance] = useState(null);
   const [subscriptionData, setSubscriptionData] = useState(null);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(true);
+  const [pointsData, setPointsData] = useState(null);
+  const [isRedeemingPoints, setIsRedeemingPoints] = useState(false);
+  const [pointsRedeemed, setPointsRedeemed] = useState(false);
+  const [discountedPrice, setDiscountedPrice] = useState(null);
 
   const createPaymentIntentMutation = useCreatePaymentIntentMutation();
   const payWithCityPassMutation = usePayWithCityPassMutation();
@@ -42,6 +48,8 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
   const getCurrentBalance = useGetCurrentBalance();
   const getCityPassBalance = useGetCityPassBalance();
   const getSubscription = useGetSubscription();
+  const getPoints = useGetPoints();
+  const redeemPointsMutation = useRedeemPointsMutation();
   const successfulPaymentMutation = useSuccessfulPaymentMutation();
 
   // Bloquear scroll del body cuando el modal está abierto
@@ -53,9 +61,10 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
     };
   }, []);
 
-  // Verificar suscripción al abrir el modal
+  // Verificar suscripción y obtener puntos al abrir el modal
   useEffect(() => {
     checkSubscription();
+    fetchPoints();
   }, []);
 
   const checkSubscription = async () => {
@@ -67,6 +76,65 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
     } finally {
       setIsCheckingSubscription(false);
     }
+  };
+
+  const fetchPoints = async () => {
+    try {
+      const points = await getPoints.get();
+      setPointsData(points.data);
+    } catch (error) {
+      console.error('Error al obtener puntos:', error);
+    }
+  };
+
+  // Calcular puntos canjeables (múltiplo de 10)
+  const getRedeemablePoints = () => {
+    if (!pointsData || !pointsData.puntos) return 0;
+    return Math.floor(pointsData.puntos / 10) * 10;
+  };
+
+  // Calcular descuento en pesos
+  const getDiscountAmount = () => {
+    return getRedeemablePoints() * 100;
+  };
+
+  // Verificar si ya se canjearon puntos para este viaje
+  const hasPointsRedeemed = () => {
+    console.log(tripEndData)
+    return tripEndData?.precioDescuento && tripEndData.precioDescuento > 0;
+  };
+
+  // Manejar canje de puntos
+  const handleRedeemPoints = async () => {
+    if (!tripEndData?.id || isRedeemingPoints) return;
+    
+    setIsRedeemingPoints(true);
+    try {
+      const response = await redeemPointsMutation.post({ viajeId: tripEndData.id });
+      
+      if (response?.success && response?.data) {
+        // Actualizar el precio final después del descuento
+        setDiscountedPrice(response.data.precioFinal);
+        setPointsRedeemed(true);
+        
+        // Actualizar puntos del usuario
+        await fetchPoints();
+        
+        alert(`¡Puntos canjeados exitosamente! Descuento de ${formatCurrency(response.data.descuentoAplicado)} aplicado.`);
+      }
+    } catch (error) {
+      console.error('Error al canjear puntos:', error);
+      alert(error.errorMutationMsg || 'Error al canjear puntos');
+    } finally {
+      setIsRedeemingPoints(false);
+    }
+  };
+
+  // Obtener el precio final a pagar (considerando descuentos)
+  const getFinalPrice = () => {
+    if (discountedPrice !== null) return discountedPrice;
+    if (hasPointsRedeemed()) return tripEndData.precioDescuento;
+    return tripEndData?.precioTotal || 0;
   };
 
   // Obtener saldos cuando se llega al paso de pago
@@ -105,9 +173,10 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
     setIsLoading(true);
     setCityPassError('');
     try {
-      // Crear PaymentIntent en el backend
+      // Crear PaymentIntent en el backend con el precio final
+      const finalPrice = getFinalPrice();
       const paymentIntentData = {
-        amount: tripEndData.precioTotal,
+        amount: finalPrice,
         currency: 'cop',
         metadata: {
           bookingId: 'abc1234',
@@ -137,7 +206,8 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
     setIsLoading(true);
     setCityPassError('');
     try {
-      const response = await payWithCityPassMutation.post({ monto: tripEndData.precioTotal });
+      const finalPrice = getFinalPrice();
+      const response = await payWithCityPassMutation.post({ monto: finalPrice });
       
       if (response?.success) {
         console.log('Pago con CityPass exitoso:', response);
@@ -174,7 +244,8 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
     setIsLoading(true);
     setBalanceError('');
     try {
-      const response = await payWithBalanceMutation.post({ monto: tripEndData.precioTotal });
+      const finalPrice = getFinalPrice();
+      const response = await payWithBalanceMutation.post({ monto: finalPrice });
       
       if (response?.success) {
         console.log('Pago con saldo exitoso:', response);
@@ -329,6 +400,53 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     {formatCurrency(tripEndData?.impuesto || 0)}
                   </span>
                 </div>
+
+                <div className="summary-item points">
+                  <div className="summary-label">
+                    <BsStarFill className="summary-icon" />
+                    <span>Puntos por finalizar el pago</span>
+                  </div>
+                  <span className="summary-value">2</span>
+                </div>
+
+                {/* Sección de redención de puntos */}
+                {pointsData && !subscriptionData?.tiene_suscripcion && (
+                  <div className="summary-item redeem-points">
+                    <div className="summary-label-column">
+                      <div className="summary-label">
+                        <BsStarFill className="summary-icon" />
+                        <span>Canjear BiciPuntos</span>
+                      </div>
+                      {!hasPointsRedeemed() && !pointsRedeemed ? (
+                        getRedeemablePoints() > 0 ? (
+                          <>
+                            <div className="points-info">
+                              <div className="points-detail">
+                                <span className="detail-label">Canjeo disponible</span>
+                                <span className="detail-value">{getRedeemablePoints()}/{pointsData.puntos} pts</span>
+                              </div>
+                              <div className="points-detail discount">
+                                <span className="detail-label">Descuento</span>
+                                <span className="detail-value">-{formatCurrency(getDiscountAmount())}</span>
+                              </div>
+                            </div>
+                            <button
+                              className="btn-redeem-points"
+                              onClick={handleRedeemPoints}
+                              disabled={isRedeemingPoints || isLoading}
+                            >
+                              {isRedeemingPoints ? 'Aplicando descuento...' : 'Aplicar descuento'}
+                            </button>
+                          </>
+                        ) : (
+                          <span className="points-insufficient">No tienes suficientes puntos para canjear (mínimo 10 puntos)</span>
+                        )
+                      ) : (
+                        <span className="points-redeemed">Ya se ha aplicado un descuento</span>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0 ? (
                   <div className="summary-item subscription">
@@ -345,7 +463,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                       <span>Total a pagar</span>
                     </div>
                     <span className="summary-value">
-                      {formatCurrency(tripEndData?.precioTotal || 0)}
+                      {formatCurrency(getFinalPrice())}
                     </span>
                   </div>
                 )}
@@ -372,7 +490,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
             <>
               <div className="payment-amount">
                 <span className="amount-label">Total a pagar:</span>
-                <span className="amount-value">{formatCurrency(tripEndData?.precioTotal || 0)}</span>
+                <span className="amount-value">{formatCurrency(getFinalPrice())}</span>
               </div>
 
               {/* Selector de método de pago */}
@@ -558,12 +676,11 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                       }
                     : handleProceedToPayment
                 }
-                disabled={isLoading}
+                disabled={isLoading || isCheckingSubscription}
               >
-                {isLoading ? (
+                {isLoading || isCheckingSubscription ? (
                   <>
                     <span className="spinner"></span>
-                    Cargando...
                   </>
                 ) : subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0 ? (
                   'Finalizar Viaje'
@@ -599,7 +716,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     ) : (
                       <FaMoneyBillWave className="btn-icon" />
                     )}
-                    Pagar {formatCurrency(tripEndData?.precioTotal || 0)}
+                    Pagar {formatCurrency(getFinalPrice())}
                   </>
                 )}
               </button>

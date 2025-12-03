@@ -2,7 +2,7 @@
 @use '@styles/mixins' as *;
 
 .profile-container {
-  max-width: 800px;
+  max-width: 950px;
   margin: 0 auto;
 
   @media (max-width: 768px) {
@@ -115,7 +115,7 @@
     // Sección de saldo
     .balance-section {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 24px;
 
       @media (max-width: 768px) {
@@ -208,6 +208,37 @@
 
           &:hover:not(:disabled) {
             background-color: #1e7ed9;
+          }
+        }
+      }
+
+      // Points Card Specific Styles
+      .points-card {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 215, 0, 0.15),
+          rgba(255, 215, 0, 0.05)
+        );
+        border: 2px solid #ffd700;
+
+        .points-amount {
+          color: #ffd700;
+        }
+
+        .points-equivalence {
+          margin-top: 4px;
+          padding: 8px 16px;
+          background: linear-gradient(
+            135deg,
+            rgba(255, 146, 45, 0.1),
+            rgba(255, 146, 45, 0.05)
+          );
+          border-radius: 8px;
+
+          .equivalence-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: $primary-color;
           }
         }
       }

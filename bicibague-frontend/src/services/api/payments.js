@@ -62,7 +62,7 @@ export const usePayWithBalanceMutation = () => {
         true // supabaseURL
       ),
   };
-}
+};
 
 // ------------ PAYMENT -------------- //
 // Obtener Stripe publishable key GET
@@ -163,7 +163,7 @@ export const useCancelSubscriptionMutation = () => {
   };
 };
 
-// // ------------ CITYPASS -------------- //
+// ------------ CITYPASS -------------- //
 
 // Obtener saldo citypass GET
 export const useGetCityPassBalance = () => {
@@ -197,6 +197,28 @@ export const usePayWithCityPassMutation = () => {
         '/citypass/pago',
         data,
         'Error al pagar con CityPass'
+      ),
+  };
+};
+
+// ------------ PUNTOS -------------- //
+// Obtener puntos GET
+export const useGetPoints = () => {
+  return {
+    get: useFetch('/users/puntos', 'Error al obtener los puntos').fetchData,
+  };
+};
+
+// Canjear puntos POST
+export const useRedeemPointsMutation = () => {
+  const post = useMutation();
+  return {
+    post: (data) =>
+      post.mutate(
+        'POST',
+        '/trips/canjear-puntos',
+        data,
+        'Error al canjear puntos'
       ),
   };
 };

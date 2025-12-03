@@ -172,6 +172,7 @@ export const Trips = () => {
       impuesto: trip.impuesto, // 3% de impuesto
       tiempoExtra: Math.max(0, trip.duracion - (trip.tipo_viaje === 'MILLA' ? 45 : 75)),
       precioTotal: trip.precio,
+      precioDescuento: trip.precioDescuento || 0,
       bicicletaId: trip.bicicleta.id,
     };
     setTripEndData(paymentData);
@@ -413,7 +414,7 @@ export const Trips = () => {
                     </div>
                     <div className="charge-amount">
                       <FaMoneyBillWave className="charge-icon" />
-                      {trip.precio ? formatCurrency(trip.precio) : 'N/A'}
+                      {trip.precio ? formatCurrency(trip?.precioDescuento || trip.precio) : 'N/A'}
                     </div>
                   </div>
 
@@ -494,7 +495,7 @@ export const Trips = () => {
                         onClick={() => handlePayTrip(trip)}
                       >
                         <FaMoneyBillWave className="btn-icon" />
-                        Pagar {formatCurrency(trip.precio)}
+                        Pagar {formatCurrency(trip.precioDescuento || trip.precio)}
                       </button>
                     </div>
                   )}

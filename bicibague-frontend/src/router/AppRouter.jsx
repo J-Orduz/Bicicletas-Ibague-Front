@@ -3,20 +3,24 @@ import {
   Routes,
   Route,
   Navigate,
-} from "react-router-dom";
+} from 'react-router-dom';
 // components
-import { MainLayout } from "@layouts/MainLayout";
-import { Home } from "@pages/home/Home";
-import { Reserves } from "@pages/reserves/Reserves";
-import { Trips } from "@pages/trips/trips";
-import { Register } from "@pages/auth/Register";
-import { Login } from "@pages/auth/Login";
-import { NotFound } from "../pages/notFound/NotFound";
-import { Profile } from "@pages/profile/Profile";
-import { ProtectedRoute } from "../router/ProtectedRoute";
-import Landing from "@pages/landing/Landing";
+import { MainLayout } from '@layouts/MainLayout';
+import { Home } from '@pages/home/Home';
+import { Reserves } from '@pages/reserves/Reserves';
+import { Trips } from '@pages/trips/trips';
+import { Register } from '@pages/auth/Register';
+import { Login } from '@pages/auth/Login';
+import { Profile } from '@pages/profile/Profile';
+import { Reports } from '@pages/reports/Reports';
+import { NotFound } from '@pages/notFound/NotFound';
+import { ProtectedRoute } from '../router/ProtectedRoute';
+import Landing from '@pages/landing/Landing';
+// hooks
+import { useAuth } from '@contexts/AuthContext';
 
 export const AppRouter = () => {
+  const { user } = useAuth();
   return (
     <Router>
       <Routes>
@@ -32,6 +36,9 @@ export const AppRouter = () => {
           <Route path="/reserves" element={<Reserves />} />
           <Route path="/trips" element={<Trips />} />
           <Route path="/profile" element={<Profile />} />
+          {user?.rol === 'admin' && (
+            <Route path="/reports" element={<Reports />} />
+          )}
         </Route>
 
         {/* Rutas de autenticación */}

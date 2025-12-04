@@ -31,6 +31,7 @@ export const useMutation = () => {
 
     try {
       const isFormData = body instanceof FormData;
+      const expectBlob = options?.responseType === 'blob';
 
       const response = await fetch(finalUrl, {
         method,
@@ -43,6 +44,28 @@ export const useMutation = () => {
       });
 
       let result = {};
+      
+      // Si se espera un blob (archivo), manejarlo directamente
+      if (expectBlob) {
+        if (!response.ok) {
+          // Intentar leer el error como JSON si es posible
+          const contentType = response.headers.get('Content-Type');
+          if (contentType && contentType.includes('application/json')) {
+            result = await response.json();
+          }
+          const errorMsgs = {
+            message: result.message || `HTTP error ${response.status}`,
+            status: response.status,
+          };
+          throw errorMsgs;
+        }
+        
+        const blob = await response.blob();
+        globalAlertShown = false;
+        return { data: blob };
+      }
+      
+      // Manejo normal para JSON
       const contentType = response.headers.get('Content-Type');
       if (contentType && contentType.includes('application/json')) {
         result = await response.json();

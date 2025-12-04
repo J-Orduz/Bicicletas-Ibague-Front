@@ -174,7 +174,7 @@ export const SubscriptionSection = ({
               className="btn-subscribe"
               onClick={handleCreateSubscription}
             >
-              <BsStar /> Suscribirse Ahora
+              <BsStar /> Suscribite Ahora
             </button>
           </div>
         )}

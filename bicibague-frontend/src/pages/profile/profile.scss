@@ -4,6 +4,7 @@
 .profile-container {
   max-width: 950px;
   margin: 0 auto;
+  padding: 0 1rem 1rem;
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -77,6 +78,14 @@
           font-weight: 500;
         }
 
+        .user-role {
+          margin: 0;
+          font-size: 0.9rem;
+          color: $text-secondary;
+          font-weight: 600;
+          text-transform: capitalize;
+        }
+        
         .user-id {
           margin: 0;
           font-size: 0.85rem;

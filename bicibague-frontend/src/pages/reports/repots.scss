@@ -1,0 +1,444 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
+.reports-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem 1rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem 0;
+  }
+
+  .reports-content {
+    @include flex($direction: column, $align: stretch, $gap: 2rem);
+
+    // Header
+    .reports-header {
+      @include flex($justify: flex-start, $gap: 1.5rem);
+      padding: 2rem;
+      background: linear-gradient(135deg, $bg-secondary, $bg-tertiary);
+      border-radius: 16px;
+      box-shadow: $shadow-md;
+
+      @media (max-width: 768px) {
+        padding: 1.5rem;
+        gap: 1rem;
+      }
+
+      .header-icon {
+        @include flex();
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(
+          135deg,
+          $primary-color,
+          $primary-color-dark
+        );
+        border-radius: 12px;
+        box-shadow: $shadow-sm;
+
+        svg {
+          width: 32px;
+          height: 32px;
+          color: $white;
+        }
+
+        @media (max-width: 768px) {
+          width: 50px;
+          height: 50px;
+
+          svg {
+            width: 28px;
+            height: 28px;
+          }
+        }
+      }
+
+      .header-text {
+        flex: 1;
+
+        h1 {
+          margin: 0 0 0.5rem 0;
+          color: $text-primary;
+          font-size: 1.75rem;
+          font-weight: 700;
+
+          @media (max-width: 768px) {
+            font-size: 1.5rem;
+          }
+        }
+
+        p {
+          margin: 0;
+          color: $text-secondary;
+          font-size: 0.95rem;
+
+          @media (max-width: 768px) {
+            font-size: 0.875rem;
+          }
+        }
+      }
+    }
+
+    // Formulario
+    .report-form {
+      @include flex($direction: column, $align: stretch, $gap: 1.5rem);
+      padding: 2rem;
+      background-color: $bg-secondary;
+      border-radius: 16px;
+      box-shadow: $shadow-md;
+
+      @media (max-width: 768px) {
+        padding: 1.5rem;
+        gap: 1.25rem;
+      }
+
+      .form-section {
+        @include flex($direction: column, $align: stretch, $gap: 0.75rem);
+
+        .form-label {
+          @include flex($justify: flex-start, $gap: 0.5rem);
+          color: $text-primary;
+          font-weight: 600;
+          font-size: 0.95rem;
+
+          svg {
+            width: 18px;
+            height: 18px;
+            color: $primary-color;
+          }
+        }
+
+        .form-select {
+          padding: 0.875rem 1rem;
+          background-color: $bg-tertiary;
+          color: $text-primary;
+          border: 2px solid $border-color;
+          border-radius: 10px;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all $transition-normal;
+
+          &:hover {
+            border-color: $primary-color-light;
+          }
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba(255, 146, 45, 0.1);
+          }
+
+          @media (max-width: 768px) {
+            padding: 0.75rem 0.875rem;
+            font-size: 0.875rem;
+          }
+        }
+
+        // Opciones de formato
+        .format-options {
+          @include flex($gap: 1rem);
+
+          .format-option {
+            @include flex($gap: 0.75rem);
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background-color: $bg-tertiary;
+            color: $text-primary;
+            border: 2px solid $border-color;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all $transition-normal;
+
+            &:hover:not(.active) {
+              border-color: $primary-color-light;
+              transform: translateY(-2px);
+              box-shadow: $shadow-sm;
+            }
+
+            &.active {
+              background: linear-gradient(
+                135deg,
+                rgba(255, 146, 45, 0.15),
+                rgba(255, 146, 45, 0.05)
+              );
+              border-color: $primary-color;
+              box-shadow: 0 0 0 3px rgba(255, 146, 45, 0.1);
+            }
+
+            .format-icon {
+              width: 24px;
+              height: 24px;
+              color: $primary-color;
+            }
+
+            @media (max-width: 768px) {
+              padding: 0.875rem 1.25rem;
+              font-size: 0.875rem;
+
+              .format-icon {
+                width: 20px;
+                height: 20px;
+              }
+            }
+          }
+        }
+
+        // Inputs de fecha
+        .date-inputs {
+          @include flex($gap: 1rem);
+
+          @media (max-width: 480px) {
+            flex-direction: column;
+          }
+
+          .date-input-group {
+            @include flex($direction: column, $align: stretch, $gap: 0.5rem);
+            flex: 1;
+            width: 100%;
+            
+            label {
+              color: $text-secondary;
+              font-size: 0.875rem;
+              font-weight: 500;
+            }
+
+            .date-input {
+              padding: 0.875rem 1rem;
+              background-color: $bg-tertiary;
+              color: $text-primary;
+              border: 2px solid $border-color;
+              border-radius: 10px;
+              font-size: 0.95rem;
+              cursor: pointer;
+              transition: all $transition-normal;
+
+              &:hover {
+                border-color: $primary-color-light;
+              }
+
+              &:focus {
+                outline: none;
+                border-color: $primary-color;
+                box-shadow: 0 0 0 3px rgba(255, 146, 45, 0.1);
+              }
+
+              @media (max-width: 768px) {
+                padding: 0.75rem 0.875rem;
+                font-size: 0.875rem;
+              }
+            }
+          }
+        }
+      }
+
+      // Mensaje de error
+      .error-message {
+        @include flex($justify: flex-start, $gap: 0.5rem);
+        padding: 0.875rem 1rem;
+        background: linear-gradient(
+          135deg,
+          rgba(223, 60, 76, 0.15),
+          rgba(223, 60, 76, 0.05)
+        );
+        border: 2px solid $red;
+        border-radius: 10px;
+        color: $dark-red;
+        font-size: 0.875rem;
+        font-weight: 500;
+
+        @media (max-width: 768px) {
+          padding: 0.75rem 0.875rem;
+          font-size: 0.8125rem;
+        }
+      }
+
+      // Botón de generar
+      .btn-generate {
+        @include primary-button(
+          $gap: 0.75rem,
+          $padding: 1rem 2rem,
+          $font-weight: 700
+        );
+        font-size: 1rem;
+        margin-top: 0.5rem;
+
+        .spinning {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @media (max-width: 768px) {
+          padding: 0.875rem 1.75rem;
+          font-size: 0.95rem;
+        }
+      }
+    }
+
+    // Resultado del reporte
+    .report-result {
+      @include flex($direction: column, $align: stretch, $gap: 1.5rem);
+      padding: 2rem;
+      background-color: $bg-secondary;
+      border-radius: 16px;
+      box-shadow: $shadow-md;
+
+      @media (max-width: 768px) {
+        padding: 1.5rem;
+        gap: 1.25rem;
+      }
+
+      .result-card {
+        @include flex($justify: flex-start, $gap: 1.5rem);
+        padding: 2rem;
+        background-color: $bg-tertiary;
+        border-radius: 12px;
+        border: 2px solid $primary-color-light;
+        box-shadow: $shadow-sm;
+
+        @media (max-width: 768px) {
+          padding: 1.5rem;
+          gap: 1rem;
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .result-icon {
+          @include flex();
+          width: 80px;
+          height: 80px;
+          background-color: $bg-secondary;
+          border-radius: 12px;
+          box-shadow: $shadow-sm;
+
+          .file-icon {
+            width: 48px;
+            height: 48px;
+
+            &.pdf {
+              color: $red;
+            }
+
+            &.excel {
+              color: $green;
+            }
+          }
+
+          @media (max-width: 768px) {
+            width: 60px;
+            height: 60px;
+
+            .file-icon {
+              width: 36px;
+              height: 36px;
+            }
+          }
+        }
+
+        .result-info {
+          flex: 1;
+
+          h2 {
+            margin: 0 0 0.75rem 0;
+            color: $text-primary;
+            font-size: 1.5rem;
+            font-weight: 700;
+
+            @media (max-width: 768px) {
+              font-size: 1.25rem;
+              margin-bottom: 0.5rem;
+            }
+          }
+
+          .result-filename {
+            margin: 0 0 0.5rem 0;
+            color: $primary-color;
+            font-size: 1rem;
+            font-weight: 600;
+
+            @media (max-width: 768px) {
+              font-size: 0.9rem;
+            }
+          }
+
+          .result-details {
+            margin: 0;
+            color: $text-secondary;
+            font-size: 0.875rem;
+
+            @media (max-width: 768px) {
+              font-size: 0.8125rem;
+            }
+          }
+        }
+      }
+
+      .result-actions {
+        @include flex($gap: 1rem);
+
+        @media (max-width: 480px) {
+          flex-direction: column;
+        }
+
+        .btn-action {
+          @include primary-button(
+            $gap: 0.75rem,
+            $padding: 1rem 1.5rem,
+            $font-weight: 600
+          );
+          flex: 1;
+          font-size: 0.95rem;
+
+          &.btn-download {
+            background-color: $green;
+
+            &:hover:not(:disabled) {
+              background-color: $dark-green;
+            }
+          }
+
+          &.btn-open {
+            background-color: $blue;
+
+            &:hover:not(:disabled) {
+              background-color: $dark-blue;
+            }
+          }
+
+          @media (max-width: 768px) {
+            padding: 0.875rem 1.25rem;
+            font-size: 0.875rem;
+          }
+        }
+      }
+
+      .btn-new-report {
+        @include secondary-button(
+          $gap: 0,
+          $padding: 1rem 2rem,
+          $bg-color: $bg-quaternary,
+          $bg-color-hover: $bg-tertiary,
+          $font-weight: 600
+        );
+        font-size: 0.95rem;
+        border: 2px solid $border-color;
+
+        @media (max-width: 768px) {
+          padding: 0.875rem 1.75rem;
+          font-size: 0.875rem;
+        }
+      }
+    }
+  }
+}

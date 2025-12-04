@@ -1,15 +1,23 @@
 import { Link } from 'react-router-dom';
 // hooks
 import { useScrollDirection } from '@hooks/useScrollDirection';
+import { useAuth } from '@contexts/AuthContext';
 // components
 import { ButtonThemeToggle } from '@components/buttonThemeToggle';
 // icons
-import { FaUser, FaRegMap, FaRegBookmark, FaBicycle } from 'react-icons/fa6';
+import {
+  FaUser,
+  FaRegMap,
+  FaRegBookmark,
+  FaBicycle,
+  FaFile,
+} from 'react-icons/fa6';
 // styles
 import './Header.scss';
 
 export const Header = () => {
   const scrollDirection = useScrollDirection();
+  const { user } = useAuth();
 
   return (
     <header
@@ -42,6 +50,14 @@ export const Header = () => {
               <span>Perfil</span>
             </Link>
           </li>
+          {user?.rol === 'admin' && (
+            <li>
+              <Link className="link" to="/reports">
+                <FaFile className="header-item-icon" />
+                <span>Reportes</span>
+              </Link>
+            </li>
+          )}
         </ul>
         <ButtonThemeToggle />
       </nav>

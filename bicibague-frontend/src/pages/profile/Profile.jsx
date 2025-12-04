@@ -30,12 +30,18 @@ import {
 import './Profile.scss';
 
 export const Profile = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { formatCurrency, CURRENCIES } = useCurrency();
   const { currency, updatePreference } = usePreferences();
 
   // Estados
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.nombre,
+    userRole: user.rol,
+    userBalance: 0,
+  });
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState(null);
   const [cityPassData, setCityPassData] = useState(null);
@@ -55,12 +61,16 @@ export const Profile = () => {
     const fetchBalance = async () => {
       try {
         const balanceData = await getCurrentBalance.get();
-        setUserData({
-          userId: balanceData.usuario.id,
-          userEmail: balanceData.usuario.email,
-          userName: balanceData.usuario.nombre,
+        // setUserData({
+        //   // userId: balanceData.usuario.id,
+        //   // userEmail: balanceData.usuario.email,
+        //   // userName: balanceData.usuario.nombre,
+        //   userBalance: balanceData.usuario.saldo,
+        // });
+        setUserData((prevData) => ({
+          ...prevData,
           userBalance: balanceData.usuario.saldo,
-        });
+        }));
       } catch (error) {
         console.error(error);
       }
@@ -137,6 +147,7 @@ export const Profile = () => {
               <div className="user-details">
                 <h2 className="user-name">{userData.userName}</h2>
                 <p className="user-email">{userData.userEmail}</p>
+                <div className="user-role">Rol: {userData.userRole.toUpperCase()}</div>
                 <p className="user-id">ID: {userData.userId}</p>
               </div>
               <button className="logout-button" onClick={logout}>

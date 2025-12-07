@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 // icons
-import { FaBicycle, FaRegClock, FaLocationDot, FaBolt } from 'react-icons/fa6';
+import { FaBicycle, FaRegClock, FaLocationDot, FaBolt, FaBatteryHalf } from 'react-icons/fa6';
 import { PiSneakerFill } from 'react-icons/pi';
 import { BsPersonCircle } from 'react-icons/bs';
 // context / hooks
@@ -15,7 +15,7 @@ import { useGetCurrentTrip, useGetTripHistory } from '@api/trips';
 // styles
 import './MapSidebar.scss';
 
-export const MapSidebar = ({ currentReservation, bikeStations }) => {
+export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) => {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const getCurrentBalance = useGetCurrentBalance();
@@ -180,6 +180,12 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
     );
   };
 
+  const getBatteryClass = (battery) => {
+    if (battery >= 60) return 'battery-high';
+    if (battery >= 30) return 'battery-medium';
+    return 'battery-low';
+  };
+
   return (
     <aside className="map-sidebar">
       {/* User header */}
@@ -257,6 +263,21 @@ export const MapSidebar = ({ currentReservation, bikeStations }) => {
               <FaBicycle className="icon-small" />
               <span>{currentTrip.bicicleta.id}</span>
             </div>
+            {bikeTelemetry && bikeTelemetry.bateria !== null && (
+              <div className="battery-indicator-sidebar">
+                <div className={`battery-bar ${getBatteryClass(bikeTelemetry.bateria)}`}>
+                  <div
+                    className="battery-fill"
+                    style={{ width: `${bikeTelemetry.bateria}%` }}
+                  >
+                    <FaBatteryHalf className="battery-icon" />
+                    <span className="battery-percentage">
+                      {bikeTelemetry.bateria}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="no-data">

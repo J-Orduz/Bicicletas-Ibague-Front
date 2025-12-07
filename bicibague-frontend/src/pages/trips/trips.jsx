@@ -20,7 +20,12 @@ import { EndTrip } from './EndTrip';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
 // api
-import { useGetCurrentTrip, useGetTripHistory, useEndTripMutation } from '@api/trips';
+import {
+  useGetCurrentTrip,
+  useGetTripHistory,
+  useEndTripMutation,
+} from '@api/trips';
+import { useGetBikeTelemetry } from '@api/bikes';
 // styles
 import './trips.scss';
 
@@ -29,12 +34,14 @@ export const Trips = () => {
   const { get: getCurrentTrip } = useGetCurrentTrip();
   const { get: getTripHistory } = useGetTripHistory();
   const { post: endTrip } = useEndTripMutation();
+  const getBikeTelemetry = useGetBikeTelemetry();
 
   const [currentTrip, setCurrentTrip] = useState(null);
   const [loadingCurrentTrip, setLoadingCurrentTrip] = useState(true);
   const [tripHistory, setTripHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [tripEndData, setTripEndData] = useState(null);
+  const [bikeTelemetry, setBikeTelemetry] = useState(null);
 
   // Cargar viaje actual desde la API
   useEffect(() => {
@@ -83,6 +90,37 @@ export const Trips = () => {
   // Estado para el modal de finalizar viaje
   const [showEndTripModal, setShowEndTripModal] = useState(false);
 
+  // Obtener telemetría de la bicicleta cada 3 segundos si hay viaje activo
+  useEffect(() => {
+    if (!currentTrip || !currentTrip.bicicleta?.id) {
+      setBikeTelemetry(null);
+      return;
+    }
+
+    const fetchTelemetry = async () => {
+      try {
+        const telemetryData = await getBikeTelemetry.get(
+          currentTrip.bicicleta.id
+        );
+
+        if (telemetryData && telemetryData.bateria !== null) {
+          setBikeTelemetry(telemetryData);
+        }
+      } catch (error) {
+        console.error('Error al obtener telemetría:', error);
+      }
+    };
+
+    // Obtener telemetría inmediatamente
+    fetchTelemetry();
+
+    // Configurar polling cada 3 segundos
+    const intervalId = setInterval(fetchTelemetry, 3000);
+
+    // Limpiar intervalo al desmontar o cuando cambie el viaje
+    return () => clearInterval(intervalId);
+  }, [currentTrip]);
+
   // Efecto para calcular el tiempo transcurrido
   useEffect(() => {
     if (!currentTrip) return;
@@ -116,11 +154,11 @@ export const Trips = () => {
   // Función para finalizar el viaje y abrir el modal
   const handleEndTrip = async () => {
     if (!currentTrip) return;
-    
+
     try {
       setLoadingCurrentTrip(true);
       const response = await endTrip({ viajeId: currentTrip.id });
-      
+
       if (response?.success && response?.data) {
         // Guardar datos de finalización
         const paymentData = {
@@ -128,23 +166,23 @@ export const Trips = () => {
           bicicletaId: currentTrip.bicicleta.id,
         };
         setTripEndData(paymentData);
-        
+
         // Recargar viaje actual y historial
         const [currentResponse, historyResponse] = await Promise.all([
           getCurrentTrip(),
           getTripHistory(),
         ]);
-        
+
         if (currentResponse?.success && currentResponse?.data) {
           setCurrentTrip(currentResponse.data);
         } else {
           setCurrentTrip(null);
         }
-        
+
         if (historyResponse?.success && historyResponse?.data?.viajes) {
           setTripHistory(historyResponse.data.viajes);
         }
-        
+
         setShowEndTripModal(true);
       } else {
         alert('Error al finalizar el viaje');
@@ -170,7 +208,10 @@ export const Trips = () => {
       tiempoViaje: trip.duracion,
       precioSubtotal: trip.subtotal, // Aproximación quitando impuesto
       impuesto: trip.impuesto, // 3% de impuesto
-      tiempoExtra: Math.max(0, trip.duracion - (trip.tipo_viaje === 'MILLA' ? 45 : 75)),
+      tiempoExtra: Math.max(
+        0,
+        trip.duracion - (trip.tipo_viaje === 'MILLA' ? 45 : 75)
+      ),
       precioTotal: trip.precio,
       precioDescuento: trip.precioDescuento || 0,
       bicicletaId: trip.bicicleta.id,
@@ -184,20 +225,20 @@ export const Trips = () => {
     setTripEndData(null);
     setCurrentTrip(null);
     setShowEndTripModal(false);
-    
+
     // Recargar el viaje actual y el historial desde la API
     try {
       const [currentResponse, historyResponse] = await Promise.all([
         getCurrentTrip(),
         getTripHistory(),
       ]);
-      
+
       if (currentResponse?.success && currentResponse?.data) {
         setCurrentTrip(currentResponse.data);
       } else {
         setCurrentTrip(null);
       }
-      
+
       if (historyResponse?.success && historyResponse?.data?.viajes) {
         setTripHistory(historyResponse.data.viajes);
       }
@@ -306,25 +347,26 @@ export const Trips = () => {
                         : 'mechanical'
                     )}
                   </div>
-                  {currentTrip.bicicleta.tipo === 'Electrica' && currentTrip.bicicleta.bateria && (
-                    <div className="battery-indicator">
-                      <div
-                        className={`battery-bar ${getBatteryClass(
-                          currentTrip.bicicleta.bateria
-                        )}`}
-                      >
+                  {currentTrip.bicicleta.tipo === 'Electrica' &&
+                    bikeTelemetry?.bateria !== null && (
+                      <div className="battery-indicator">
                         <div
-                          className="battery-fill"
-                          style={{ width: `${currentTrip.bicicleta.bateria}%` }}
+                          className={`battery-bar ${getBatteryClass(
+                            bikeTelemetry?.bateria
+                          )}`}
                         >
-                          <FaBatteryHalf className="battery-icon" />
-                          <span className="battery-percentage">
-                            {currentTrip.bicicleta.bateria}%
-                          </span>
+                          <div
+                            className="battery-fill"
+                            style={{ width: `${bikeTelemetry?.bateria}%` }}
+                          >
+                            <FaBatteryHalf className="battery-icon" />
+                            <span className="battery-percentage">
+                              {bikeTelemetry?.bateria}%
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               </div>
 
@@ -357,7 +399,8 @@ export const Trips = () => {
                   <div className="detail-content">
                     <span className="detail-label">Tipo de viaje</span>
                     <span className="detail-value">
-                      {getTripTypeLabel(currentTrip.tipo_viaje)} (máx: {getTripMaxTime(currentTrip.tipo_viaje)})
+                      {getTripTypeLabel(currentTrip.tipo_viaje)} (máx:{' '}
+                      {getTripMaxTime(currentTrip.tipo_viaje)})
                     </span>
                   </div>
                 </div>
@@ -366,7 +409,12 @@ export const Trips = () => {
                   <div className="detail-content">
                     <span className="detail-label">Precio del viaje</span>
                     <span className="detail-value">
-                      {formatCurrency(getTripBasePrice(currentTrip.tipo_viaje))} + {formatCurrency(getTripExtraMinutePrice(currentTrip.tipo_viaje))}/min. extra
+                      {formatCurrency(getTripBasePrice(currentTrip.tipo_viaje))}{' '}
+                      +{' '}
+                      {formatCurrency(
+                        getTripExtraMinutePrice(currentTrip.tipo_viaje)
+                      )}
+                      /min. extra
                     </span>
                   </div>
                 </div>
@@ -414,7 +462,9 @@ export const Trips = () => {
                     </div>
                     <div className="charge-amount">
                       <FaMoneyBillWave className="charge-icon" />
-                      {trip.precio ? formatCurrency(trip?.precioDescuento || trip.precio) : 'N/A'}
+                      {trip.precio
+                        ? formatCurrency(trip?.precioDescuento || trip.precio)
+                        : 'N/A'}
                     </div>
                   </div>
 
@@ -490,12 +540,13 @@ export const Trips = () => {
                   {/* Botón para pagar si el estado es PENDIENTE */}
                   {trip.estado_pago === 'PENDIENTE' && trip.precio && (
                     <div className="history-card-footer">
-                      <button 
-                        className="btn btn-pay-trip" 
+                      <button
+                        className="btn btn-pay-trip"
                         onClick={() => handlePayTrip(trip)}
                       >
                         <FaMoneyBillWave className="btn-icon" />
-                        Pagar {formatCurrency(trip.precioDescuento || trip.precio)}
+                        Pagar{' '}
+                        {formatCurrency(trip.precioDescuento || trip.precio)}
                       </button>
                     </div>
                   )}

@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { FaBicycle, FaBatteryHalf } from 'react-icons/fa6';
 // Fix para los iconos de Leaflet en Vite/React
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -10,7 +12,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 // components
 import { ReserveBike } from './ReserveBike.jsx';
 // api
-import { useGetStations, useGetStationBikes } from '@api/bikes';
+import { useGetStations, useGetStationBikes, useGetBikeTelemetry } from '@api/bikes';
 import { useGetCurrentTrip } from '@api/trips';
 import { useGetCurrentReservation } from '@api/reserves';
 // styles
@@ -23,11 +25,30 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-export const MapView = ({ onStationsLoaded }) => {
+// Icono personalizado para la bicicleta en uso usando react-icons
+const bikeIconSvg = renderToStaticMarkup(
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <circle cx="24" cy="24" r="23" fill="#ff922d" opacity="0.95"/>
+    <g transform="translate(12, 12)">
+      <FaBicycle color="white" size={24} />
+    </g>
+  </svg>
+);
+
+const bikeIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,' + btoa(bikeIconSvg),
+  iconSize: [48, 48],
+  iconAnchor: [24, 24],
+  popupAnchor: [0, -24],
+});
+
+export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
   const [selectedStation, setSelectedStation] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [hasActiveTrip, setHasActiveTrip] = useState(false);
   const [hasActiveReservation, setHasActiveReservation] = useState(false);
+  const [currentTrip, setCurrentTrip] = useState(null);
+  const [bikeTelemetry, setBikeTelemetry] = useState(null);
 
   // Coordenadas de Ibagué, Colombia
   const center = [4.4389, -75.2322];
@@ -39,17 +60,21 @@ export const MapView = ({ onStationsLoaded }) => {
   const getStationBikes = useGetStationBikes();
   const getCurrentTrip = useGetCurrentTrip();
   const getCurrentReservation = useGetCurrentReservation();
+  const getBikeTelemetry = useGetBikeTelemetry();
 
-  // Verificar si hay viaje activo
+  // Verificar si hay viaje activo y obtener datos
   useEffect(() => {
     const checkActiveTrip = async () => {
       try {
         const tripData = await getCurrentTrip.get();
         console.log('Datos del viaje activo:', tripData);
-        setHasActiveTrip(tripData.data !== null);
+        const hasTrip = tripData.data !== null;
+        setHasActiveTrip(hasTrip);
+        setCurrentTrip(hasTrip ? tripData.data : null);
       } catch (error) {
         console.error('Error al verificar viaje activo:', error);
         setHasActiveTrip(false);
+        setCurrentTrip(null);
       }
     };
 
@@ -71,6 +96,41 @@ export const MapView = ({ onStationsLoaded }) => {
 
     checkActiveReservation();
   }, []);
+
+  // Obtener telemetría de la bicicleta cada 3 segundos si hay viaje activo
+  useEffect(() => {
+    if (!currentTrip || !currentTrip.bicicleta?.id) {
+      setBikeTelemetry(null);
+      return;
+    }
+
+    const fetchTelemetry = async () => {
+      try {
+        const telemetryData = await getBikeTelemetry.get(currentTrip.bicicleta.id);
+        
+        if (telemetryData) {
+          console.log('Telemetría obtenida:', telemetryData);
+          setBikeTelemetry(telemetryData);
+          
+          // Notificar al componente padre
+          if (onBikeTelemetryUpdate) {
+            onBikeTelemetryUpdate(telemetryData);
+          }
+        }
+      } catch (error) {
+        console.error('Error al obtener telemetría:', error);
+      }
+    };
+
+    // Obtener telemetría inmediatamente
+    fetchTelemetry();
+
+    // Configurar polling cada 3 segundos
+    const intervalId = setInterval(fetchTelemetry, 3000);
+
+    // Limpiar intervalo al desmontar o cuando cambie el viaje
+    return () => clearInterval(intervalId);
+  }, [currentTrip]);
 
   // Función para cargar/refrescar estaciones
   const fetchStations = async () => {
@@ -138,6 +198,12 @@ export const MapView = ({ onStationsLoaded }) => {
     setSelectedStation(null);
   };
 
+  const getBatteryClass = (battery) => {
+    if (battery >= 60) return 'battery-high';
+    if (battery >= 30) return 'battery-medium';
+    return 'battery-low';
+  };
+
   return (
     <>
       <section className="map-container">
@@ -174,6 +240,51 @@ export const MapView = ({ onStationsLoaded }) => {
               </Popup>
             </Marker>
           ))}
+
+          {/* Marcador de bicicleta en uso */}
+          {bikeTelemetry && bikeTelemetry.latitud && bikeTelemetry.longitud && (
+            <Marker
+              position={[bikeTelemetry.latitud, bikeTelemetry.longitud]}
+              icon={bikeIcon}
+              zIndexOffset={1000}
+            >
+              <Popup className="bike-telemetry-popup" maxWidth={320}>
+                <div className="telemetry-info">
+                  <h4>Bicicleta en Uso</h4>
+                  <div className="telemetry-content">
+                    <div className="telemetry-row">
+                      <span className="telemetry-label">ID:</span>
+                      <span className="telemetry-value">{bikeTelemetry.IDbicicleta}</span>
+                    </div>
+                    {bikeTelemetry.bateria !== null && (
+                      <div className="telemetry-row battery-row">
+                        <span className="telemetry-label">Batería:</span>
+                        <div className="battery-indicator-popup">
+                          <div className={`battery-bar ${getBatteryClass(bikeTelemetry.bateria)}`}>
+                            <div
+                              className="battery-fill"
+                              style={{ width: `${bikeTelemetry.bateria}%` }}
+                            >
+                              <FaBatteryHalf className="battery-icon" />
+                              <span className="battery-percentage">
+                                {bikeTelemetry.bateria}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="telemetry-row last-update">
+                      <span className="telemetry-label">Última actualización:</span>
+                      <span className="telemetry-value telemetry-time">
+                        {new Date(bikeTelemetry.fechaConsulta).toLocaleString('es-CO')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          )}
         </MapContainer>
       </section>
 

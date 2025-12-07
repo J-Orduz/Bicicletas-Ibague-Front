@@ -237,6 +237,51 @@
           margin-left: 0.25rem;
         }
       }
+
+      .battery-indicator-sidebar {
+        width: 100%;
+        margin-top: 0.25rem;
+
+        .battery-bar {
+          width: 100%;
+          height: 28px;
+          background-color: $bg-secondary;
+          border-radius: 6px;
+          overflow: hidden;
+          border: 2px solid $border-color;
+          position: relative;
+
+          .battery-fill {
+            @include flex($justify: center, $gap: 0.4rem);
+            height: 100%;
+            transition: width $transition-normal;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: $white;
+
+            .battery-icon {
+              width: 16px;
+              height: 16px;
+            }
+
+            .battery-percentage {
+              font-weight: 700;
+            }
+          }
+
+          &.battery-high .battery-fill {
+            background: linear-gradient(90deg, $green, $light-green);
+          }
+
+          &.battery-medium .battery-fill {
+            background: linear-gradient(90deg, #ff9800, #ffc107);
+          }
+
+          &.battery-low .battery-fill {
+            background: linear-gradient(90deg, $red, $light-red);
+          }
+        }
+      }
     }
   }
 

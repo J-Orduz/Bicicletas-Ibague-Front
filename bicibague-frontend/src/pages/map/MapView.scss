@@ -35,9 +35,7 @@
       margin-bottom: 12px;
 
       .stat-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        @include flex($justify: space-between);
         padding: 8px 12px;
         background-color: $bg-secondary;
         border-radius: 6px;
@@ -55,12 +53,13 @@
     }
 
     .redistribution-info {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      @include flex($gap: 6px);
       padding: 6px 10px;
-      background: linear-gradient(135deg, rgba($primary-color, 0.1), rgba($primary-color, 0.05));
+      background: linear-gradient(
+        135deg,
+        rgba($primary-color, 0.1),
+        rgba($primary-color, 0.05)
+      );
       border: 1px solid rgba($primary-color, 0.3);
       border-radius: 6px;
       font-size: 0.85rem;
@@ -79,35 +78,12 @@
     }
 
     .btn-reserve {
+      @include primary-button($padding: 10px 16px, $border-radius: 8px);
       width: 100%;
-      padding: 10px 16px;
-      background-color: $primary-color;
-      color: $white;
-      border: none;
-      border-radius: 8px;
       font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all $transition-fast;
-      box-shadow: $shadow-sm;
 
-      &:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: $shadow-md;
-      }
-
-      &:active:not(:disabled) {
-        transform: translateY(0);
-      }
-
-      &:disabled {
-        background: $bg-tertiary;
-        color: $text-secondary;
-        cursor: not-allowed;
-        box-shadow: none;
-      }
-
-      &.active-trip, &.active-reservation{
+      &.active-trip,
+      &.active-reservation {
         background: $bg-tertiary;
         color: $red;
         border: 2px solid $red;
@@ -145,5 +121,107 @@
     margin: 12px;
     min-width: 280px;
     max-width: 300px;
+  }
+}
+
+// Estilos para el popup de telemetría de la bicicleta en uso
+.bike-telemetry-popup {
+  .leaflet-popup-content-wrapper {
+    background-color: $bg-secondary;
+    color: $white;
+    border-radius: 12px;
+    box-shadow: $shadow-lg;
+  }
+
+  .leaflet-popup-tip {
+    background: $bg-secondary;
+  }
+
+  .telemetry-info {
+    padding: 8px;
+
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: $primary-color;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba($black, 0.2);
+      padding-bottom: 8px;
+      border-bottom: 2px solid $primary-color;
+    }
+
+    .telemetry-content {
+      @include flex($direction: column, $gap: 0.75rem, $align: stretch);
+
+      .telemetry-row {
+        @include flex($direction: column, $align: flex-start, $gap: 0.25rem);
+
+        .telemetry-label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          opacity: 0.9;
+        }
+
+        .telemetry-value {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: $primary-color;
+
+          &.telemetry-time {
+            font-size: 0.8rem;
+          }
+        }
+
+        &.battery-row {
+          .battery-indicator-popup {
+            width: 100%;
+            margin-top: 0.25rem;
+
+            .battery-bar {
+              width: 100%;
+              height: 28px;
+              background-color: rgba($white, 0.2);
+              border-radius: 6px;
+              overflow: hidden;
+              border: 2px solid rgba($white, 0.3);
+              position: relative;
+
+              .battery-fill {
+                @include flex($justify: center, $gap: 0.4rem);
+                height: 100%;
+                transition: width $transition-normal;
+                font-weight: 700;
+                font-size: 0.85rem;
+                color: $white;
+
+                .battery-icon {
+                  width: 16px;
+                  height: 16px;
+                }
+
+                .battery-percentage {
+                  font-weight: 700;
+                }
+              }
+
+              &.battery-high .battery-fill {
+                background: linear-gradient(90deg, $green, $light-green);
+              }
+
+              &.battery-medium .battery-fill {
+                background: linear-gradient(90deg, #ff9800, #ffc107);
+              }
+
+              &.battery-low .battery-fill {
+                background: linear-gradient(90deg, $red, $light-red);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

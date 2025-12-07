@@ -8,6 +8,7 @@ import "./Home.scss";
 export const Home = () => {
   const [currentReservation, setCurrentReservation] = useState(null);
   const [bikeStations, setBikeStations] = useState([]);
+  const [bikeTelemetry, setBikeTelemetry] = useState(null);
 
   const getCurrentReservation = useGetCurrentReservation();
 
@@ -30,14 +31,22 @@ export const Home = () => {
     setBikeStations(stations);
   };
 
+  const handleBikeTelemetryUpdate = (telemetry) => {
+    setBikeTelemetry(telemetry);
+  };
+
   return (
     <section className="home-container">
       <SubHeader pageTitle="Mapa BicIbagué" />
       <div className="home-content">
-        <MapView onStationsLoaded={handleStationsLoaded} />
+        <MapView 
+          onStationsLoaded={handleStationsLoaded}
+          onBikeTelemetryUpdate={handleBikeTelemetryUpdate}
+        />
         <MapSidebar
           currentReservation={currentReservation}
           bikeStations={bikeStations}
+          bikeTelemetry={bikeTelemetry}
         />
       </div>
     </section>

@@ -23,3 +23,16 @@ export const useGetAllBikes = () => {
     get: useFetch('/bikes', 'Error al obtener las bicicletas').fetchData,
   };
 };
+
+// Obtener telemetria de una bicicleta GET
+export const useGetBikeTelemetry = () => {
+  const { fetchData } = useFetch(
+    ``,
+    'Error al obtener la telemetría de la bicicleta'
+  );
+  return {
+    get: (bikeId) => {
+      return fetchData(`/bikes/${bikeId}/telemetria`);
+    },
+  };
+};

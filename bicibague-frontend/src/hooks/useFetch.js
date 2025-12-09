@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 
+const apiBase = import.meta.env.VITE_API_BASE || '';
+
 // Ref global compartida entre todas las instancias del hook (si sirvio OMG :v)
 let globalAlertShown = false;
 
@@ -18,13 +20,12 @@ export const useFetch = (
   // No hace fetch hasta que se llame a fetchData directamente
   const fetchData = useCallback(
     async (newUrl = '') => {
-
       setLoading(true);
       setError(null);
 
       const finalUrl = supabaseURL
         ? `/functions/v1${newUrl || baseUrl}`
-        : `/api${newUrl || baseUrl}`;
+        : `${apiBase}/api${newUrl || baseUrl}`;
 
       try {
         const response = await fetch(finalUrl, {
@@ -48,7 +49,7 @@ export const useFetch = (
           };
           throw errorMsgs;
         }
-        globalAlertShown = false; 
+        globalAlertShown = false;
         return result;
       } catch (err) {
         setError('Ha ocurrido un error'); // usuario
@@ -56,10 +57,10 @@ export const useFetch = (
 
         // Si el error es 401 (Unauthorized), cerrar sesión
         if (err.status === 401 && !globalAlertShown) {
-          globalAlertShown = true; 
+          globalAlertShown = true;
           logout();
           alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
-        } 
+        }
 
         const errorMsgs = {
           errorFetchMsg: errorMessage,

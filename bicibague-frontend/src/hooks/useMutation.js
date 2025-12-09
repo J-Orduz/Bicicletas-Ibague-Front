@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 
+const apiBase = import.meta.env.VITE_API_BASE || '';
+
 let globalAlertShown = false;
 
 export const useMutation = () => {
@@ -27,7 +29,7 @@ export const useMutation = () => {
     // const finalUrl = `/v1${endpoint}`;
     const finalUrl = supabaseURL
       ? `/functions/v1${endpoint}`
-      : `/api${endpoint}`;
+      : `${apiBase}/api${endpoint}`;
 
     try {
       const isFormData = body instanceof FormData;

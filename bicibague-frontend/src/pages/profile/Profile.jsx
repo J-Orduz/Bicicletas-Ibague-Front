@@ -27,7 +27,7 @@ import {
   BsStarFill,
 } from 'react-icons/bs';
 // styles
-import './Profile.scss';
+import './profile.scss';
 
 export const Profile = () => {
   const { logout, user } = useAuth();

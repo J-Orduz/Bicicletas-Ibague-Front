@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: bicibague-frontend
+    env: static
+    buildCommand: cd bicibague-frontend && npm install && npm run build
+    staticPublishPath: ./bicibague-frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

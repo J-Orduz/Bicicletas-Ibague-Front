@@ -7,7 +7,7 @@ import {
 // icons
 import { FaExclamationCircle, FaCreditCard } from 'react-icons/fa';
 // styles
-import './StripePayment.scss';
+import './stripePayment.scss';
 
 /**
  * Componente reutilizable para procesar pagos con Stripe

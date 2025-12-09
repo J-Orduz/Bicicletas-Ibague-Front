@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 
 const apiBase = import.meta.env.VITE_API_BASE || '';
+const supabaseURLenv = import.meta.env.VITE_SUPABASE_URL || '';
 
 // Ref global compartida entre todas las instancias del hook (si sirvio OMG :v)
 let globalAlertShown = false;
@@ -24,7 +25,7 @@ export const useFetch = (
       setError(null);
 
       const finalUrl = supabaseURL
-        ? `/functions/v1${newUrl || baseUrl}`
+        ? `${supabaseURLenv}/functions/v1${newUrl || baseUrl}`
         : `${apiBase}/api${newUrl || baseUrl}`;
 
       try {

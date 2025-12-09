@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 
 const apiBase = import.meta.env.VITE_API_BASE || '';
+const supabaseURLenv = import.meta.env.VITE_SUPABASE_URL || '';
 
 let globalAlertShown = false;
 
@@ -28,7 +29,7 @@ export const useMutation = () => {
 
     // const finalUrl = `/v1${endpoint}`;
     const finalUrl = supabaseURL
-      ? `/functions/v1${endpoint}`
+      ? `${supabaseURLenv}/functions/v1${endpoint}`
       : `${apiBase}/api${endpoint}`;
 
     try {

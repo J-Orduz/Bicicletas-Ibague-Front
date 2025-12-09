@@ -38,4 +38,29 @@ export default defineConfig({
       '@contexts': '/src/store/contexts',
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separar React y React DOM en su propio chunk
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          
+          // Separar las librerías de mapas (pesadas)
+          'map-vendor': ['leaflet', 'react-leaflet'],
+          
+          // Separar Three.js en chunks individuales para mejor code-splitting
+          'three': ['three'],
+          'ogl': ['ogl'],
+          'postprocessing': ['postprocessing'],
+          
+          // Separar iconos
+          'icons-vendor': ['react-icons'],
+        },
+      },
+    },
+    // Aumentar el límite de advertencia de tamaño de chunk a 1000 kB
+    chunkSizeWarningLimit: 1000,
+    // Usar esbuild para minificación (más rápido y ya incluido)
+    minify: 'esbuild',
+  },
 });

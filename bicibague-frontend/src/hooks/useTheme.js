@@ -8,9 +8,10 @@ export const useTheme = () => {
       return savedTheme;
     }
     // Detectar preferencia del sistema
-    return window.matchMedia('(prefers-color-scheme: dark)').matches 
-      ? 'dark' 
-      : 'light';
+    // return window.matchMedia('(prefers-color-scheme: dark)').matches 
+    //   ? 'dark' 
+    //   : 'light';
+    return 'dark'; // valor por defecto
   };
 
   const [theme, setTheme] = useState(getInitialTheme);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 // components
 import { SubHeader } from "@layouts/SubHeader";
-import { ButtonThemeToggle } from "@components/buttonThemeToggle";
+import { ButtonThemeToggle } from "@components/ButtonThemeToggle";
 import Aurora from "@components/Aurora";
 // api
 import { useRegisterUserMutation } from "@api/auth";

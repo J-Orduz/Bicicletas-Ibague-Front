@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useScrollDirection } from '@hooks/useScrollDirection';
 import { useAuth } from '@contexts/AuthContext';
 // components
-import { ButtonThemeToggle } from '@components/buttonThemeToggle';
+import { ButtonThemeToggle } from '@components/ButtonThemeToggle';
 // icons
 import {
   FaUser,

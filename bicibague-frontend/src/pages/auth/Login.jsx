@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // components
 import { SubHeader } from "@layouts/SubHeader";
-import { ButtonThemeToggle } from "@components/buttonThemeToggle";
+import { ButtonThemeToggle } from "@components/ButtonThemeToggle";
 import Aurora from "@components/Aurora";
 // context
 import { useAuth } from "@contexts/AuthContext";

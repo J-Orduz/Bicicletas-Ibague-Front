@@ -128,7 +128,7 @@ export const Trips = () => {
     const updateElapsedTime = () => {
       const start = new Date(currentTrip.fecha_inicio);
       const now = new Date();
-      const diff = now - start;
+      const diff = Math.max(0, now - start); // Asegurar que no sea negativo
 
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));

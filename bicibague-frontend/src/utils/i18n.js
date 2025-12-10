@@ -16,7 +16,8 @@ i18n
   .init({
     resources,
     fallbackLng: 'es', // Idioma por defecto
-    lng: localStorage.getItem('userLanguage') || 'es', // Idioma inicial desde localStorage o español
+    
+    lng: localStorage.getItem('userPreferences.language') || 'es', // Idioma inicial desde localStorage o español
     debug: false, // Cambia a true para ver logs en desarrollo
     interpolation: {
       escapeValue: false, // React ya hace el escape

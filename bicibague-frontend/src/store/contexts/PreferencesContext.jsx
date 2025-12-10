@@ -5,7 +5,7 @@ const PreferencesContext = createContext();
 
 export const PreferencesProvider = ({ children }) => {
   const { i18n } = useTranslation();
-  
+
   // Cargar preferencias desde localStorage o usar valores por defecto
   const [preferences, setPreferences] = useState(() => {
     const savedPreferences = localStorage.getItem('userPreferences');
@@ -42,11 +42,10 @@ export const PreferencesProvider = ({ children }) => {
       ...prev,
       [key]: value,
     }));
-    
+
     // Si se actualiza el idioma, también actualizar i18next
     if (key === 'language') {
       i18n.changeLanguage(value);
-      localStorage.setItem('userLanguage', value);
     }
   };
 
@@ -59,7 +58,6 @@ export const PreferencesProvider = ({ children }) => {
     setPreferences(defaultPreferences);
     localStorage.setItem('userPreferences', JSON.stringify(defaultPreferences));
     i18n.changeLanguage('es');
-    localStorage.setItem('userLanguage', 'es');
   };
 
   const value = {

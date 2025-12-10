@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const apiBase = import.meta.env.VITE_API_BASE || '';
 const supabaseURLenv = import.meta.env.VITE_SUPABASE_URL || '';
@@ -10,6 +11,7 @@ export const useMutation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { token, logout } = useAuth();
+  const { t } = useTranslation();
 
   const mutate = async (
     method,
@@ -93,7 +95,7 @@ export const useMutation = () => {
       if (err.status === 401 && !globalAlertShown) {
         globalAlertShown = true;
         logout();
-        alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
+        alert(t('fetch.sessionExpired'));
       }
 
       const errorMsgs = {

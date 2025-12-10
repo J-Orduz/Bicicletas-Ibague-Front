@@ -1,6 +1,7 @@
 // leaftlet map. Tutorial: https://leafletjs.com/examples.html
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -45,6 +46,7 @@ const bikeIcon = new L.Icon({
 
 export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [selectedStation, setSelectedStation] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [hasActiveTrip, setHasActiveTrip] = useState(false);
@@ -117,7 +119,7 @@ export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
           // Verificar si el candado está bloqueado
           if (telemetryData.estadoCandado === 'Bloqueado') {
             console.log('Candado bloqueado detectado. Viaje finalizado.');
-            alert('Viaje finalizado');
+            alert(t('mapView.tripFinalized'));
             
             // Actualizar estado del viaje
             setHasActiveTrip(false);
@@ -268,15 +270,15 @@ export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
             >
               <Popup className="bike-telemetry-popup" maxWidth={320}>
                 <div className="telemetry-info">
-                  <h4>Bicicleta en Uso</h4>
+                  <h4>{t('mapView.bikeInUse')}</h4>
                   <div className="telemetry-content">
                     <div className="telemetry-row">
-                      <span className="telemetry-label">ID:</span>
+                      <span className="telemetry-label">{t('mapView.id')}:</span>
                       <span className="telemetry-value">{bikeTelemetry.IDbicicleta}</span>
                     </div>
                     {bikeTelemetry.bateria !== null && (
                       <div className="telemetry-row battery-row">
-                        <span className="telemetry-label">Batería:</span>
+                        <span className="telemetry-label">{t('mapView.battery')}:</span>
                         <div className="battery-indicator-popup">
                           <div className={`battery-bar ${getBatteryClass(bikeTelemetry.bateria)}`}>
                             <div
@@ -293,7 +295,7 @@ export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
                       </div>
                     )}
                     <div className="telemetry-row last-update">
-                      <span className="telemetry-label">Última actualización:</span>
+                      <span className="telemetry-label">{t('mapView.lastUpdate')}:</span>
                       <span className="telemetry-value telemetry-time">
                         {new Date(bikeTelemetry.fechaConsulta).toLocaleString('es-CO')}
                       </span>
@@ -314,6 +316,7 @@ export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
 };
 
 const CountdownTimer = ({ redistributionDate, onCountdownComplete }) => {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState('');
   const [hasCompleted, setHasCompleted] = useState(false);
 
@@ -324,7 +327,7 @@ const CountdownTimer = ({ redistributionDate, onCountdownComplete }) => {
       const difference = redistribution - now;
 
       if (difference <= 0) {
-        setTimeLeft('Redistribución en progreso');
+        setTimeLeft(t('mapView.redistributionInProgress'));
         
         // Ejecutar callback solo una vez cuando llegue a 0
         if (!hasCompleted && onCountdownComplete) {
@@ -363,33 +366,34 @@ export const BikeStationPopup = ({
   redistributionDate,
   onRefreshStations,
 }) => {
+  const { t } = useTranslation();
   const totalCapacity = 15;
   const availableBikes = bikes.filter((bike) => bike.available);
 
   const getButtonConfig = () => {
     if (hasActiveTrip) {
       return {
-        text: 'Tienes un viaje en curso',
+        text: t('mapView.tripInProgress'),
         className: 'btn-reserve active-trip',
         disabled: true,
       };
     }
     if (hasActiveReservation) {
       return {
-        text: 'Ya tienes una reserva activa',
+        text: t('mapView.activeReservation'),
         className: 'btn-reserve active-reservation',
         disabled: true,
       };
     }
     if (availableBikes.length === 0) {
       return {
-        text: 'No hay bicicletas disponibles',
+        text: t('mapView.noBikesAvailable'),
         className: 'btn-reserve',
         disabled: true,
       };
     }
     return {
-      text: 'Ver Bicicletas Disponibles',
+      text: t('mapView.viewAvailableBikes'),
       className: 'btn-reserve',
       disabled: false,
     };
@@ -402,14 +406,14 @@ export const BikeStationPopup = ({
       <h3>{name}</h3>
       <div className="station-stats">
         <div className="stat-item">
-          <span className="stat-label">Disponibles:</span>
+          <span className="stat-label">{t('mapView.available')}:</span>
           <span className="stat-value">
             {availableBikes.length} / {totalCapacity}
           </span>
         </div>
         {redistributionDate && (
           <div className="redistribution-info">
-            <span className="redistribution-text">Llegarán nuevas bicicletas en: </span>
+            <span className="redistribution-text">{t('mapView.newBikesArriving')}: </span>
             <CountdownTimer 
               redistributionDate={redistributionDate}
               onCountdownComplete={onRefreshStations}

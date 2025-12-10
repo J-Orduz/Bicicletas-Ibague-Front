@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 // components
 import { SubscriptionPaymentModal } from './SubscriptionPaymentModal';
 // hooks
@@ -21,6 +22,7 @@ export const SubscriptionSection = ({
   onSubscriptionChange,
 }) => {
   const { formatCurrency } = useCurrency();
+  const { t } = useTranslation();
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   const handleCreateSubscription = () => {
@@ -34,14 +36,14 @@ export const SubscriptionSection = ({
 
   const handleCancelSubscription = async () => {
     const confirmed = window.confirm(
-      '¿Estás seguro de cancelar tu suscripción? No se realizarán reembolsos.'
+      t('subscription.cancelConfirmation')
     );
 
     if (!confirmed) return;
 
     try {
       await cancelSubscription.post();
-      alert('Suscripción cancelada exitosamente');
+      alert(t('subscription.cancelSuccess'));
       onSubscriptionChange?.();
     } catch (error) {
       alert(error.errorMutationMsg || 'Error al cancelar la suscripción');
@@ -64,26 +66,26 @@ export const SubscriptionSection = ({
       <div className="subscription-section">
         <div className="subscription-header">
           <BsStarFill className="subscription-icon" />
-          <h2 className="section-title">Suscripción</h2>
+          <h2 className="section-title">{t('profile.subscription')}</h2>
         </div>
 
         {subscriptionData?.tiene_suscripcion ? (
           <div className="subscription-active">
             <div className="subscription-info">
               <div className="info-item">
-                <span className="info-label">Plan:</span>
-                <span className="info-value">BicIbagué Plus</span>
+                <span className="info-label">{t('subscription.plan')}:</span>
+                <span className="info-value">{t('subscription.planName')}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Precio:</span>
+                <span className="info-label">{t('subscription.price')}:</span>
                 <span className="info-value">
                   {formatCurrency(SUBSCRIPTION_PRICE)}/mes
                 </span>
               </div>
               <div className="info-item">
-                <span className="info-label">Estado:</span>
+                <span className="info-label">{t('subscription.status')}:</span>
                 <span className="info-value status-active">
-                  {subscriptionData.estado || 'Activa'}
+                  {subscriptionData.estado || t('subscription.active')}
                 </span>
               </div>
             </div>
@@ -94,7 +96,7 @@ export const SubscriptionSection = ({
                   <BsCheckCircleFill />
                 </div>
                 <div className="stat-content">
-                  <span className="stat-label">Viajes disponibles</span>
+                  <span className="stat-label">{t('subscription.tripsAvailable')}</span>
                   <span className="stat-value highlight">
                     {subscriptionData.viajes_disponibles || 50}
                   </span>
@@ -106,9 +108,9 @@ export const SubscriptionSection = ({
                   <BsCalendar3 />
                 </div>
                 <div className="stat-content">
-                  <span className="stat-label">Días restantes</span>
+                  <span className="stat-label">{t('subscription.daysRemaining')}</span>
                   <span className="stat-value">
-                    {subscriptionData.dias_restantes || 30} días
+                    {subscriptionData.dias_restantes || 30} {t('subscription.days')}
                   </span>
                 </div>
               </div>
@@ -118,7 +120,7 @@ export const SubscriptionSection = ({
                   <BsCalendar3 />
                 </div>
                 <div className="stat-content">
-                  <span className="stat-label">Fecha de vencimiento</span>
+                  <span className="stat-label">{t('subscription.expirationDate')}</span>
                   <span className="stat-value">
                     {formatDate(subscriptionData.fecha_vencimiento)}
                   </span>
@@ -127,15 +129,15 @@ export const SubscriptionSection = ({
             </div>
 
             <div className="subscription-benefits">
-              <h3 className="benefits-title">Beneficios incluidos:</h3>
+              <h3 className="benefits-title">{t('subscription.benefitsIncluded')}:</h3>
               <ul className="benefits-list">
                 <li>
                   <BsCheckCircleFill className="benefit-icon" />
-                  50 viajes disponibles al mes
+                  {t('subscription.benefit1')}
                 </li>
                 <li>
                   <BsCheckCircleFill className="benefit-icon" />
-                  Sin recargos por exceder el tiempo límite
+                  {t('subscription.benefit2')}
                 </li>
               </ul>
             </div>
@@ -144,28 +146,28 @@ export const SubscriptionSection = ({
               className="btn-cancel-subscription"
               onClick={handleCancelSubscription}
             >
-              <BsXCircleFill /> Cancelar Suscripción
+              <BsXCircleFill /> {t('subscription.cancel')}
             </button>
           </div>
         ) : (
           <div className="subscription-inactive">
             <div className="subscription-promo">
-              <h3 className="promo-title">Suscríbete a BicIbagué Plus</h3>
+              <h3 className="promo-title">{t('subscription.subscribeTitle')}</h3>
               <p className="promo-price">
                 {formatCurrency(SUBSCRIPTION_PRICE)}/mes
               </p>
             </div>
 
             <div className="subscription-benefits">
-              <h4 className="benefits-title">Beneficios incluidos:</h4>
+              <h4 className="benefits-title">{t('subscription.benefitsIncluded')}:</h4>
               <ul className="benefits-list">
                 <li>
                   <BsCheckCircleFill className="benefit-icon" />
-                  50 viajes disponibles al mes
+                  {t('subscription.benefit1')}
                 </li>
                 <li>
                   <BsCheckCircleFill className="benefit-icon" />
-                  Sin recargos por exceder el tiempo límite
+                  {t('subscription.benefit2')}
                 </li>
               </ul>
             </div>
@@ -174,7 +176,7 @@ export const SubscriptionSection = ({
               className="btn-subscribe"
               onClick={handleCreateSubscription}
             >
-              <BsStar /> Suscribite Ahora
+              <BsStar /> {t('subscription.subscribeNow')}
             </button>
           </div>
         )}

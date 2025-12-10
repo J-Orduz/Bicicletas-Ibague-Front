@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Hyperspeed from "./Hyperspeed";
 import "./Landing.scss";
 
@@ -25,6 +26,7 @@ const landingPreset = {
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <main className="landing-root">
@@ -32,10 +34,10 @@ const Landing = () => {
         <div className="header-left">Bicibague</div>
         <nav className="header-right">
           <button className="header-link" onClick={() => navigate("/login")}>
-            Iniciar sesión
+            {t('auth.login')}
           </button>
           <button className="header-cta" onClick={() => navigate("/register")}>
-            Registrarse
+            {t('auth.register')}
           </button>
         </nav>
       </header>
@@ -46,19 +48,18 @@ const Landing = () => {
 
       <div className="landing-hero">
         <div className="hero-inner">
-          <h1 className="hero-title">Reserva y recorre Ibagué en bicicleta</h1>
+          <h1 className="hero-title">{t('landing.heroTitle')}</h1>
           <p className="hero-sub">
-            Crea una cuenta para comenzar a reservar bicicletas o inicia sesión
-            si ya tienes una.
+            {t('landing.heroSubtitle')}
           </p>
           <div className="hero-actions">
             <button
               className="btn primary"
               onClick={() => navigate("/register")}
             >
-              Crear cuenta
+              {t('landing.createAccount')}
             </button>
-            <button className="btn ghost">Conocer más</button>
+            <button className="btn ghost">{t('landing.learnMore')}</button>
           </div>
         </div>
       </div>

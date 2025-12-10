@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 // components
 import { StripePayment, StripePaymentForm } from '@components/StripePayment';
 // API
@@ -26,6 +27,7 @@ import './EndTrip.scss';
 export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
+  const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState('summary'); // 'summary', 'payment', 'processing', 'success'
@@ -120,11 +122,11 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
         // Actualizar puntos del usuario
         await fetchPoints();
         
-        alert(`¡Puntos canjeados exitosamente! Descuento de ${formatCurrency(response.data.descuentoAplicado)} aplicado.`);
+        alert(t('trips.pointsRedeemedSuccess', { discount: formatCurrency(response.data.descuentoAplicado) }));
       }
     } catch (error) {
       console.error('Error al canjear puntos:', error);
-      alert(error.errorMutationMsg || 'Error al canjear puntos');
+      alert(error.errorMutationMsg || t('trips.errorRedeemingPoints'));
     } finally {
       setIsRedeemingPoints(false);
     }
@@ -192,7 +194,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
         setClientSecret(response.paymentIntent.client_secret);
         setPaymentStep('payment');
       } else {
-        alert('Error al crear el pago');
+        alert(t('trips.errorCreatingPayment'));
       }
     } catch (error) {
       console.error('Error al crear el PaymentIntent:', error);
@@ -330,16 +332,16 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
       <div className="endtrip-modal">
         <div className="modal-header">
           <h1>
-            {paymentStep === 'summary' && 'Resumen del Viaje'}
-            {paymentStep === 'payment' && 'Procesar Pago'}
-            {paymentStep === 'processing' && 'Procesando...'}
-            {paymentStep === 'success' && '¡Pago Exitoso!'}
+            {paymentStep === 'summary' && t('trips.tripSummary')}
+            {paymentStep === 'payment' && t('trips.processing')}
+            {paymentStep === 'processing' && t('trips.processing')}
+            {paymentStep === 'success' && t('trips.paymentSuccessful')}
           </h1>
           <button
             className="btn-close"
             onClick={handleCancel}
             disabled={isLoading || paymentStep === 'processing'}
-            aria-label="Cerrar"
+            aria-label={t('common.close')}
           >
             <BsXLg className="btn-icon" />
           </button>
@@ -355,16 +357,16 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                 </div>
                 <div className="bike-details">
                   <h2 className="bike-id">{trip?.bicicleta?.id || tripEndData?.bicicletaId || 'N/A'}</h2>
-                  <p className="bike-status">Viaje Completado</p>
+                  <p className="bike-status">{t('trips.tripCompleted')}</p>
                 </div>
               </div>
 
               <div className="trip-summary">
-                <h3 className="summary-title">Detalles del Viaje</h3>
+                <h3 className="summary-title">{t('trips.tripDetails')}</h3>
                 <div className="summary-item">
                   <div className="summary-label">
                     <FaRegClock className="summary-icon" />
-                    <span>Duración</span>
+                    <span>{t('trips.duration')}</span>
                   </div>
                   <span className="summary-value">{calculateDuration()}</span>
                 </div>
@@ -372,7 +374,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                 <div className="summary-item">
                   <div className="summary-label">
                     <FaMoneyBillWave className="summary-icon" />
-                    <span>Precio del viaje</span>
+                    <span>{t('trips.tripPrice')}</span>
                   </div>
                   <span className="summary-value">
                     {formatCurrency(tripEndData?.precioSubtotal || 0)}
@@ -383,7 +385,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                   <div className="summary-item extra-time">
                     <div className="summary-label">
                       <FaRegClock className="summary-icon" />
-                      <span>Tiempo extra ({tripEndData.tiempoExtra} min)</span>
+                      <span>{t('trips.extraTime', { minutes: tripEndData.tiempoExtra })}</span>
                     </div>
                     <span className="summary-value">
                       {formatCurrency((tripEndData.precioTotal - tripEndData.precioSubtotal - tripEndData.impuesto) || 0)}
@@ -394,7 +396,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                 <div className="summary-item">
                   <div className="summary-label">
                     <FaMoneyBillWave className="summary-icon" />
-                    <span>Impuesto</span>
+                    <span>{t('trips.tax')}</span>
                   </div>
                   <span className="summary-value">
                     {formatCurrency(tripEndData?.impuesto || 0)}
@@ -404,7 +406,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                 <div className="summary-item points">
                   <div className="summary-label">
                     <BsStarFill className="summary-icon" />
-                    <span>Puntos por finalizar el pago</span>
+                    <span>{t('trips.pointsForPayment')}</span>
                   </div>
                   <span className="summary-value">2</span>
                 </div>
@@ -415,18 +417,18 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     <div className="summary-label-column">
                       <div className="summary-label">
                         <BsStarFill className="summary-icon" />
-                        <span>Canjear BiciPuntos</span>
+                        <span>{t('trips.redeemPoints')}</span>
                       </div>
                       {!hasPointsRedeemed() && !pointsRedeemed ? (
                         getRedeemablePoints() > 0 ? (
                           <>
                             <div className="points-info">
                               <div className="points-detail">
-                                <span className="detail-label">Canjeo disponible</span>
+                                <span className="detail-label">{t('trips.availableRedemption')}</span>
                                 <span className="detail-value">{getRedeemablePoints()}/{pointsData.puntos} pts</span>
                               </div>
                               <div className="points-detail discount">
-                                <span className="detail-label">Descuento</span>
+                                <span className="detail-label">{t('trips.discount')}</span>
                                 <span className="detail-value">-{formatCurrency(getDiscountAmount())}</span>
                               </div>
                             </div>
@@ -435,14 +437,14 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                               onClick={handleRedeemPoints}
                               disabled={isRedeemingPoints || isLoading}
                             >
-                              {isRedeemingPoints ? 'Aplicando descuento...' : 'Aplicar descuento'}
+                              {isRedeemingPoints ? t('trips.applyingDiscount') : t('trips.applyDiscount')}
                             </button>
                           </>
                         ) : (
-                          <span className="points-insufficient">No tienes suficientes puntos para canjear (mínimo 10 puntos)</span>
+                          <span className="points-insufficient">{t('trips.insufficientPoints')}</span>
                         )
                       ) : (
-                        <span className="points-redeemed">Ya se ha aplicado un descuento</span>
+                        <span className="points-redeemed">{t('trips.discountApplied')}</span>
                       )}
                     </div>
                   </div>
@@ -452,15 +454,15 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                   <div className="summary-item subscription">
                     <div className="summary-label">
                       <BsStarFill className="summary-icon" />
-                      <span>Suscripción Activa</span>
+                      <span>{t('trips.subscriptionActive')}</span>
                     </div>
-                    <span className="summary-value">Gratis</span>
+                    <span className="summary-value">{t('trips.freeTrip')}</span>
                   </div>
                 ) : (
                   <div className="summary-item total">
                     <div className="summary-label">
                       <FaMoneyBillWave className="summary-icon" />
-                      <span>Total a pagar</span>
+                      <span>{t('trips.totalToPay')}</span>
                     </div>
                     <span className="summary-value">
                       {formatCurrency(getFinalPrice())}
@@ -475,9 +477,9 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     <BsStarFill />
                   </div>
                   <div className="info-content">
-                    <p className="info-title">¡Viaje incluido en tu suscripción!</p>
+                    <p className="info-title">{t('trips.tripIncludedInSubscription')}</p>
                     <p className="info-description">
-                      Este viaje será descontado de tus {subscriptionData.viajes_disponibles} viajes disponibles.
+                      {t('trips.tripWillBeDeducted', { trips: subscriptionData.viajes_disponibles })}
                     </p>
                   </div>
                 </div>
@@ -489,13 +491,13 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
           {paymentStep === 'payment' && (
             <>
               <div className="payment-amount">
-                <span className="amount-label">Total a pagar:</span>
+                <span className="amount-label">{t('trips.totalToPay')}:</span>
                 <span className="amount-value">{formatCurrency(getFinalPrice())}</span>
               </div>
 
               {/* Selector de método de pago */}
               <div className="payment-method-selector">
-                <h3 className="selector-title">Selecciona el método de pago:</h3>
+                <h3 className="selector-title">{t('trips.selectPaymentMethod')}</h3>
                 <div className="payment-methods">
                   <button
                     className={`payment-method-option ${paymentMethod === 'card' ? 'active' : ''}`}
@@ -507,7 +509,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     disabled={isLoading}
                   >
                     <FaCreditCard className="method-icon" />
-                    <span>Tarjeta de Crédito/Débito</span>
+                    <span>{t('trips.creditDebitCard')}</span>
                   </button>
                   <button
                     className={`payment-method-option ${paymentMethod === 'balance' ? 'active' : ''}`}
@@ -519,7 +521,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     disabled={isLoading}
                   >
                     <FaMoneyBillWave className="method-icon" />
-                    <span>Saldo BiciBague</span>
+                    <span>{t('trips.bicibagueBalance')}</span>
                   </button>
                   <button
                     className={`payment-method-option ${paymentMethod === 'citypass' ? 'active' : ''}`}
@@ -531,7 +533,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     disabled={isLoading}
                   >
                     <FaCreditCard className="method-icon" />
-                    <span>CityPass</span>
+                    <span>{t('trips.citypass')}</span>
                   </button>
                 </div>
               </div>
@@ -545,23 +547,23 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
               {paymentMethod === 'balance' && (
                 <div className="citypass-payment-info">
                   <p className="info-text">
-                    El monto será descontado de tu saldo BiciBague.
+                    {t('trips.amountDeductedFromBalance')}
                   </p>
                   {userBalance !== null && (
                     <div className="balance-display">
-                      <span className="balance-label">Tu saldo actual:</span>
+                      <span className="balance-label">{t('trips.yourCurrentBalance')}:</span>
                       <span className="balance-value">{formatCurrency(userBalance)}</span>
                     </div>
                   )}
                   {balanceError === 'insufficient_balance' && (
                     <div className="error-container">
-                      <p className="error-text">Saldo insuficiente en tu cuenta BiciBague</p>
-                      <p className="error-hint">Por favor, selecciona otro método de pago o recarga tu saldo</p>
+                      <p className="error-text">{t('trips.insufficientBalanceBicibague')}</p>
+                      <p className="error-hint">{t('trips.selectAnotherMethodOrRecharge')}</p>
                     </div>
                   )}
                   {balanceError === 'generic' && (
                     <div className="error-container">
-                      <p className="error-text">Error al procesar el pago con saldo</p>
+                      <p className="error-text">{t('trips.errorProcessingBalancePayment')}</p>
                     </div>
                   )}
                 </div>
@@ -571,31 +573,31 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
               {paymentMethod === 'citypass' && (
                 <div className="citypass-payment-info">
                   <p className="info-text">
-                    El monto será descontado de tu tarjeta CityPass vinculada.
+                    {t('trips.amountDeductedFromCitypass')}
                   </p>
                   {cityPassBalance !== null && (
                     <div className="balance-display">
-                      <span className="balance-label">Tu saldo CityPass:</span>
+                      <span className="balance-label">{t('trips.yourCitypassBalance')}:</span>
                       <span className="balance-value">{formatCurrency(cityPassBalance)}</span>
                     </div>
                   )}
                   {cityPassError === 'no_card' && (
                     <div className="error-container">
-                      <p className="error-text">No tienes una tarjeta CityPass vinculada</p>
+                      <p className="error-text">{t('trips.noLinkedCitypass')}</p>
                       <Link to="/profile" className="link-card-button">
-                        Vincular Tarjeta Ahora
+                        {t('trips.linkCardNow')}
                       </Link>
                     </div>
                   )}
                   {cityPassError === 'insufficient_balance' && (
                     <div className="error-container">
-                      <p className="error-text">Saldo insuficiente en tu tarjeta CityPass</p>
-                      <p className="error-hint">Por favor, selecciona otro método de pago</p>
+                      <p className="error-text">{t('trips.insufficientBalanceCitypass')}</p>
+                      <p className="error-hint">{t('trips.selectAnotherMethod')}</p>
                     </div>
                   )}
                   {cityPassError === 'generic' && (
                     <div className="error-container">
-                      <p className="error-text">Error al procesar el pago con CityPass</p>
+                      <p className="error-text">{t('trips.errorProcessingCitypassPayment')}</p>
                     </div>
                   )}
                 </div>
@@ -607,8 +609,8 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
           {paymentStep === 'processing' && (
             <div className="processing-container">
               <div className="spinner-large"></div>
-              <p className="processing-text">Procesando tu pago...</p>
-              <p className="processing-subtext">Por favor espera un momento</p>
+              <p className="processing-text">{t('trips.processingPayment')}</p>
+              <p className="processing-subtext">{t('trips.pleaseWait')}</p>
             </div>
           )}
 
@@ -637,13 +639,13 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
               </div>
               <h2 className="success-title">
                 {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0
-                  ? '¡Viaje completado!'
-                  : '¡Pago realizado con éxito!'}
+                  ? t('trips.tripCompletedTitle')
+                  : t('trips.paymentSuccessful')}
               </h2>
               <p className="success-text">
                 {subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0
-                  ? `Este viaje fue descontado de tu suscripción. Te quedan ${subscriptionData.viajes_disponibles - 1} viajes disponibles este mes.`
-                  : 'Tu viaje ha sido finalizado. Gracias por usar nuestro servicio.'}
+                  ? t('trips.tripDeductedFromSubscription', { remaining: subscriptionData.viajes_disponibles - 1 })
+                  : t('trips.thankYou')}
               </p>
             </div>
           )}
@@ -656,7 +658,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
               onClick={handleCancel}
               disabled={isLoading}
             >
-              Cancelar
+              {t('common.cancel')}
             </button>
             {paymentStep === 'summary' && (
               <button
@@ -683,9 +685,9 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     <span className="spinner"></span>
                   </>
                 ) : subscriptionData?.tiene_suscripcion && subscriptionData?.viajes_disponibles > 0 ? (
-                  'Finalizar Viaje'
+                  t('trips.endTrip')
                 ) : (
-                  'Proceder al Pago'
+                  t('trips.proceedToPayment')
                 )}
               </button>
             )}
@@ -707,7 +709,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                 {isLoading ? (
                   <>
                     <span className="spinner"></span>
-                    Procesando...
+                    {t('trips.processing')}
                   </>
                 ) : (
                   <>
@@ -716,7 +718,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
                     ) : (
                       <FaMoneyBillWave className="btn-icon" />
                     )}
-                    Pagar {formatCurrency(getFinalPrice())}
+                    {t('trips.pay')} {formatCurrency(getFinalPrice())}
                   </>
                 )}
               </button>

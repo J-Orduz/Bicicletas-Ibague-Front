@@ -6,6 +6,7 @@ import { SubscriptionSection } from './SubscriptionSection';
 import { useAuth } from '@contexts/AuthContext';
 import { usePreferences } from '@contexts/PreferencesContext';
 import { useCurrency } from '@hooks/useCurrency';
+import { useTranslation } from 'react-i18next';
 // API
 import {
   useGetCurrentBalance,
@@ -32,7 +33,8 @@ import './profile.scss';
 export const Profile = () => {
   const { logout, user } = useAuth();
   const { formatCurrency, CURRENCIES } = useCurrency();
-  const { currency, updatePreference } = usePreferences();
+  const { currency, language, updatePreference } = usePreferences();
+  const { t } = useTranslation();
 
   // Estados
   const [userData, setUserData] = useState({
@@ -136,7 +138,7 @@ export const Profile = () => {
 
   return (
     <div className="profile-container">
-      <SubHeader pageTitle="Perfil" />
+      <SubHeader pageTitle={t('profile.title')} />
       <div className="profile-content">
         {userData ? (
           <>
@@ -148,19 +150,19 @@ export const Profile = () => {
                 <h2 className="user-name">{userData.userName}</h2>
                 <p className="user-email">{userData.userEmail}</p>
                 <div className="user-role">
-                  Rol: {userData.userRole.toUpperCase()}
+                  {t('profile.role')}: {userData.userRole.toUpperCase()}
                 </div>
-                <p className="user-id">ID: {userData.userId}</p>
+                <p className="user-id">{t('profile.id')}: {userData.userId}</p>
               </div>
               <button className="logout-button" onClick={logout}>
-                Cerrar Sesión
+                {t('auth.logout')}
               </button>
             </div>
 
             <div className="balance-section">
               {/* BiciPuntos */}
               <div className="balance-card points-card">
-                <span className="balance-label">BiciPuntos</span>
+                <span className="balance-label">{t('profile.biciPoints')}</span>
                 <span className="balance-amount points-amount">
                   {pointsData?.puntos || 0}
                 </span>
@@ -172,7 +174,7 @@ export const Profile = () => {
               </div>
               {/* Saldo Principal */}
               <div className="balance-card">
-                <span className="balance-label">Saldo BiciBague</span>
+                <span className="balance-label">{t('profile.bicibagueBalance')}</span>
                 <span className="balance-amount">
                   {formatCurrency(userData.userBalance)}
                 </span>
@@ -180,13 +182,13 @@ export const Profile = () => {
                   className="btn-recharge"
                   onClick={() => setShowRechargeModal(true)}
                 >
-                  <BsCreditCard2Front /> Recargar Saldo
+                  <BsCreditCard2Front /> {t('profile.recharge')}
                 </button>
               </div>
 
               {/* Saldo CityPass */}
               <div className="balance-card citypass-card">
-                <span className="balance-label">Saldo CityPass</span>
+                <span className="balance-label">{t('profile.citypassBalance')}</span>
                 {cityPassData ? (
                   <>
                     <span className="balance-amount citypass-amount">
@@ -199,13 +201,13 @@ export const Profile = () => {
                 ) : (
                   <>
                     <span className="no-card-message">
-                      No tienes una tarjeta vinculada
+                      {t('profile.noCardLinked')}
                     </span>
                     <button
                       className="btn-link-citypass"
                       onClick={() => setShowLinkCityPassModal(true)}
                     >
-                      <BsCreditCard2Front /> Vincular Tarjeta
+                      <BsCreditCard2Front /> {t('profile.linkCard')}
                     </button>
                   </>
                 )}
@@ -224,15 +226,15 @@ export const Profile = () => {
             <div className="preferences-section">
               <div className="preferences-header">
                 <BsGearFill className="preferences-icon" />
-                <h2 className="section-title">Preferencias</h2>
+                <h2 className="section-title">{t('profile.preferences')}</h2>
               </div>
 
               <div className="preferences-content">
                 <div className="preference-item">
                   <div className="preference-info">
-                    <span className="preference-label">Moneda</span>
+                    <span className="preference-label">{t('profile.currency')}</span>
                     <span className="preference-description">
-                      Selecciona la moneda para mostrar los precios
+                      {t('profile.currencyDescription')}
                     </span>
                   </div>
                   <div className="preference-control">
@@ -252,29 +254,33 @@ export const Profile = () => {
                   </div>
                 </div>
 
-                {/* Espacio para futuras preferencias */}
-                {/* 
+                {/* Preferencia de idioma */}
                 <div className="preference-item">
                   <div className="preference-info">
-                    <span className="preference-label">Idioma</span>
+                    <span className="preference-label">{t('profile.language')}</span>
                     <span className="preference-description">
-                      Selecciona el idioma de la aplicación
+                      {t('profile.languageDescription')}
                     </span>
                   </div>
                   <div className="preference-control">
-                    <select className="preference-selector">
-                      <option value="es">Español</option>
-                      <option value="en">English</option>
+                    <select
+                      className="preference-selector"
+                      value={language}
+                      onChange={(e) =>
+                        updatePreference('language', e.target.value)
+                      }
+                    >
+                      <option value="es">{t('languages.es')}</option>
+                      <option value="en">{t('languages.en')}</option>
                     </select>
                   </div>
                 </div>
-                */}
               </div>
             </div>
           </>
         ) : (
           <div className="loading-state">
-            <p>Cargando información del usuario...</p>
+            <p>{t('profile.loadingUserInfo')}</p>
           </div>
         )}
       </div>
@@ -295,6 +301,7 @@ export const Profile = () => {
 };
 
 const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
+  const { t } = useTranslation();
   const [cardSuffix, setCardSuffix] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -309,7 +316,7 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
 
   const validateCardNumber = () => {
     if (cardSuffix.length !== 4) {
-      setError('Debes ingresar exactamente 4 dígitos');
+      setError(t('citypass.errorGeneral'));
       return false;
     }
     return true;
@@ -324,14 +331,14 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
 
     try {
       await linkCityPassMutation.post({ cardNumber: fullCardNumber });
-      alert('Tarjeta CityPass vinculada exitosamente');
+      alert(t('citypass.successMessage'));
       onSuccess();
       onClose();
     } catch (err) {
       if (err.errorJsonMsg?.includes('ya está en uso')) {
-        setError('El número de tarjeta ya está en uso');
+        setError(t('citypass.errorInUse'));
       } else {
-        setError(err.errorMutationMsg || 'Error al vincular la tarjeta');
+        setError(err.errorMutationMsg || t('citypass.errorGeneral'));
       }
     } finally {
       setIsProcessing(false);
@@ -348,8 +355,8 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
     <div className="recharge-modal-overlay" onClick={handleOverlayClick}>
       <div className="recharge-modal">
         <div className="modal-header">
-          <h1>Vincular Tarjeta CityPass</h1>
-          <button className="btn-close" onClick={onClose} aria-label="Cerrar">
+          <h1>{t('citypass.linkTitle')}</h1>
+          <button className="btn-close" onClick={onClose} aria-label={t('common.close')}>
             <BsXLg className="btn-icon" />
           </button>
         </div>
@@ -357,8 +364,7 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
         <div className="modal-body">
           <div className="citypass-form">
             <p className="form-description">
-              Ingresa los últimos 4 dígitos de tu tarjeta CityPass que comienza
-              con 1010.
+              {t('citypass.description')}
             </p>
 
             <div className="card-number-input">
@@ -378,7 +384,7 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
               </div>
               {error && <p className="error-message">{error}</p>}
               <p className="input-hint">
-                Número completo: 1010{cardSuffix || ' _ _ _ _'}
+                {t('citypass.completeNumber')} 1010{cardSuffix || ' _ _ _ _'}
               </p>
             </div>
           </div>
@@ -390,14 +396,14 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
             onClick={onClose}
             disabled={isProcessing}
           >
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             className="btn-confirm"
             onClick={handleLinkCard}
             disabled={cardSuffix.length !== 4 || isProcessing}
           >
-            {isProcessing ? 'Vinculando...' : 'Vincular Tarjeta'}
+            {isProcessing ? t('citypass.linking') : t('citypass.linkCard')}
           </button>
         </div>
       </div>
@@ -407,6 +413,7 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
 
 const RechargeModal = ({ onClose }) => {
   const { token } = useAuth();
+  const { t } = useTranslation();
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const createRechargeMutation = useCreateRechargeMutation();
@@ -424,7 +431,7 @@ const RechargeModal = ({ onClose }) => {
 
   const validateAmount = () => {
     if (!selectedAmount) {
-      alert('Por favor selecciona un monto');
+      alert(t('recharge.selectAmountAlert'));
       return false;
     }
 
@@ -447,7 +454,7 @@ const RechargeModal = ({ onClose }) => {
         // Navegar a la URL de Stripe en otra pestaña
         window.open(response.url, '_blank');
       } else {
-        alert('No se pudo obtener la URL de pago');
+        alert(t('recharge.processingURLError'));
       }
     } catch (error) {
       alert(error.errorMutationMsg || 'Error al procesar el pago con tarjeta');
@@ -466,15 +473,15 @@ const RechargeModal = ({ onClose }) => {
     <div className="recharge-modal-overlay" onClick={handleOverlayClick}>
       <div className="recharge-modal">
         <div className="modal-header">
-          <h1>Recargar Saldo</h1>
-          <button className="btn-close" onClick={onClose} aria-label="Cerrar">
+          <h1>{t('recharge.title')}</h1>
+          <button className="btn-close" onClick={onClose} aria-label={t('common.close')}>
             <BsXLg className="btn-icon" />
           </button>
         </div>
 
         <div className="modal-body">
           <div className="amount-selection">
-            <h3>Selecciona el monto a recargar:</h3>
+            <h3>{t('recharge.selectAmount')}</h3>
             <div className="amounts-grid">
               {predefinedAmounts.map((amount) => (
                 <label key={amount.value} className="amount-item">
@@ -503,7 +510,7 @@ const RechargeModal = ({ onClose }) => {
             onClick={onClose}
             disabled={isProcessing}
           >
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             className="btn-use-card"
@@ -511,10 +518,10 @@ const RechargeModal = ({ onClose }) => {
             disabled={!selectedAmount || isProcessing}
           >
             {isProcessing ? (
-              'Procesando...'
+              t('recharge.processing')
             ) : (
               <>
-                <BsCreditCard2Front /> Recargar
+                <BsCreditCard2Front /> {t('recharge.recharge')}
               </>
             )}
           </button>

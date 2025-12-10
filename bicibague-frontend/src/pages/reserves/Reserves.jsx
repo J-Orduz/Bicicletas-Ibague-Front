@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 // components
 import { UnlockBike } from './UnlockBike';
 import { SubHeader } from '@layouts/SubHeader';
@@ -26,6 +27,7 @@ import './Reserves.scss';
 
 export const Reserves = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   // Estados de la reserva actual y el historial
   const [currentReservation, setCurrentReservation] = useState(null);
@@ -230,15 +232,15 @@ export const Reserves = () => {
   const getStatusText = (status) => {
     switch (status) {
       case 'completada':
-        return 'Completada';
+        return t('reserves.completed');
       case 'cancelada':
-        return 'Cancelada';
+        return t('reserves.cancelled');
       case 'activa':
-        return 'Activa';
+        return t('reserves.active');
       case 'expirada':
-        return 'Perdida';
+        return t('reserves.expired');
       case 'programada':
-        return 'Programada';
+        return t('reserves.notStarted');
       default:
         return status;
     }
@@ -247,11 +249,11 @@ export const Reserves = () => {
   return (
     <>
       <div className="reserves-container">
-        <SubHeader pageTitle="Reservas" />
+        <SubHeader pageTitle={t('reserves.title')} />
 
         {/* Sección de Reserva Actual */}
         <div className="current-reservation-section">
-          <h2 className="section-title">Reserva Actual</h2>
+          <h2 className="section-title">{t('reserves.currentReservation')}</h2>
 
           {currentReservation ? (
             <div className="current-reservation-card">
@@ -278,10 +280,10 @@ export const Reserves = () => {
                     <div className="reservation-expired">
                       <TbClockOff className="expired-icon" />
                       <div className="expired-content">
-                        <h3 className="expired-title">¡Tiempo Agotado!</h3>
-                        <p className="expired-subtitle">Reserva Perdida</p>
+                        <h3 className="expired-title">¡{t('reserves.expired')}!</h3>
+                        <p className="expired-subtitle">{t('reserves.expired')}</p>
                         <p className="expired-message">
-                          Espera unos segundos para poder realizar otra reserva
+                          {t('reserves.waitingStart')}
                         </p>
                       </div>
                     </div>
@@ -295,8 +297,8 @@ export const Reserves = () => {
                       <div className="timer-content">
                         <span className="timer-label">
                           {isExpiringSoon
-                            ? '¡Tiempo casi agotado!'
-                            : 'Tiempo restante'}
+                            ? t('reserves.expiringSoon')
+                            : t('reserves.timeRemaining')}
                         </span>
                         <div className="timer-display">{remainingTime}</div>
                       </div>
@@ -309,7 +311,7 @@ export const Reserves = () => {
                 <div className="detail-item">
                   <FaRegCalendar className="detail-icon" />
                   <div className="detail-content">
-                    <span className="detail-label">Fecha de reserva</span>
+                    <span className="detail-label">{t('reserves.reservationDate')}</span>
                     <span className="detail-value">
                       {formatDate(currentReservation.reserveDate)}
                     </span>
@@ -318,18 +320,17 @@ export const Reserves = () => {
                 <div className="detail-item">
                   <FaRegClock className="detail-icon" />
                   <div className="detail-content">
-                    <span className="detail-label">Hora de reserva</span>
+                    <span className="detail-label">{t('reserves.reservationDate')}</span>
                     <span className="detail-value">
                       {formatTime(currentReservation.reserveDate)} -{' '}
-                      {formatTime(currentReservation.reserveExpiry)} (Guardamos
-                      tu reserva por 10 min. más)
+                      {formatTime(currentReservation.reserveExpiry)}
                     </span>
                   </div>
                 </div>
                 <div className="detail-item">
                   <FaLocationDot className="detail-icon" />
                   <div className="detail-content">
-                    <span className="detail-label">Estación</span>
+                    <span className="detail-label">{t('reserves.station')}</span>
                     <span className="detail-value">
                       {currentReservation.estation}
                     </span>
@@ -344,7 +345,7 @@ export const Reserves = () => {
                   disabled={isExpired}
                 >
                   <MdOutlinePlayCircleOutline className="btn-icon" />
-                  Iniciar Viaje
+                  {t('reserves.startTrip')}
                 </button>
                 <button
                   className="btn-cancel"
@@ -352,7 +353,7 @@ export const Reserves = () => {
                   disabled={isExpired}
                 >
                   <BsXLg className="btn-icon" />
-                  Cancelar Reserva
+                  {t('reserves.cancel')}
                 </button>
               </div>
             </div>
@@ -360,11 +361,11 @@ export const Reserves = () => {
             <div className="no-reservation">
               <FaRegClock className="no-reservation-icon" />
               <p className="no-reservation-text">
-                No tienes ninguna reserva activa
+                {t('reserves.noReserves')}
               </p>
               <button className="btn-reserve-now" onClick={handleReserveNow}>
                 <FaPlus className="btn-icon" />
-                Reservar Ahora
+                {t('reserves.reserveNow')}
               </button>
             </div>
           )}
@@ -372,7 +373,7 @@ export const Reserves = () => {
 
         {/* Sección de Historial */}
         <div className="history-section">
-          <h2 className="section-title">Historial de Reservas</h2>
+          <h2 className="section-title">{t('reserves.history')}</h2>
 
           {/* Estadísticas */}
           {stats && (
@@ -383,7 +384,7 @@ export const Reserves = () => {
                 </div>
                 <div className="stat-content">
                   <span className="stat-value">{stats.total_reservas}</span>
-                  <span className="stat-label">Total Reservas</span>
+                  <span className="stat-label">{t('reserves.totalReservations')}</span>
                 </div>
               </div>
 
@@ -395,7 +396,7 @@ export const Reserves = () => {
                   <span className="stat-value">
                     {stats.reservas_activas || 0}
                   </span>
-                  <span className="stat-label">Activas</span>
+                  <span className="stat-label">{t('reserves.active')}</span>
                 </div>
               </div>
 
@@ -407,7 +408,7 @@ export const Reserves = () => {
                   <span className="stat-value">
                     {stats.reservas_completadas || 0}
                   </span>
-                  <span className="stat-label">Completadas</span>
+                  <span className="stat-label">{t('reserves.completedReservations')}</span>
                 </div>
               </div>
 
@@ -419,7 +420,7 @@ export const Reserves = () => {
                   <span className="stat-value">
                     {stats.reservas_programadas || 0}
                   </span>
-                  <span className="stat-label">Programadas</span>
+                  <span className="stat-label">{t('reserves.notStarted')}</span>
                 </div>
               </div>
 
@@ -431,7 +432,7 @@ export const Reserves = () => {
                   <span className="stat-value">
                     {stats.reservas_canceladas || 0}
                   </span>
-                  <span className="stat-label">Canceladas</span>
+                  <span className="stat-label">{t('reserves.cancelledReservations')}</span>
                 </div>
               </div>
 
@@ -443,7 +444,7 @@ export const Reserves = () => {
                   <span className="stat-value">
                     {stats.reservas_expiradas || 0}
                   </span>
-                  <span className="stat-label">Expiradas</span>
+                  <span className="stat-label">{t('reserves.expired')}</span>
                 </div>
               </div>
             </div>
@@ -470,7 +471,7 @@ export const Reserves = () => {
                     <div className="history-detail">
                       <FaRegCalendar className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Fecha:</span>
+                        <span className="history-label">{t('trips.date')}:</span>
                         <span className="history-value">
                           {formatDate(reservation.reserveDate)}
                         </span>
@@ -479,7 +480,7 @@ export const Reserves = () => {
                     <div className="history-detail">
                       <FaRegClock className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Hora:</span>
+                        <span className="history-label">{t('reserves.timeRemaining')}:</span>
                         <span className="history-value">
                           {formatTime(reservation.reserveDate)}
                         </span>
@@ -491,7 +492,7 @@ export const Reserves = () => {
             </div>
           ) : (
             <div className="no-history">
-              <p>No hay reservas en el historial</p>
+              <p>{t('reserves.noReserves')}</p>
             </div>
           )}
         </div>

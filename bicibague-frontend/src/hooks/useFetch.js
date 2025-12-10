@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@contexts/AuthContext';
 
 const apiBase = import.meta.env.VITE_API_BASE || '';
@@ -17,6 +18,7 @@ export const useFetch = (
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { token, logout } = useAuth();
+  const { t } = useTranslation();
 
   // No hace fetch hasta que se llame a fetchData directamente
   const fetchData = useCallback(
@@ -60,7 +62,7 @@ export const useFetch = (
         if (err.status === 401 && !globalAlertShown) {
           globalAlertShown = true;
           logout();
-          alert('Sesión expirada. Por favor, inicia sesión de nuevo.');
+          alert(t('fetch.sessionExpired'));
         }
 
         const errorMsgs = {

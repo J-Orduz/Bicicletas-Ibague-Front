@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 // components
 import { MainLayout } from '@layouts/MainLayout';
 import { ProtectedRoute } from '../router/ProtectedRoute';
@@ -23,18 +24,21 @@ const NotFound = lazy(() => import('@pages/notFound/NotFound').then(module => ({
 const Landing = lazy(() => import('@pages/landing/Landing'));
 
 // Componente de loading
-const LoadingFallback = () => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    fontSize: '1.2rem',
-    color: 'var(--text-color)',
-  }}>
-    Cargando...
-  </div>
-);
+const LoadingFallback = () => {
+  const { t } = useTranslation();
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      fontSize: '1.2rem',
+      color: 'var(--text-color)',
+    }}>
+      {t('common.loading')}
+    </div>
+  );
+};
 
 export const AppRouter = () => {
   const { user } = useAuth();

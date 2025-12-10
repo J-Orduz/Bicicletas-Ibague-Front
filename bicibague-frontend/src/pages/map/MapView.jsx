@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+// hooks
+import { useNotifier } from '@hooks/useNotifier';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -47,6 +49,7 @@ const bikeIcon = new L.Icon({
 export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const notify = useNotifier();
   const [selectedStation, setSelectedStation] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [hasActiveTrip, setHasActiveTrip] = useState(false);
@@ -119,7 +122,7 @@ export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
           // Verificar si el candado está bloqueado
           if (telemetryData.estadoCandado === 'Bloqueado') {
             console.log('Candado bloqueado detectado. Viaje finalizado.');
-            alert(t('mapView.tripFinalized'));
+            notify.success(t('mapView.tripFinalized'));
             
             // Actualizar estado del viaje
             setHasActiveTrip(false);

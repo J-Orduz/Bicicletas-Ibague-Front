@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 // components
-import { SubHeader } from "@layouts/SubHeader";
+// import { SubHeader } from "@layouts/SubHeader";
 import { ButtonThemeToggle } from "@components/ButtonThemeToggle";
 import Aurora from "@components/Aurora";
 // context
 import { useAuth } from "@contexts/AuthContext";
+// hooks
+import { useNotifier } from "@hooks/useNotifier";
 // api
 import { useLoginUserMutation } from "@api/auth";
 
@@ -15,6 +17,7 @@ export const Login = () => {
   const loginUserMutation = useLoginUserMutation();
   const { login } = useAuth();
   const { t } = useTranslation();
+  const notify = useNotifier();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -145,7 +148,7 @@ export const Login = () => {
               <div className="forgot-password">
                 <Link
                   to="#"
-                  onClick={() => alert("Funcionalidad en desarrollo")}
+                  onClick={() => notify.info(t('auth.forgotPasswordInfo'))}
                 >
                   {t('auth.forgotPassword')}
                 </Link>

@@ -7,6 +7,7 @@ import { useAuth } from '@contexts/AuthContext';
 import { usePreferences } from '@contexts/PreferencesContext';
 import { useCurrency } from '@hooks/useCurrency';
 import { useTranslation } from 'react-i18next';
+import { useNotifier } from '@hooks/useNotifier';
 // API
 import {
   useGetCurrentBalance,
@@ -302,6 +303,7 @@ export const Profile = () => {
 
 const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
   const { t } = useTranslation();
+  const notify = useNotifier();
   const [cardSuffix, setCardSuffix] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -331,7 +333,7 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
 
     try {
       await linkCityPassMutation.post({ cardNumber: fullCardNumber });
-      alert(t('citypass.successMessage'));
+      notify.success(t('citypass.successMessage'));
       onSuccess();
       onClose();
     } catch (err) {
@@ -414,6 +416,7 @@ const LinkCityPassModal = ({ onClose, onSuccess, linkCityPassMutation }) => {
 const RechargeModal = ({ onClose }) => {
   const { token } = useAuth();
   const { t } = useTranslation();
+  const notify = useNotifier();
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const createRechargeMutation = useCreateRechargeMutation();
@@ -431,7 +434,7 @@ const RechargeModal = ({ onClose }) => {
 
   const validateAmount = () => {
     if (!selectedAmount) {
-      alert(t('recharge.selectAmountAlert'));
+      notify.warn(t('recharge.selectAmountAlert'));
       return false;
     }
 
@@ -454,10 +457,10 @@ const RechargeModal = ({ onClose }) => {
         // Navegar a la URL de Stripe en otra pestaña
         window.open(response.url, '_blank');
       } else {
-        alert(t('recharge.processingURLError'));
+        notify.error(t('recharge.processingURLError'));
       }
     } catch (error) {
-      alert(error.errorMutationMsg || 'Error al procesar el pago con tarjeta');
+      notify.error(error.errorMutationMsg || 'Error al procesar el pago con tarjeta');
       setIsProcessing(false);
     }
     setIsProcessing(false);

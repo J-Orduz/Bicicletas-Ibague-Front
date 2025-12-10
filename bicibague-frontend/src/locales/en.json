@@ -37,7 +37,8 @@
       "registering": "Registering...",
       "createAccount": "Create account",
       "backToHome": "Back to home",
-      "emailVerified": "Email verified successfully."
+      "emailVerified": "Email verified successfully.",
+      "forgotPasswordInfo": "Functionality under development."
     },
     "nav": {
       "home": "Home",

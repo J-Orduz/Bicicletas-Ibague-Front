@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { SubscriptionPaymentModal } from './SubscriptionPaymentModal';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
+import { useNotifier } from '@hooks/useNotifier';
 // icons
 import {
   BsStar,
@@ -23,6 +24,7 @@ export const SubscriptionSection = ({
 }) => {
   const { formatCurrency } = useCurrency();
   const { t } = useTranslation();
+  const notify = useNotifier();
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   const handleCreateSubscription = () => {
@@ -43,10 +45,10 @@ export const SubscriptionSection = ({
 
     try {
       await cancelSubscription.post();
-      alert(t('subscription.cancelSuccess'));
+      notify.success(t('subscription.cancelSuccess'));
       onSubscriptionChange?.();
     } catch (error) {
-      alert(error.errorMutationMsg || 'Error al cancelar la suscripción');
+      notify.error(error.errorMutationMsg || 'Error al cancelar la suscripción');
     }
   };
 

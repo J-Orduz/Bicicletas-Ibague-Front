@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 // icons
 import { FaBicycle, FaRegClock, FaLocationDot, FaBolt, FaBatteryHalf } from 'react-icons/fa6';
 import { PiSneakerFill } from 'react-icons/pi';
@@ -18,6 +19,7 @@ import './MapSidebar.scss';
 export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) => {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
+  const { t } = useTranslation();
   const getCurrentBalance = useGetCurrentBalance();
   const getCurrentTrip = useGetCurrentTrip();
   const getTripHistory = useGetTripHistory();
@@ -204,7 +206,7 @@ export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) 
           </div>
           <div className="user-actions">
             <Link to="/profile" className="btn-quick-recharge">
-              Recargar
+              {t('sidebar.recharge')}
             </Link>
             {/* 'Ver perfil' eliminado según petición */}
           </div>
@@ -212,13 +214,13 @@ export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) 
       </div>
       {/* Reserva Actual - Siempre visible */}
       <div className="sidebar-card reservation-card">
-        <h3>Reserva Activa</h3>
+        <h3>{t('sidebar.activeReservation')}</h3>
         {currentReservation ? (
           <div className="reservation-info">
             <div className="info-row">
               <FaBicycle className="icon" />
               <div className="info-content">
-                <span className="info-label">Bicicleta:</span>
+                <span className="info-label">{t('sidebar.bike')}:</span>
                 <span className="info-value">
                   {currentReservation.Bicicleta?.id || 'N/A'}
                   {currentReservation.Bicicleta?.tipo &&
@@ -229,14 +231,14 @@ export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) 
             <div className="info-row">
               <FaRegClock className="icon" />
               <div className="info-content">
-                <span className="info-label">Expira en:</span>
+                <span className="info-label">{t('sidebar.expiresIn')}:</span>
                 <span className="info-value">{remainingTime}</span>
               </div>
             </div>
             <div className="info-row">
               <FaLocationDot className="icon" />
               <div className="info-content">
-                <span className="info-label">Estación:</span>
+                <span className="info-label">{t('sidebar.station')}:</span>
                 <span className="info-value">
                   {currentReservation.Bicicleta?.Estacion?.nombre || 'N/A'}
                 </span>
@@ -245,14 +247,14 @@ export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) 
           </div>
         ) : (
           <div className="no-data">
-            <p>No tienes ninguna reserva activa</p>
+            <p>{t('sidebar.noActiveReservation')}</p>
           </div>
         )}
       </div>
 
       {/* Viaje Actual - Siempre visible */}
       <div className="sidebar-card trip-card">
-        <h3>Viaje Actual</h3>
+        <h3>{t('sidebar.currentTrip')}</h3>
         {currentTrip ? (
           <div className="trip-info">
             <div className="trip-timer">
@@ -281,27 +283,27 @@ export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) 
           </div>
         ) : (
           <div className="no-data">
-            <p>No tienes ningún viaje activo</p>
+            <p>{t('sidebar.noActiveTrip')}</p>
           </div>
         )}
       </div>
 
       {/* Estadísticas de Estaciones */}
       <div className="sidebar-card stations-card">
-        <h3>Estaciones</h3>
+        <h3>{t('sidebar.stations')}</h3>
         <div className="stations-summary">
           <div className="summary-item">
             {/* <FaLocationDot className="summary-icon" /> */}
             <div className="summary-content">
               <span className="summary-value">{totalStations}</span>
-              <span className="summary-label">Estaciones</span>
+              <span className="summary-label">{t('sidebar.stationsLabel')}</span>
             </div>
           </div>
           <div className="summary-item">
             {/* <FaBicycle className="summary-icon" /> */}
             <div className="summary-content">
               <span className="summary-value">{totalAvailableBikes}</span>
-              <span className="summary-label">Bicicletas</span>
+              <span className="summary-label">{t('sidebar.bikes')}</span>
             </div>
           </div>
         </div>
@@ -309,15 +311,15 @@ export const MapSidebar = ({ currentReservation, bikeStations, bikeTelemetry }) 
 
       {/* Tu Actividad */}
       <div className="sidebar-card stats-card">
-        <h3>Tu Actividad</h3>
+        <h3>{t('sidebar.yourActivity')}</h3>
         <div className="stats-grid">
           <div className="stat-item">
             <span className="stat-value">{stats.totalReserves}</span>
-            <span className="stat-label">Reservas</span>
+            <span className="stat-label">{t('sidebar.reserves')}</span>
           </div>
           <div className="stat-item">
             <span className="stat-value">{stats.totalTrips}</span>
-            <span className="stat-label">Viajes</span>
+            <span className="stat-label">{t('sidebar.trips')}</span>
           </div>
         </div>
       </div>

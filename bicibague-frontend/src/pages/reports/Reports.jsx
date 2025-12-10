@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 // components
 import { SubHeader } from '@layouts/SubHeader';
 // API
@@ -19,23 +20,24 @@ import {
 import './repots.scss';
 
 const REPORT_TYPES = [
-  { value: 'usage_frequency', label: 'Frecuencia de Uso' },
-  { value: 'stations_demand', label: 'Demanda de Estaciones' },
-  { value: 'bike_demand_by_type', label: 'Demanda por Tipo de Bicicleta' },
-  { value: 'trips_per_day', label: 'Viajes por Día' },
-  { value: 'maintenance', label: 'Bicicletas en Mantenimiento' },
-  { value: 'estaciones', label: 'Estaciones' },
-  { value: 'viajes', label: 'Viajes' },
-  { value: 'bicicletas', label: 'Bicicletas' },
-  { value: 'reservas', label: 'Reservas' },
+  { value: 'usage_frequency', labelKey: 'reports.usageFrequency' },
+  { value: 'stations_demand', labelKey: 'reports.stationsDemand' },
+  { value: 'bike_demand_by_type', labelKey: 'reports.bikeDemandByType' },
+  { value: 'trips_per_day', labelKey: 'reports.tripsPerDay' },
+  { value: 'maintenance', labelKey: 'reports.maintenance' },
+  { value: 'estaciones', labelKey: 'reports.stations' },
+  { value: 'viajes', labelKey: 'reports.trips' },
+  { value: 'bicicletas', labelKey: 'reports.bikes' },
+  { value: 'reservas', labelKey: 'reports.reserves' },
 ];
 
 const FILE_FORMATS = [
-  { value: 'pdf', label: 'PDF', icon: FaFilePdf },
-  { value: 'xlsx', label: 'Excel', icon: FaFileExcel },
+  { value: 'pdf', labelKey: 'reports.pdf', icon: FaFilePdf },
+  { value: 'xlsx', labelKey: 'reports.excel', icon: FaFileExcel },
 ];
 
 export const Reports = () => {
+  const { t } = useTranslation();
   const [reportName, setReportName] = useState('usage_frequency');
   const [reportType, setReportType] = useState('pdf');
   const [dateFrom, setDateFrom] = useState('');
@@ -55,7 +57,7 @@ export const Reports = () => {
   const validateDates = () => {
     // Si solo se proporciona una fecha, requerir ambas
     if ((dateFrom && !dateTo) || (!dateFrom && dateTo)) {
-      setError('Por favor selecciona ambas fechas o deja ambas vacías');
+      setError(t('reports.bothDatesRequired'));
       return false;
     }
 
@@ -151,7 +153,7 @@ export const Reports = () => {
 
   return (
     <div className="reports-container">
-      <SubHeader pageTitle="Generación de Reportes" />
+      <SubHeader pageTitle={t('reports.title')} />
       <div className="reports-content">
         {/* Header */}
         {/* <div className="reports-header">
@@ -171,7 +173,7 @@ export const Reports = () => {
             <div className="form-section">
               <label className="form-label">
                 <FaFileAlt />
-                Tipo de Reporte
+                {t('reports.reportType')}
               </label>
               <select
                 className="form-select"
@@ -180,7 +182,7 @@ export const Reports = () => {
               >
                 {REPORT_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
-                    {type.label}
+                    {t(type.labelKey)}
                   </option>
                 ))}
               </select>
@@ -190,7 +192,7 @@ export const Reports = () => {
             <div className="form-section">
               <label className="form-label">
                 <FaFile />
-                Formato de Archivo
+                {t('reports.fileFormat')}
               </label>
               <div className="format-options">
                 {FILE_FORMATS.map((format) => {
@@ -216,11 +218,11 @@ export const Reports = () => {
             <div className="form-section">
               <label className="form-label">
                 <FaCalendarAlt />
-                Rango de Fechas
+                {t('reports.dateRange')}
               </label>
               <div className="date-inputs">
                 <div className="date-input-group">
-                  <label htmlFor="dateFrom">Desde</label>
+                  <label htmlFor="dateFrom">{t('reports.from')}</label>
                   <input
                     type="date"
                     id="dateFrom"
@@ -231,7 +233,7 @@ export const Reports = () => {
                   />
                 </div>
                 <div className="date-input-group">
-                  <label htmlFor="dateTo">Hasta</label>
+                  <label htmlFor="dateTo">{t('reports.to')}</label>
                   <input
                     type="date"
                     id="dateTo"
@@ -260,12 +262,12 @@ export const Reports = () => {
               {isGenerating ? (
                 <>
                   <FaSpinner className="btn-icon spinning" />
-                  Generando Reporte...
+                  {t('reports.generating')}
                 </>
               ) : (
                 <>
                   <FaChartBar className="btn-icon" />
-                  Generar Reporte
+                  {t('reports.generate')}
                 </>
               )}
             </button>
@@ -282,12 +284,12 @@ export const Reports = () => {
                 )}
               </div>
               <div className="result-info">
-                <h2>Reporte Generado Exitosamente</h2>
+                <h2>{t('reports.generatedSuccessfully')}</h2>
                 <p className="result-filename">{generatedReport.name}</p>
                 <p className="result-details">
-                  Tipo:{' '}
-                  {REPORT_TYPES.find((t) => t.value === reportName)?.label} |
-                  Formato: {reportType.toUpperCase()} | Período: {dateFrom} a{' '}
+                  {t('reports.type')}:{' '}
+                  {t(REPORT_TYPES.find((type) => type.value === reportName)?.labelKey)} |
+                  {t('reports.format')}: {reportType.toUpperCase()} | {t('reports.period')}: {dateFrom} {t('reports.to').toLowerCase()}{' '}
                   {dateTo}
                 </p>
               </div>
@@ -299,7 +301,7 @@ export const Reports = () => {
                 onClick={handleDownload}
               >
                 <FaDownload className="btn-icon" />
-                Descargar
+                {t('reports.download')}
               </button>
               {reportType === 'pdf' && (
                 <button
@@ -307,13 +309,13 @@ export const Reports = () => {
                   onClick={handleOpenInNewTab}
                 >
                   <FaExternalLinkAlt className="btn-icon" />
-                  Abrir en Nueva Pestaña
+                  {t('reports.openInNewTab')}
                 </button>
               )}
             </div>
 
             <button className="btn-new-report" onClick={handleNewReport}>
-              Generar Nuevo Reporte
+              {t('reports.generateNew')}
             </button>
           </div>
         )}

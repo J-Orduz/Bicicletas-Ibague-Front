@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const AuthContext = createContext();
 
@@ -7,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Cargar token del localStorage al iniciar
@@ -56,7 +58,7 @@ export const AuthProvider = ({ children }) => {
           // Limpiar la URL (remover el fragmento)
           window.history.replaceState(null, null, ' ');
 
-          alert('Email verificado exitosamente.');
+          alert(t('auth.emailVerified'));
         }
       }
     };

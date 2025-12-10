@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 // components
 import { SubHeader } from "@layouts/SubHeader";
 import { ButtonThemeToggle } from "@components/ButtonThemeToggle";
@@ -8,6 +9,7 @@ import Aurora from "@components/Aurora";
 import { useRegisterUserMutation } from "@api/auth";
 
 export const Register = () => {
+  const { t } = useTranslation();
   const registerUserMutation = useRegisterUserMutation();
 
   const [formData, setFormData] = useState({
@@ -38,24 +40,23 @@ export const Register = () => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "El nombre es requerido";
+      newErrors.name = t('auth.nameRequired');
     } else if (formData.name.trim().length < 3) {
-      newErrors.name = "El nombre debe tener al menos 3 caracteres";
+      newErrors.name = t('auth.nameMinLength');
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "El correo es requerido";
+      newErrors.email = t('auth.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "El correo no es válido";
+      newErrors.email = t('auth.emailInvalid');
     }
 
     if (!formData.password) {
-      newErrors.password = "La contraseña es requerida";
+      newErrors.password = t('auth.passwordRequired');
     } else if (formData.password.length < 6) {
-      newErrors.password = "La contraseña debe tener al menos 6 caracteres";
+      newErrors.password = t('auth.passwordMinLength');
     } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password =
-        "La contraseña debe contener al menos una letra y un número";
+      newErrors.password = t('auth.passwordFormat');
     }
 
     setErrors(newErrors);
@@ -114,20 +115,20 @@ export const Register = () => {
       <div className="auth-wrapper">
         <div className="auth-card">
           <div className="auth-header">
-            <h2>Regístrate</h2>
+            <h2>{t('auth.register')}</h2>
             {/* <p>Únete a BicIbagué y comienza tu aventura</p> */}
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="name">Nombre completo</label>
+              <label htmlFor="name">{t('auth.fullName')}</label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Ingresa tu nombre"
+                placeholder={t('auth.enterName')}
                 className={errors.name ? "input-error" : ""}
                 disabled={isLoading}
               />
@@ -137,7 +138,7 @@ export const Register = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Correo electrónico</label>
+              <label htmlFor="email">{t('auth.email')}</label>
               <input
                 type="email"
                 id="email"
@@ -154,14 +155,14 @@ export const Register = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Contraseña</label>
+              <label htmlFor="password">{t('auth.password')}</label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Mínimo 6 caracteres (letras y números)"
+                placeholder={t('auth.passwordPlaceholder')}
                 className={errors.password ? "input-error" : ""}
                 disabled={isLoading}
               />
@@ -175,15 +176,15 @@ export const Register = () => {
             )}
 
             <button type="submit" className="btn-submit" disabled={isLoading}>
-              {isLoading ? "Registrando..." : "Crear cuenta"}
+              {isLoading ? t('auth.registering') : t('auth.createAccount')}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              ¿Ya tienes cuenta?{" "}
+              {t('auth.hasAccount')}{" "}
               <Link to="/login" className="auth-link">
-                Inicia sesión
+                {t('auth.login')}
               </Link>
             </p>
             <button
@@ -192,7 +193,7 @@ export const Register = () => {
               onClick={() => (window.location.href = "/landing")}
               style={{ marginTop: 16 }}
             >
-              Volver al inicio
+              {t('auth.backToHome')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { MapView } from "@pages/map/MapView";
 import { MapSidebar } from "@pages/map/MapSidebar";
 import { SubHeader } from "@layouts/SubHeader";
@@ -6,6 +7,7 @@ import { useGetCurrentReservation } from "@api/reserves";
 import "./Home.scss";
 
 export const Home = () => {
+  const { t } = useTranslation();
   const [currentReservation, setCurrentReservation] = useState(null);
   const [bikeStations, setBikeStations] = useState([]);
   const [bikeTelemetry, setBikeTelemetry] = useState(null);
@@ -37,7 +39,7 @@ export const Home = () => {
 
   return (
     <section className="home-container">
-      <SubHeader pageTitle="Mapa BicIbagué" />
+      <SubHeader pageTitle={t('map.title')} />
       <div className="home-content">
         <MapView 
           onStationsLoaded={handleStationsLoaded}

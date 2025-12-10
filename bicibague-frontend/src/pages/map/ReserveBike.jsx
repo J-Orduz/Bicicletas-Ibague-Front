@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 // api
 import { useReserveBikeMutation, useReserveBikeScheduledMutation } from '@api/reserves';
 //icons
@@ -9,6 +10,7 @@ import './ReserveBike.scss';
 
 export const ReserveBike = ({ station, onClose }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [selectedBike, setSelectedBike] = useState(null);
   const [reservationType, setReservationType] = useState('now'); // 'now' o 'scheduled'
   const [scheduledDate, setScheduledDate] = useState('');
@@ -28,14 +30,14 @@ export const ReserveBike = ({ station, onClose }) => {
 
   const handleReserve = async () => {
     if (!selectedBike) {
-      alert('Por favor selecciona una bicicleta');
+      alert(t('reserves.selectBikeAlert'));
       return;
     }
 
     // Validar fecha y hora si es reserva programada
     if (reservationType === 'scheduled') {
       if (!scheduledDate || !scheduledTime) {
-        alert('Por favor selecciona fecha y hora para la reserva');
+        alert(t('reserves.selectDateTimeAlert'));
         return;
       }
 
@@ -43,7 +45,7 @@ export const ReserveBike = ({ station, onClose }) => {
       const selectedDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
       const now = new Date();
       if (selectedDateTime <= now) {
-        alert('La fecha y hora deben ser futuras');
+        alert(t('reserves.futureDateAlert'));
         return;
       }
     }
@@ -52,7 +54,7 @@ export const ReserveBike = ({ station, onClose }) => {
       if (reservationType === 'now') {
         // Reserva inmediata
         await reserveBikeMutation.post({ bikeId: selectedBike });
-        alert(`Bicicleta ${selectedBike} reservada exitosamente en ${station.name}`);
+        alert(t('reserves.reserveSuccessNow', { bikeId: selectedBike, station: station.name }));
       } else {
         // Reserva programada
         // Construir la fecha y hora en formato ISO con zona horaria de Colombia (UTC-5)
@@ -63,7 +65,7 @@ export const ReserveBike = ({ station, onClose }) => {
           bikeId: selectedBike,
           fechaHoraProgramada: fechaHoraProgramada
         });
-        alert(`Bicicleta ${selectedBike} programada para ${scheduledDate} a las ${scheduledTime} en ${station.name}`);
+        alert(t('reserves.reserveSuccessScheduled', { bikeId: selectedBike, date: scheduledDate, time: scheduledTime, station: station.name }));
       }
 
       onClose();
@@ -94,7 +96,7 @@ export const ReserveBike = ({ station, onClose }) => {
         <div className="modal-body">
           <div className="station-info">
             <div className="info-card">
-              <span className="info-label">Total Disponibles</span>
+              <span className="info-label">{t('reserves.totalAvailable')}</span>
               <span className="info-value">
                 {availableBikes.length} / {totalCapacity}
               </span>
@@ -105,14 +107,14 @@ export const ReserveBike = ({ station, onClose }) => {
             <div className="type-stat mechanical">
               <span className="icon">🚴</span>
               <div className="type-info">
-                <span className="type-label">Mecánicas</span>
+                <span className="type-label">{t('reserves.mechanical')}</span>
                 <span className="type-count">{availableMechanical.length}</span>
               </div>
             </div>
             <div className="type-stat electric">
               <span className="icon">⚡</span>
               <div className="type-info">
-                <span className="type-label">Eléctricas</span>
+                <span className="type-label">{t('reserves.electric')}</span>
                 <span className="type-count">{availableElectric.length}</span>
               </div>
             </div>
@@ -120,7 +122,7 @@ export const ReserveBike = ({ station, onClose }) => {
 
           {/* Tipo de reserva */}
           <div className="reservation-type">
-            <h3>Tipo de reserva:</h3>
+            <h3>{t('reserves.reservationType')}:</h3>
             <div className="type-options">
               <label className="type-option">
                 <input
@@ -133,8 +135,8 @@ export const ReserveBike = ({ station, onClose }) => {
                 <span className="option-content">
                   <span className="option-icon">🕒</span>
                   <span className="option-text">
-                    <strong>Reservar Ahora</strong>
-                    <small>Disponible inmediatamente</small>
+                    <strong>{t('reserves.reserveNow')}</strong>
+                    <small>{t('reserves.availableImmediately')}</small>
                   </span>
                 </span>
               </label>
@@ -150,8 +152,8 @@ export const ReserveBike = ({ station, onClose }) => {
                 <span className="option-content">
                   <span className="option-icon">📅</span>
                   <span className="option-text">
-                    <strong>Programar Reserva</strong>
-                    <small>Elige fecha y hora</small>
+                    <strong>{t('reserves.scheduleReserve')}</strong>
+                    <small>{t('reserves.chooseDateTime')}</small>
                   </span>
                 </span>
               </label>
@@ -163,7 +165,7 @@ export const ReserveBike = ({ station, onClose }) => {
             <div className="schedule-fields">
               <div className="field-group">
                 <label htmlFor="scheduledDate" className="field-label">
-                  Fecha:
+                  {t('reserves.date')}:
                 </label>
                 <input
                   type="date"
@@ -176,7 +178,7 @@ export const ReserveBike = ({ station, onClose }) => {
               </div>
               <div className="field-group">
                 <label htmlFor="scheduledTime" className="field-label">
-                  Hora:
+                  {t('reserves.time')}:
                 </label>
                 <input
                   type="time"
@@ -190,12 +192,12 @@ export const ReserveBike = ({ station, onClose }) => {
           )}
 
           <div className="bike-list">
-            <h3>Selecciona una bicicleta:</h3>
+            <h3>{t('reserves.selectBike')}:</h3>
 
             {/* TODO: Simplificar */}
             {availableMechanical.length > 0 && (
               <div className="bike-category">
-                <p className="category-title">Mecánicas</p>
+                <p className="category-title">{t('reserves.mechanical')}</p>
                 <div className="bikes-grid">
                   {availableMechanical.map((bike) => (
                     <BikeItem
@@ -212,7 +214,7 @@ export const ReserveBike = ({ station, onClose }) => {
 
             {availableElectric.length > 0 && (
               <div className="bike-category">
-                <p className="category-title">Eléctricas</p>
+                <p className="category-title">{t('reserves.electric')}</p>
                 <div className="bikes-grid">
                   {availableElectric.map((bike) => (
                     <BikeItem
@@ -231,14 +233,14 @@ export const ReserveBike = ({ station, onClose }) => {
 
         <div className="modal-footer">
           <button className="btn-cancel" onClick={onClose}>
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             className="btn-confirm"
             onClick={handleReserve}
             disabled={!selectedBike}
           >
-            Reservar Bicicleta
+            {t('reserves.reserveBike')}
           </button>
         </div>
       </div>

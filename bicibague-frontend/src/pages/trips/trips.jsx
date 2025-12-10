@@ -14,6 +14,7 @@ import {
 import { MdOutlineStopCircle } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
 import { PiSneakerFill } from 'react-icons/pi';
+import { useTranslation } from 'react-i18next';
 // components
 import { SubHeader } from '@layouts/SubHeader';
 import { EndTrip } from './EndTrip';
@@ -31,6 +32,7 @@ import './trips.scss';
 
 export const Trips = () => {
   const { formatCurrency } = useCurrency();
+  const { t } = useTranslation();
   const { get: getCurrentTrip } = useGetCurrentTrip();
   const { get: getTripHistory } = useGetTripHistory();
   const { post: endTrip } = useEndTripMutation();
@@ -185,11 +187,11 @@ export const Trips = () => {
 
         setShowEndTripModal(true);
       } else {
-        alert('Error al finalizar el viaje');
+        alert(t('trips.endTripError'));
       }
     } catch (error) {
       console.error('Error al finalizar el viaje:', error);
-      alert('Error al finalizar el viaje. Por favor, intenta de nuevo.');
+      alert(t('trips.endTripError'));
     } finally {
       setLoadingCurrentTrip(false);
     }
@@ -304,7 +306,7 @@ export const Trips = () => {
   };
 
   const getPaymentStatusLabel = (status) => {
-    return status === 'PAGADO' ? 'Pagado' : 'Pendiente';
+    return status === 'PAGADO' ? t('trips.paid') : t('trips.pending');
   };
 
   const getBikeTypeIcon = (type) => {
@@ -324,15 +326,15 @@ export const Trips = () => {
   return (
     <>
       <div className="trips-container">
-        <SubHeader pageTitle="Viajes" />
+        <SubHeader pageTitle={t('trips.title')} />
 
         {/* Sección de Viaje Actual */}
         <div className="current-trip-section">
-          <h2 className="section-title">Viaje Actual</h2>
+          <h2 className="section-title">{t('trips.currentTrip')}</h2>
 
           {loadingCurrentTrip ? (
             <div className="no-trip">
-              <p className="no-trip-text">Cargando viaje actual...</p>
+              <p className="no-trip-text">{t('common.loading')}</p>
             </div>
           ) : currentTrip ? (
             <div className="current-trip-card">
@@ -379,7 +381,7 @@ export const Trips = () => {
                 <div className="detail-item">
                   <FaRegCalendar className="detail-icon" />
                   <div className="detail-content">
-                    <span className="detail-label">Fecha de inicio</span>
+                    <span className="detail-label">{t('trips.startTime')}</span>
                     <span className="detail-value">
                       {formatDate(currentTrip.fecha_inicio)}
                     </span>
@@ -388,7 +390,7 @@ export const Trips = () => {
                 <div className="detail-item">
                   <FaRegClock className="detail-icon" />
                   <div className="detail-content">
-                    <span className="detail-label">Hora de inicio</span>
+                    <span className="detail-label">{t('trips.startTime')}</span>
                     <span className="detail-value">
                       {formatTime(currentTrip.fecha_inicio)}
                     </span>
@@ -397,9 +399,9 @@ export const Trips = () => {
                 <div className="detail-item">
                   <FaBicycle className="detail-icon" />
                   <div className="detail-content">
-                    <span className="detail-label">Tipo de viaje</span>
+                    <span className="detail-label">{t('trips.tripType')}</span>
                     <span className="detail-value">
-                      {getTripTypeLabel(currentTrip.tipo_viaje)} (máx:{' '}
+                      {getTripTypeLabel(currentTrip.tipo_viaje)} ({t('trips.maxTime')}:{' '}
                       {getTripMaxTime(currentTrip.tipo_viaje)})
                     </span>
                   </div>
@@ -407,7 +409,7 @@ export const Trips = () => {
                 <div className="detail-item">
                   <FaMoneyBillWave className="detail-icon" />
                   <div className="detail-content">
-                    <span className="detail-label">Precio del viaje</span>
+                    <span className="detail-label">{t('trips.cost')}</span>
                     <span className="detail-value">
                       {formatCurrency(getTripBasePrice(currentTrip.tipo_viaje))}{' '}
                       +{' '}
@@ -423,16 +425,16 @@ export const Trips = () => {
               <div className="trip-actions">
                 <button className="btn btn-end" onClick={handleEndTrip}>
                   <MdOutlineStopCircle className="btn-icon" />
-                  Finalizar Viaje (boton de simulación)
+                  {t('trips.endTrip')}
                 </button>
               </div>
             </div>
           ) : (
             <div className="no-trip">
               <FaBicycle className="no-trip-icon" />
-              <p className="no-trip-text">No tienes ningún viaje en progreso</p>
+              <p className="no-trip-text">{t('trips.noCurrentTrip')}</p>
               <p className="no-trip-hint">
-                Desbloquea una reserva para comenzar un viaje
+                {t('reserves.unlock')}
               </p>
             </div>
           )}
@@ -440,11 +442,11 @@ export const Trips = () => {
 
         {/* Sección de Historial */}
         <div className="history-section">
-          <h2 className="section-title">Historial de Viajes</h2>
+          <h2 className="section-title">{t('trips.history')}</h2>
 
           {loadingHistory ? (
             <div className="no-history">
-              <p>Cargando historial...</p>
+              <p>{t('common.loading')}</p>
             </div>
           ) : tripHistory.length > 0 ? (
             <div className="history-list">
@@ -472,7 +474,7 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaRegCalendar className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Inicio:</span>
+                        <span className="history-label">{t('trips.startTime')}:</span>
                         <span className="history-value">
                           {formatDate(trip.fechas.inicio)} -{' '}
                           {formatTime(trip.fechas.inicio)}
@@ -483,7 +485,7 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaRegCalendarCheck className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Fin:</span>
+                        <span className="history-label">{t('trips.endTime')}:</span>
                         <span className="history-value">
                           {trip.fechas.fin
                             ? `${formatDate(trip.fechas.fin)} - ${formatTime(
@@ -497,7 +499,7 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaRegClock className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Duración:</span>
+                        <span className="history-label">{t('trips.duration')}:</span>
                         <span className="history-value">
                           {formatDuration(trip.duracion)}
                         </span>
@@ -507,7 +509,7 @@ export const Trips = () => {
                     <div className="history-detail">
                       <GiPathDistance className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Distancia:</span>
+                        <span className="history-label">{t('trips.distance')}:</span>
                         <span className="history-value">
                           {formatDistance(trip.distancia)}
                         </span>
@@ -517,7 +519,7 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaBicycle className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">Tipo de viaje:</span>
+                        <span className="history-label">{t('trips.tripType')}:</span>
                         <span className="history-value">
                           {getTripTypeLabel(trip.tipo_viaje)}
                         </span>
@@ -527,7 +529,7 @@ export const Trips = () => {
                     <div className="history-detail payment-status">
                       {getPaymentStatusIcon(trip.estado_pago)}
                       <div className="history-content">
-                        <span className="history-label">Estado de pago:</span>
+                        <span className="history-label">{t('trips.paymentStatus')}:</span>
                         <span
                           className={`history-value payment-${trip.estado_pago.toLowerCase()}`}
                         >
@@ -545,7 +547,7 @@ export const Trips = () => {
                         onClick={() => handlePayTrip(trip)}
                       >
                         <FaMoneyBillWave className="btn-icon" />
-                        Pagar{' '}
+                        {t('trips.payNow')}{' '}
                         {formatCurrency(trip.precioDescuento || trip.precio)}
                       </button>
                     </div>
@@ -555,7 +557,7 @@ export const Trips = () => {
             </div>
           ) : (
             <div className="no-history">
-              <p>No hay viajes en el historial</p>
+              <p>{t('trips.noTrips')}</p>
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 // components
 import { SubHeader } from "@layouts/SubHeader";
 import { ButtonThemeToggle } from "@components/ButtonThemeToggle";
@@ -13,6 +14,7 @@ export const Login = () => {
   const navigate = useNavigate();
   const loginUserMutation = useLoginUserMutation();
   const { login } = useAuth();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -41,13 +43,13 @@ export const Login = () => {
     const newErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = "El correo es requerido";
+      newErrors.email = t('auth.email') + " " + t('common.error').toLowerCase();
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "El correo no es válido";
+      newErrors.email = t('auth.email') + " " + t('common.error').toLowerCase();
     }
 
     if (!formData.password) {
-      newErrors.password = "La contraseña es requerida";
+      newErrors.password = t('auth.password') + " " + t('common.error').toLowerCase();
     }
 
     setErrors(newErrors);
@@ -104,12 +106,12 @@ export const Login = () => {
       <div className="auth-wrapper">
         <div className="auth-card">
           <div className="auth-header">
-            <h2>Inicia Sesión</h2>
+            <h2>{t('auth.login')}</h2>
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">Correo electrónico</label>
+              <label htmlFor="email">{t('auth.email')}</label>
               <input
                 type="email"
                 id="email"
@@ -126,14 +128,14 @@ export const Login = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Contraseña</label>
+              <label htmlFor="password">{t('auth.password')}</label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Ingresa tu contraseña"
+                placeholder={t('auth.password')}
                 className={errors.password ? "input-error" : ""}
                 disabled={isLoading}
               />
@@ -145,7 +147,7 @@ export const Login = () => {
                   to="#"
                   onClick={() => alert("Funcionalidad en desarrollo")}
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t('auth.forgotPassword')}
                 </Link>
               </div>
             </div>
@@ -155,15 +157,15 @@ export const Login = () => {
             )}
 
             <button type="submit" className="btn-submit" disabled={isLoading}>
-              {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+              {isLoading ? t('common.loading') : t('auth.login')}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              ¿No tienes cuenta?{" "}
+              {t('auth.noAccount')}{" "}
               <Link to="/register" className="auth-link">
-                Regístrate
+                {t('auth.register')}
               </Link>
             </p>
             <button
@@ -172,7 +174,7 @@ export const Login = () => {
               onClick={() => navigate("/landing")}
               style={{ marginTop: 16 }}
             >
-              Volver al inicio
+              {t('auth.backToHome')}
             </button>
           </div>
         </div>

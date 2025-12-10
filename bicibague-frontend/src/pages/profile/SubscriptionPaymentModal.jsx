@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 // components
 import { StripePayment, StripePaymentForm } from '@components/StripePayment';
 // hooks
@@ -11,6 +12,7 @@ import './SubscriptionPaymentModal.scss';
 
 export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscription }) => {
   const { formatCurrency } = useCurrency();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState('summary'); // 'summary', 'payment', 'success'
   const [clientSecret, setClientSecret] = useState('');
@@ -35,7 +37,7 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
         setClientSecret(response.paymentIntent.client_secret);
         setPaymentStep('payment');
       } else {
-        alert('Error al crear el pago de suscripción');
+        alert(t('subscription.paymentCreationError'));
       }
     } catch (error) {
       console.error('Error al crear el PaymentIntent:', error);
@@ -90,9 +92,9 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
       <div className="subscription-payment-modal">
         <div className="modal-header">
           <h1>
-            {paymentStep === 'summary' && 'Suscripción BicIbagué Plus'}
-            {paymentStep === 'payment' && 'Procesar Pago'}
-            {paymentStep === 'success' && '¡Suscripción Exitosa!'}
+            {paymentStep === 'summary' && t('subscription.subscriptionTitle')}
+            {paymentStep === 'payment' && t('trips.processing')}
+            {paymentStep === 'success' && t('subscription.successTitle')}
           </h1>
           <button
             className="btn-close"
@@ -113,7 +115,7 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
                   <BsStarFill className="subscription-icon" />
                 </div>
                 <div className="subscription-details">
-                  <h2 className="subscription-name">BicIbagué Plus</h2>
+                  <h2 className="subscription-name">{t('subscription.planName')}</h2>
                   <p className="subscription-price">
                     {formatCurrency(SUBSCRIPTION_AMOUNT)}/mes
                   </p>
@@ -121,21 +123,21 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
               </div>
 
               <div className="subscription-benefits-card">
-                <h3 className="benefits-title">Beneficios incluidos:</h3>
+                <h3 className="benefits-title">{t('subscription.benefitsIncluded')}:</h3>
                 <ul className="benefits-list">
                   <li>
                     <BsCheckCircleFill className="benefit-icon" />
-                    <span>50 viajes disponibles al mes</span>
+                    <span>{t('subscription.benefit1')}</span>
                   </li>
                   <li>
                     <BsCheckCircleFill className="benefit-icon" />
-                    <span>Sin recargos por exceder el tiempo límite</span>
+                    <span>{t('subscription.benefit2')}</span>
                   </li>
                 </ul>
               </div>
 
               <div className="subscription-total">
-                <span className="total-label">Total a pagar hoy:</span>
+                <span className="total-label">{t('subscription.totalToday')}:</span>
                 <span className="total-value">
                   {formatCurrency(SUBSCRIPTION_AMOUNT)}
                 </span>
@@ -147,7 +149,7 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
           {paymentStep === 'payment' && (
             <>
               <div className="payment-amount">
-                <span className="amount-label">Total a pagar:</span>
+                <span className="amount-label">{t('trips.totalToPay')}:</span>
                 <span className="amount-value">
                   {formatCurrency(SUBSCRIPTION_AMOUNT)}
                 </span>
@@ -180,9 +182,9 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
                   />
                 </svg>
               </div>
-              <h2 className="success-title">¡Suscripción activada!</h2>
+              <h2 className="success-title">{t('subscription.activatedTitle')}</h2>
               <p className="success-text">
-                Ahora tienes acceso a todos los beneficios de BicIbagué Plus.
+                {t('subscription.activatedDescription')}
               </p>
             </div>
           )}
@@ -195,7 +197,7 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
               onClick={handleCancel}
               disabled={isLoading}
             >
-              Cancelar
+              {t('common.cancel')}
             </button>
             {paymentStep === 'summary' && (
               <button
@@ -206,10 +208,10 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
                 {isLoading ? (
                   <>
                     <span className="spinner"></span>
-                    Cargando...
+                    {t('common.loading')}
                   </>
                 ) : (
-                  'Proceder al Pago'
+                  t('trips.proceedToPayment')
                 )}
               </button>
             )}
@@ -222,12 +224,12 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
                 {isLoading ? (
                   <>
                     <span className="spinner"></span>
-                    Procesando...
+                    {t('trips.processing')}
                   </>
                 ) : (
                   <>
                     <FaCreditCard className="btn-icon" />
-                    Pagar {formatCurrency(SUBSCRIPTION_AMOUNT)}
+                    {t('trips.pay')} {formatCurrency(SUBSCRIPTION_AMOUNT)}
                   </>
                 )}
               </button>

@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@contexts/PreferencesContext';
 
 export const useTheme = () => {
+  const { preferences, updatePreference } = usePreferences();
+  
   // Obtener el tema guardado o usar el preferido del sistema
   const getInitialTheme = () => {
-    const savedTheme = localStorage.getItem('theme');
+    // const savedTheme = localStorage.getItem('theme');
+    const savedTheme = preferences.theme;
     if (savedTheme) {
       return savedTheme;
     }
@@ -19,8 +23,8 @@ export const useTheme = () => {
   useEffect(() => {
     // Aplicar el tema al elemento raíz
     document.documentElement.setAttribute('data-theme', theme);
-    // Guardar en localStorage
-    localStorage.setItem('theme', theme);
+    // Actualizar la preferencia en el contexto del localStorage
+    updatePreference('theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

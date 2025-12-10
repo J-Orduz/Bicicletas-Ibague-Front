@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 // API
 import { useStartTripMutation } from '@api/reserves';
 import { useGetStations } from '@api/bikes';
@@ -17,6 +18,7 @@ import './UnlockBike.scss';
 
 export const UnlockBike = ({ reservation, onClose }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [serialNumber, setSerialNumber] = useState('');
   const [destinationSearch, setDestinationSearch] = useState('');
@@ -85,17 +87,17 @@ export const UnlockBike = ({ reservation, onClose }) => {
 
     // Validación básica
     if (!serialNumber.trim()) {
-      setError('Por favor ingresa el número de serie');
+      setError(t('reserves.serialNumber') + ' ' + t('common.error').toLowerCase());
       return;
     }
 
     if (serialNumber.length < 11 || serialNumber.length > 11) {
-      setError('El número de serie debe ser de tipo: ABC-123-XYZ');
+      setError(t('reserves.serialNumber') + ' ' + t('common.error').toLowerCase());
       return;
     }
 
     if (!selectedStation) {
-      setError('Por favor selecciona una estación de destino');
+      setError(t('reserves.destination') + ' ' + t('common.error').toLowerCase());
       return;
     }
 
@@ -181,12 +183,12 @@ export const UnlockBike = ({ reservation, onClose }) => {
     <div className="unlock-modal-overlay" onClick={handleOverlayClick}>
       <div className="unlock-modal">
         <div className="modal-header">
-          <h1>Desbloquear Bicicleta</h1>
+          <h1>{t('reserves.unlockBike')}</h1>
           <button
             className="btn-close"
             onClick={onClose}
             disabled={isLoading}
-            aria-label="Cerrar"
+            aria-label={t('common.close')}
           >
             <BsXLg className="btn-icon" />
           </button>
@@ -199,13 +201,13 @@ export const UnlockBike = ({ reservation, onClose }) => {
             </div>
             <div className="bike-details">
               <h2 className="bike-id">{reservation.bikeId}</h2>
-              <p className="bike-status">Reserva Activa</p>
+              <p className="bike-status">{t('reserves.activeReservation')}</p>
             </div>
           </div>
 
           <div className="input-section">
             <label htmlFor="destination" className="input-label">
-              Estación de Destino:
+              {t('reserves.destination')}:
             </label>
             <div className="input-wrapper autocomplete-wrapper">
               <div className="input-icon-container">
@@ -217,7 +219,7 @@ export const UnlockBike = ({ reservation, onClose }) => {
                 className={`serial-input destination-input ${
                   error && !selectedStation ? 'error' : ''
                 }`}
-                placeholder="Buscar estación..."
+                placeholder={t('reserves.searchStation')}
                 value={destinationSearch}
                 onChange={handleDestinationChange}
                 onFocus={handleDestinationFocus}
@@ -244,8 +246,8 @@ export const UnlockBike = ({ reservation, onClose }) => {
                           className={`station-type ${station.tipoEstacion.toLowerCase()}`}
                         >
                           {station.tipoEstacion === 'BICICLETA'
-                            ? '🚲 Bicicleta'
-                            : '🚇 Metro'}
+                            ? t('reserves.bikeStation')
+                            : t('reserves.metroStation')}
                         </span>
                       </div>
                     </div>
@@ -258,20 +260,20 @@ export const UnlockBike = ({ reservation, onClose }) => {
                 destinationSearch && (
                   <div className="stations-list">
                     <div className="station-item no-results">
-                      No se encontraron estaciones
+                      {t('reserves.noStationsFound')}
                     </div>
                   </div>
                 )}
             </div>
             {selectedStation && (
               <div className="selected-station-info">
-                <span className="station-type-label">Tipo de estación:</span>
+                <span className="station-type-label">{t('reserves.stationType')}</span>
                 <span
                   className={`station-type-badge ${selectedStation.tipoEstacion.toLowerCase()}`}
                 >
                   {selectedStation.tipoEstacion === 'BICICLETA'
-                    ? '🚲 Bicicleta'
-                    : '🚇 Metro'}
+                    ? t('reserves.bikeStation')
+                    : t('reserves.metroStation')}
                 </span>
               </div>
             )}
@@ -279,7 +281,7 @@ export const UnlockBike = ({ reservation, onClose }) => {
 
           <div className="input-section">
             <label htmlFor="serialNumber" className="input-label">
-              Número de Serie:
+              {t('reserves.serialNumber')}:
             </label>
             <div className="input-wrapper">
               <input
@@ -304,14 +306,14 @@ export const UnlockBike = ({ reservation, onClose }) => {
 
           <div className="unlock-instructions">
             <h3 className="instructions-title">
-              Instrucciones del numero de serie:
+              {t('reserves.instructionsTitle')}
             </h3>
             <ol className="instructions-list">
               <li>
-                1. Localiza el número de serie en la barra de la bicicleta
+                {t('reserves.instruction1')}
               </li>
               <li>
-                2. Ingresa el código exactamente como aparece (sin espacios)
+                {t('reserves.instruction2')}
               </li>
             </ol>
           </div>
@@ -319,7 +321,7 @@ export const UnlockBike = ({ reservation, onClose }) => {
 
         <div className="modal-footer">
           <button className="btn-cancel" onClick={onClose} disabled={isLoading}>
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             className="btn-unlock"
@@ -329,12 +331,12 @@ export const UnlockBike = ({ reservation, onClose }) => {
             {isLoading ? (
               <>
                 <span className="spinner"></span>
-                Desbloqueando...
+                {t('reserves.unlocking')}
               </>
             ) : (
               <>
                 <IoLockOpenOutline className="btn-icon" />
-                Desbloquear
+                {t('reserves.unlock')}
               </>
             )}
           </button>

@@ -1,5 +1,6 @@
 // leaftlet map. Tutorial: https://leafletjs.com/examples.html
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -43,6 +44,7 @@ const bikeIcon = new L.Icon({
 });
 
 export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
+  const navigate = useNavigate();
   const [selectedStation, setSelectedStation] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [hasActiveTrip, setHasActiveTrip] = useState(false);
@@ -111,6 +113,22 @@ export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
         if (telemetryData) {
           console.log('Telemetría obtenida:', telemetryData);
           setBikeTelemetry(telemetryData);
+          
+          // Verificar si el candado está bloqueado
+          if (telemetryData.estadoCandado === 'Bloqueado') {
+            console.log('Candado bloqueado detectado. Viaje finalizado.');
+            alert('Viaje finalizado');
+            
+            // Actualizar estado del viaje
+            setHasActiveTrip(false);
+            setCurrentTrip(null);
+            setBikeTelemetry(null);
+            
+            // Redirigir a la página de viajes
+            navigate('/trips');
+            
+            return;
+          }
           
           // Notificar al componente padre
           if (onBikeTelemetryUpdate) {

@@ -147,7 +147,9 @@ export const Profile = () => {
               <div className="user-details">
                 <h2 className="user-name">{userData.userName}</h2>
                 <p className="user-email">{userData.userEmail}</p>
-                <div className="user-role">Rol: {userData.userRole.toUpperCase()}</div>
+                <div className="user-role">
+                  Rol: {userData.userRole.toUpperCase()}
+                </div>
                 <p className="user-id">ID: {userData.userId}</p>
               </div>
               <button className="logout-button" onClick={logout}>
@@ -157,19 +159,17 @@ export const Profile = () => {
 
             <div className="balance-section">
               {/* BiciPuntos */}
-              {pointsData && (
-                <div className="balance-card points-card">
-                  <span className="balance-label">BiciPuntos</span>
-                  <span className="balance-amount points-amount">
-                    {pointsData.puntos}
+              <div className="balance-card points-card">
+                <span className="balance-label">BiciPuntos</span>
+                <span className="balance-amount points-amount">
+                  {pointsData?.puntos || 0}
+                </span>
+                <div className="points-equivalence">
+                  <span className="equivalence-text">
+                    {formatCurrency((pointsData?.puntos || 0) * 100)}
                   </span>
-                  <div className="points-equivalence">
-                    <span className="equivalence-text">
-                      {formatCurrency(pointsData.puntos * 100)}
-                    </span>
-                  </div>
                 </div>
-              )}
+              </div>
               {/* Saldo Principal */}
               <div className="balance-card">
                 <span className="balance-label">Saldo BiciBague</span>

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 // API
 import { useStartTripMutation } from '@api/reserves';
 import { useGetStations } from '@api/bikes';
+// hooks
+import { useNotifier } from '@hooks/useNotifier';
 // icons
 import { IoLockOpenOutline } from 'react-icons/io5';
 import { BsXLg } from 'react-icons/bs';
@@ -19,6 +21,7 @@ import './UnlockBike.scss';
 export const UnlockBike = ({ reservation, onClose }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const notify = useNotifier();
 
   const [serialNumber, setSerialNumber] = useState('');
   const [destinationSearch, setDestinationSearch] = useState('');
@@ -74,7 +77,7 @@ export const UnlockBike = ({ reservation, onClose }) => {
   const onUnlock = (serialNumber, bikeData) => {
     console.log('Viaje iniciado con número de serie:', serialNumber);
 
-    alert(
+    notify.success(
       `¡Bicicleta desbloqueada! Número de serie: ${serialNumber}\n¡Disfruta tu viaje!`
     );
     navigate('/trips');

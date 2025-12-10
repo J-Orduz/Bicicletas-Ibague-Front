@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@contexts/AuthContext';
+import { useNotifier } from "@hooks/useNotifier";
 
 const apiBase = import.meta.env.VITE_API_BASE || '';
 const supabaseURLenv = import.meta.env.VITE_SUPABASE_URL || '';
@@ -19,6 +20,7 @@ export const useFetch = (
   const [error, setError] = useState(null);
   const { token, logout } = useAuth();
   const { t } = useTranslation();
+  const notify = useNotifier();
 
   // No hace fetch hasta que se llame a fetchData directamente
   const fetchData = useCallback(
@@ -62,7 +64,7 @@ export const useFetch = (
         if (err.status === 401 && !globalAlertShown) {
           globalAlertShown = true;
           logout();
-          alert(t('fetch.sessionExpired'));
+          notify.warn(t('fetch.sessionExpired'));
         }
 
         const errorMsgs = {

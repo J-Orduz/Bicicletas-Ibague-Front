@@ -17,6 +17,7 @@ import {
 import { useSuccessfulPaymentMutation } from '@api/trips';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
+import { useNotifier } from '@hooks/useNotifier';
 // icons
 import { BsXLg, BsStarFill } from 'react-icons/bs';
 import { FaBicycle, FaRegClock, FaMoneyBillWave } from 'react-icons/fa6';
@@ -28,6 +29,7 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
   const { t } = useTranslation();
+  const notify = useNotifier();
 
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState('summary'); // 'summary', 'payment', 'processing', 'success'
@@ -122,11 +124,11 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
         // Actualizar puntos del usuario
         await fetchPoints();
         
-        alert(t('trips.pointsRedeemedSuccess', { discount: formatCurrency(response.data.descuentoAplicado) }));
+        notify.success(t('trips.pointsRedeemedSuccess', { discount: formatCurrency(response.data.descuentoAplicado) }));
       }
     } catch (error) {
       console.error('Error al canjear puntos:', error);
-      alert(error.errorMutationMsg || t('trips.errorRedeemingPoints'));
+      notify.error(error.errorMutationMsg || t('trips.errorRedeemingPoints'));
     } finally {
       setIsRedeemingPoints(false);
     }
@@ -194,11 +196,11 @@ export const EndTrip = ({ trip, tripEndData, onClose, onTripEnded }) => {
         setClientSecret(response.paymentIntent.client_secret);
         setPaymentStep('payment');
       } else {
-        alert(t('trips.errorCreatingPayment'));
+        notify.error(t('trips.errorCreatingPayment'));
       }
     } catch (error) {
       console.error('Error al crear el PaymentIntent:', error);
-      alert(error.errorMutationMsg || 'Error al procesar el pago');
+      notify.error(error.errorMutationMsg || 'Error al procesar el pago');
     } finally {
       setIsLoading(false);
     }

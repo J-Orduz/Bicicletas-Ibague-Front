@@ -5,12 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { SubHeader } from "@layouts/SubHeader";
 import { ButtonThemeToggle } from "@components/ButtonThemeToggle";
 import Aurora from "@components/Aurora";
+// hooks
+import { useNotifier } from "@hooks/useNotifier";
 // api
 import { useRegisterUserMutation } from "@api/auth";
 
 export const Register = () => {
   const { t } = useTranslation();
   const registerUserMutation = useRegisterUserMutation();
+  const notify = useNotifier();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -84,7 +87,7 @@ export const Register = () => {
       });
 
       //   navigate('/');
-      alert(response.message);
+      notify.success(response.message);
     } catch (error) {
       setErrors({ submit: error.errorMutationMsg });
     } finally {

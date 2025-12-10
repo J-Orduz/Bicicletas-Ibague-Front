@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 // icons
 import {
   FaBicycle,
@@ -14,12 +15,12 @@ import {
 import { MdOutlineStopCircle } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
 import { PiSneakerFill } from 'react-icons/pi';
-import { useTranslation } from 'react-i18next';
 // components
 import { SubHeader } from '@layouts/SubHeader';
 import { EndTrip } from './EndTrip';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
+import { useNotifier } from '@hooks/useNotifier';
 // api
 import {
   useGetCurrentTrip,
@@ -33,6 +34,7 @@ import './trips.scss';
 export const Trips = () => {
   const { formatCurrency } = useCurrency();
   const { t } = useTranslation();
+  const notify = useNotifier();
   const { get: getCurrentTrip } = useGetCurrentTrip();
   const { get: getTripHistory } = useGetTripHistory();
   const { post: endTrip } = useEndTripMutation();
@@ -187,11 +189,11 @@ export const Trips = () => {
 
         setShowEndTripModal(true);
       } else {
-        alert(t('trips.endTripError'));
+        notify.error(t('trips.endTripError'));
       }
     } catch (error) {
       console.error('Error al finalizar el viaje:', error);
-      alert(t('trips.endTripError'));
+      notify.error(t('trips.endTripError'));
     } finally {
       setLoadingCurrentTrip(false);
     }
@@ -401,7 +403,8 @@ export const Trips = () => {
                   <div className="detail-content">
                     <span className="detail-label">{t('trips.tripType')}</span>
                     <span className="detail-value">
-                      {getTripTypeLabel(currentTrip.tipo_viaje)} ({t('trips.maxTime')}:{' '}
+                      {getTripTypeLabel(currentTrip.tipo_viaje)} (
+                      {t('trips.maxTime')}:{' '}
                       {getTripMaxTime(currentTrip.tipo_viaje)})
                     </span>
                   </div>
@@ -433,9 +436,7 @@ export const Trips = () => {
             <div className="no-trip">
               <FaBicycle className="no-trip-icon" />
               <p className="no-trip-text">{t('trips.noCurrentTrip')}</p>
-              <p className="no-trip-hint">
-                {t('reserves.unlock')}
-              </p>
+              <p className="no-trip-hint">{t('reserves.unlock')}</p>
             </div>
           )}
         </div>
@@ -474,7 +475,9 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaRegCalendar className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">{t('trips.startTime')}:</span>
+                        <span className="history-label">
+                          {t('trips.startTime')}:
+                        </span>
                         <span className="history-value">
                           {formatDate(trip.fechas.inicio)} -{' '}
                           {formatTime(trip.fechas.inicio)}
@@ -485,7 +488,9 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaRegCalendarCheck className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">{t('trips.endTime')}:</span>
+                        <span className="history-label">
+                          {t('trips.endTime')}:
+                        </span>
                         <span className="history-value">
                           {trip.fechas.fin
                             ? `${formatDate(trip.fechas.fin)} - ${formatTime(
@@ -499,7 +504,9 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaRegClock className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">{t('trips.duration')}:</span>
+                        <span className="history-label">
+                          {t('trips.duration')}:
+                        </span>
                         <span className="history-value">
                           {formatDuration(trip.duracion)}
                         </span>
@@ -509,7 +516,9 @@ export const Trips = () => {
                     <div className="history-detail">
                       <GiPathDistance className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">{t('trips.distance')}:</span>
+                        <span className="history-label">
+                          {t('trips.distance')}:
+                        </span>
                         <span className="history-value">
                           {formatDistance(trip.distancia)}
                         </span>
@@ -519,7 +528,9 @@ export const Trips = () => {
                     <div className="history-detail">
                       <FaBicycle className="history-icon" />
                       <div className="history-content">
-                        <span className="history-label">{t('trips.tripType')}:</span>
+                        <span className="history-label">
+                          {t('trips.tripType')}:
+                        </span>
                         <span className="history-value">
                           {getTripTypeLabel(trip.tipo_viaje)}
                         </span>
@@ -529,7 +540,9 @@ export const Trips = () => {
                     <div className="history-detail payment-status">
                       {getPaymentStatusIcon(trip.estado_pago)}
                       <div className="history-content">
-                        <span className="history-label">{t('trips.paymentStatus')}:</span>
+                        <span className="history-label">
+                          {t('trips.paymentStatus')}:
+                        </span>
                         <span
                           className={`history-value payment-${trip.estado_pago.toLowerCase()}`}
                         >

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { useNotifier } from "@hooks/useNotifier";
 
 const apiBase = import.meta.env.VITE_API_BASE || '';
 const supabaseURLenv = import.meta.env.VITE_SUPABASE_URL || '';
@@ -12,6 +13,7 @@ export const useMutation = () => {
   const [error, setError] = useState(null);
   const { token, logout } = useAuth();
   const { t } = useTranslation();
+  const notify = useNotifier();
 
   const mutate = async (
     method,
@@ -95,7 +97,7 @@ export const useMutation = () => {
       if (err.status === 401 && !globalAlertShown) {
         globalAlertShown = true;
         logout();
-        alert(t('fetch.sessionExpired'));
+        notify.warn(t('fetch.sessionExpired'));
       }
 
       const errorMsgs = {

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 // api
 import { useReserveBikeMutation, useReserveBikeScheduledMutation } from '@api/reserves';
+// hooks
+import { useNotifier } from '@hooks/useNotifier';
 //icons
 import { BsXLg } from 'react-icons/bs';
 // styles
@@ -11,6 +13,7 @@ import './ReserveBike.scss';
 export const ReserveBike = ({ station, onClose }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const notify = useNotifier();
   const [selectedBike, setSelectedBike] = useState(null);
   const [reservationType, setReservationType] = useState('now'); // 'now' o 'scheduled'
   const [scheduledDate, setScheduledDate] = useState('');
@@ -30,14 +33,14 @@ export const ReserveBike = ({ station, onClose }) => {
 
   const handleReserve = async () => {
     if (!selectedBike) {
-      alert(t('reserves.selectBikeAlert'));
+      notify.warn(t('reserves.selectBikeAlert'));
       return;
     }
 
     // Validar fecha y hora si es reserva programada
     if (reservationType === 'scheduled') {
       if (!scheduledDate || !scheduledTime) {
-        alert(t('reserves.selectDateTimeAlert'));
+        notify.warn(t('reserves.selectDateTimeAlert'));
         return;
       }
 
@@ -45,7 +48,7 @@ export const ReserveBike = ({ station, onClose }) => {
       const selectedDateTime = new Date(`${scheduledDate}T${scheduledTime}`);
       const now = new Date();
       if (selectedDateTime <= now) {
-        alert(t('reserves.futureDateAlert'));
+        notify.warn(t('reserves.futureDateAlert'));
         return;
       }
     }
@@ -54,7 +57,7 @@ export const ReserveBike = ({ station, onClose }) => {
       if (reservationType === 'now') {
         // Reserva inmediata
         await reserveBikeMutation.post({ bikeId: selectedBike });
-        alert(t('reserves.reserveSuccessNow', { bikeId: selectedBike, station: station.name }));
+        notify.success(t('reserves.reserveSuccessNow', { bikeId: selectedBike, station: station.name }));
       } else {
         // Reserva programada
         // Construir la fecha y hora en formato ISO con zona horaria de Colombia (UTC-5)
@@ -65,13 +68,13 @@ export const ReserveBike = ({ station, onClose }) => {
           bikeId: selectedBike,
           fechaHoraProgramada: fechaHoraProgramada
         });
-        alert(t('reserves.reserveSuccessScheduled', { bikeId: selectedBike, date: scheduledDate, time: scheduledTime, station: station.name }));
+        notify.success(t('reserves.reserveSuccessScheduled', { bikeId: selectedBike, date: scheduledDate, time: scheduledTime, station: station.name }));
       }
 
       onClose();
       navigate('/reserves');
     } catch (error) {
-      alert(error.errorMutationMsg, error.errorJsonMsg);
+      notify.error(error.errorMutationMsg || error.errorJsonMsg);
       return;
     }
   };

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StripePayment, StripePaymentForm } from '@components/StripePayment';
 // hooks
 import { useCurrency } from '@hooks/useCurrency';
+import { useNotifier } from '@hooks/useNotifier';
 // icons
 import { BsXLg, BsStarFill, BsCheckCircleFill } from 'react-icons/bs';
 import { FaCreditCard } from 'react-icons/fa';
@@ -13,6 +14,7 @@ import './SubscriptionPaymentModal.scss';
 export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscription }) => {
   const { formatCurrency } = useCurrency();
   const { t } = useTranslation();
+  const notify = useNotifier();
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState('summary'); // 'summary', 'payment', 'success'
   const [clientSecret, setClientSecret] = useState('');
@@ -37,11 +39,11 @@ export const SubscriptionPaymentModal = ({ onClose, onSuccess, createSubscriptio
         setClientSecret(response.paymentIntent.client_secret);
         setPaymentStep('payment');
       } else {
-        alert(t('subscription.paymentCreationError'));
+        notify.error(t('subscription.paymentCreationError'));
       }
     } catch (error) {
       console.error('Error al crear el PaymentIntent:', error);
-      alert(error.errorMutationMsg || 'Error al procesar la suscripción');
+      notify.error(error.errorMutationMsg || 'Error al procesar la suscripción');
     } finally {
       setIsLoading(false);
     }

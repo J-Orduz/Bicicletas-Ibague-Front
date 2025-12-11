@@ -31,12 +31,28 @@
     }
   }
 
-  h1 {
-    color: $primary-color;
-    margin-bottom: 3px;
+  .header-logo {
+    @include flex($gap: 10px);
+
+    img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    h1 {
+      color: $primary-color;
+      margin-bottom: 3px;
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
 
     @media (max-width: 768px) {
-      display: none;
+      img {
+        display: none;
+      }
     }
   }
 

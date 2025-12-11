@@ -1,3 +1,6 @@
+@use '@styles/variables' as *;
+@use '@styles/mixins' as *;
+
 .landing-root {
   position: relative;
   width: 100%;
@@ -28,6 +31,14 @@
   color: #fff;
   max-width: 720px;
   padding: 32px;
+
+  .hero-logo {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    margin-bottom: 24px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  }
 }
 
 // Pill-style floating header bar, solid color, no blur
@@ -60,7 +71,13 @@
   font-family: 'Inter', 'Poppins', Arial, sans-serif;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+
+  .landing-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
 }
 
 .header-right {
@@ -117,7 +134,8 @@
   font-weight: 900;
   pointer-events: auto;
   letter-spacing: -1.2px;
-  color: #fff;
+  // color: #fff;
+  color: $primary-color;
   text-shadow: 0 2px 6px rgba(0,0,0,0.18);
   font-family: 'Inter', 'Poppins', Arial, sans-serif;
 }

@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa6';
 // styles
 import './Header.scss';
+import logo from '/logo_bicibague.png';
 
 export const Header = () => {
   const scrollDirection = useScrollDirection();
@@ -25,7 +26,10 @@ export const Header = () => {
     <header
       className={`header ${scrollDirection === 'down' ? 'header--hidden' : ''}`}
     >
-      <h1>BicIbagué</h1>
+      <div className="header-logo">
+        <img src={logo} alt="BicIbagué Logo" />
+        <h1>BicIbagué</h1>
+      </div>
       <nav>
         <ul>
           <li>

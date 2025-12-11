@@ -1,12 +1,13 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Hyperspeed from "./Hyperspeed";
-import "./Landing.scss";
+import Hyperspeed from './Hyperspeed';
+import './Landing.scss';
+import logo from '/logo_bicibague.png';
 
 const landingPreset = {
   // Highway-like preset with warm orange/red colors
-  distortion: "turbulentDistortion",
+  distortion: 'turbulentDistortion',
   lanesPerRoad: 3,
   lightPairsPerRoadWay: 40,
   totalSideLightSticks: 30,
@@ -33,10 +34,10 @@ const Landing = () => {
       <header className="landing-header">
         <div className="header-left">Bicibague</div>
         <nav className="header-right">
-          <button className="header-link" onClick={() => navigate("/login")}>
+          <button className="header-link" onClick={() => navigate('/login')}>
             {t('auth.login')}
           </button>
-          <button className="header-cta" onClick={() => navigate("/register")}>
+          <button className="header-cta" onClick={() => navigate('/register')}>
             {t('auth.register')}
           </button>
         </nav>
@@ -48,14 +49,13 @@ const Landing = () => {
 
       <div className="landing-hero">
         <div className="hero-inner">
+          <img src={logo} alt="BicIbagué Logo" className="hero-logo" />
           <h1 className="hero-title">{t('landing.heroTitle')}</h1>
-          <p className="hero-sub">
-            {t('landing.heroSubtitle')}
-          </p>
+          <p className="hero-sub">{t('landing.heroSubtitle')}</p>
           <div className="hero-actions">
             <button
               className="btn primary"
-              onClick={() => navigate("/register")}
+              onClick={() => navigate('/register')}
             >
               {t('landing.createAccount')}
             </button>

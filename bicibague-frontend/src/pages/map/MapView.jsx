@@ -130,7 +130,7 @@ export const MapView = ({ onStationsLoaded, onBikeTelemetryUpdate }) => {
             setBikeTelemetry(null);
             
             // Redirigir a la página de viajes
-            navigate('/trips');
+            // navigate('/trips');
             
             return;
           }
